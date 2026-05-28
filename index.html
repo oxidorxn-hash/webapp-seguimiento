@@ -2114,6 +2114,17 @@
 
         var renderExpenses = (container) => {
             const data = getBoardData();
+            // Remove legacy "Liquidación de deuda" entries created by the old settlement mechanism
+            // (those are synthetic compensation entries, not real expenses)
+            if (data.expenses) {
+                const cleaned = data.expenses.filter(e =>
+                    !(e.concept === 'Liquidación de deuda' && !e.settled && e.category === 'Finanzas')
+                );
+                if (cleaned.length !== data.expenses.length) {
+                    data.expenses = cleaned;
+                    saveBoardData(data);
+                }
+            }
             const expenses = data.expenses || [];
 
             // Safe date formatter helper (avoids Invalid Date)
@@ -2290,7 +2301,7 @@
             if (!panel) return;
             const renderInds = (d) => {
                 const fmt = v => formatCLP(Math.round(v || 0));
-                const fecha = d.uf?.fecha ? new Date(d.uf.fecha + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                const fecha = d.uf?.fecha ? (() => { try { return new Date(d.uf.fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return ''; } })() : '';
                 panel.innerHTML = `
                     <div class="indicator-chip"><span class="ind-label">UF</span><span class="ind-value">${fmt(d.uf?.valor)}</span></div>
                     <div class="indicator-chip"><span class="ind-label">USD</span><span class="ind-value">${fmt(d.dolar?.valor)}</span></div>
@@ -2300,10 +2311,13 @@
                 `;
             };
             try {
+                // Invalidate cache if it produced Invalid Date (legacy bug)
                 const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { data, ts } = JSON.parse(cached);
-                    if (Date.now() - ts < CACHE_TTL) { renderInds(data); return; }
+                    const testDate = data.uf?.fecha ? new Date(data.uf.fecha) : null;
+                    const cacheOk  = testDate && !isNaN(testDate.getTime());
+                    if (cacheOk && Date.now() - ts < CACHE_TTL) { renderInds(data); return; }
                 }
                 const res = await fetch('https://mindicador.cl/api');
                 if (!res.ok) throw new Error('fetch error');
