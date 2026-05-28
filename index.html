@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Global JavaScript Error Boundary -->
+    <script>
+        window.showAppError = function(message, sourceInfo) {
+            if (document.getElementById('app-error-banner')) return;
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'app-error-banner';
+            errorDiv.style.position = 'fixed';
+            errorDiv.style.bottom = '20px';
+            errorDiv.style.right = '20px';
+            errorDiv.style.maxWidth = '450px';
+            errorDiv.style.background = 'rgba(239, 68, 68, 0.98)';
+            errorDiv.style.color = '#ffffff';
+            errorDiv.style.padding = '18px 22px';
+            errorDiv.style.borderRadius = '14px';
+            errorDiv.style.zIndex = '99999';
+            errorDiv.style.fontFamily = 'monospace';
+            errorDiv.style.fontSize = '12px';
+            errorDiv.style.lineHeight = '1.6';
+            errorDiv.style.boxShadow = '0 10px 35px rgba(239, 68, 68, 0.4)';
+            errorDiv.style.backdropFilter = 'blur(12px)';
+            errorDiv.style.border = '1px solid rgba(255,255,255,0.25)';
+            errorDiv.style.animation = 'fadeIn 0.3s ease-out';
+            
+            errorDiv.innerHTML = `
+                <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Error de Ejecución Detallado
+                </div>
+                <div style="opacity: 0.95; margin-bottom: 10px; font-weight: 600;">${message}</div>
+                <div style="font-size: 10px; opacity: 0.8; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto;">${sourceInfo}</div>
+            `;
+            document.body.appendChild(errorDiv);
+        };
+        
+        window.onerror = function(message, source, lineno, colno, error) {
+            const file = source ? source.substring(source.lastIndexOf('/') + 1) : 'unknown';
+            window.showAppError(message, `Archivo: ${file}\nLínea: ${lineno}:${colno}\nStack: ${error ? error.stack : 'No disponible'}`);
+            return false;
+        };
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veloce Tracker - Dashboard & Kanban</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6366f1">
+    
+    <script>
+        // Register Service Worker for PWA support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
+                    .catch(err => console.error('Error al registrar Service Worker:', err));
+            });
+        }
+    </script>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m12 14-3-3 3-3"></path><path d="m16 11-4 3"></path></svg>
+                    <span class="logo-text">Veloce</span>
+                </div>
+                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="dashboard" id="nav-dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="10" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="kanban" id="nav-kanban">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M11 3v18"></path><path d="M16 3v18"></path><path d="M8 3v18"></path></svg>
+                    <span>Tablero Kanban</span>
+                </button>
+                <button class="nav-btn" data-view="timeline" id="nav-timeline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Línea de Tiempo</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="theme-toggle-btn" id="theme-toggle" aria-label="Cambiar tema">
+                    <span class="icon-light">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                    </span>
+                    <span class="icon-dark">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </span>
+                    <span class="theme-toggle-text">Modo Claro</span>
+                </button>
+                <div class="user-profile">
+                    <div class="avatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name">Usuario Demo</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-container" id="global-search-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    <input type="text" placeholder="Buscar tareas..." id="search-input" class="search-input">
+                </div>
+                <div class="top-bar-actions">
+                    <div class="date-badge" id="current-date">Cargando fecha...</div>
+                </div>
+            </header>
+
+            <div class="content-body" id="app-content">
+                <!-- Dynamic Content Loaded Here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Universal Modal for Tasks/Columns -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-card" id="task-modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Añadir Tarea</h3>
+                <button class="close-btn" id="modal-close" aria-label="Cerrar modal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="task-form" class="modal-form">
+                <input type="hidden" id="task-id">
+                <input type="hidden" id="task-column-id">
+                
+                <div class="form-group">
+                    <label for="task-title-input">Título de la tarea</label>
+                    <input type="text" id="task-title-input" required placeholder="Ej. Implementar autenticación" maxlength="80">
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-desc-input">Descripción</label>
+                    <textarea id="task-desc-input" rows="3" placeholder="Describe brevemente de qué trata esta tarea..." maxlength="300"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-priority-input">Prioridad</label>
+                        <select id="task-priority-input" required>
+                            <option value="low">Baja</option>
+                            <option value="medium" selected>Media</option>
+                            <option value="high">Alta</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-start-date-input">Fecha de inicio</label>
+                        <input type="date" id="task-start-date-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-date-input">Fecha límite</label>
+                        <input type="date" id="task-date-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 16px;">
+                    <label style="font-weight: 700; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span>Subtareas</span>
+                        <span id="subtasks-progress" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">0/0 (0%)</span>
+                    </label>
+                    <div style="width: 100%; height: 6px; background-color: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-full); margin-bottom: 12px; overflow: hidden;">
+                        <div id="subtasks-progress-bar" style="width: 0%; height: 100%; background: var(--accent-gradient); border-radius: var(--border-radius-full); transition: width 0.3s ease;"></div>
+                    </div>
+                    <div id="subtasks-list-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; margin-bottom: 12px; padding: 4px;">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="new-subtask-input" placeholder="Añadir subtarea..." style="flex: 1; padding: 8px 12px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02); font-size: 0.85rem;" maxlength="80">
+                        <button type="button" class="btn btn-secondary" id="add-subtask-btn" style="padding: 8px 12px;">+</button>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="calendar-export-group" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Añadir a Calendario</label>
+                    <div style="display: flex; gap: 12px;">
+                        <a id="export-google-btn" href="#" target="_blank" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 12px; border-radius: var(--border-radius-sm); display: flex; align-items: center; gap: 6px; text-decoration: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                            Google Calendar
+                        </a>
+                        <button type="button" id="export-apple-btn" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 12px; border-radius: var(--border-radius-sm); display: flex; align-items: center; gap: 6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 16V12"></path><path d="M12 8H12.01"></path></svg>
+                            Apple / iCal
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="modal-submit-btn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Combined Engine -->
+    <script>
+        /* ==========================================================================
+           VELOCE TRACKER COMBINED FRONTEND ENGINE
+           All-in-one script to bypass file:// browser sandboxing and CORS restrictions.
+           ========================================================================== */
+
+        // --- 1. STORAGE SERVICE (js/storage.js) ---
+        const STORAGE_KEY = 'veloce_tracker_data';
+        const LOG_KEY = 'veloce_tracker_logs';
+
+        var generateId = () => 'id-' + Math.random().toString(36).substr(2, 9);
+
+        const getSeedData = () => {
+            const today = new Date();
+            const formatDate = (daysOffset) => {
+                const d = new Date(today);
+                d.setDate(today.getDate() + daysOffset);
+                return d.toISOString().split('T')[0];
+            };
+            return {
+                columns: [
+                    {
+                        id: 'col-backlog',
+                        title: 'Backlog',
+                        tasks: [
+                            { id: 'task-1', title: 'Investigar APIs de integración', desc: 'Evaluar alternativas para conectar el servicio de notificaciones con la plataforma externa.', priority: 'low', date: formatDate(6) },
+                            { id: 'task-2', title: 'Reunión de kickoff con cliente', desc: 'Definir el alcance final del proyecto y alinear expectativas técnicas.', priority: 'medium', date: formatDate(4) }
+                        ]
+                    },
+                    {
+                        id: 'col-todo',
+                        title: 'Por Hacer',
+                        tasks: [
+                            { id: 'task-3', title: 'Diseñar interfaz del Dashboard', desc: 'Crear propuestas visuales premium en alta fidelidad utilizando el sistema de colores de la marca.', priority: 'high', date: formatDate(2) },
+                            { id: 'task-4', title: 'Escribir documentación del onboarding', desc: 'Redactar los pasos iniciales para el ingreso de nuevos desarrolladores al repositorio.', priority: 'low', date: formatDate(3) }
+                        ]
+                    },
+                    {
+                        id: 'col-inprogress',
+                        title: 'En Progreso',
+                        tasks: [
+                            { id: 'task-5', title: 'Implementar Drag & Drop en Kanban', desc: 'Utilizar el API nativo de HTML5 con efectos visuales fluidos, animaciones y soporte táctil.', priority: 'high', date: formatDate(1) }
+                        ]
+                    },
+                    {
+                        id: 'col-completed',
+                        title: 'Completado',
+                        tasks: [
+                            { id: 'task-6', title: 'Configurar entorno de desarrollo', desc: 'Instalar servidores locales, definir linters de código y verificar conexiones a base de datos.', priority: 'medium', date: formatDate(-1) },
+                            { id: 'task-7', title: 'Refactorizar variables de diseño CSS', desc: 'Migrar estilos duros a variables CSS adaptables para facilitar el soporte de temas.', priority: 'low', date: formatDate(-2) }
+                        ]
+                    }
+                ]
+            };
+        };
+
+        const getSeedLogs = () => [
+            { id: 'log-1', text: 'Entorno de desarrollo configurado correctamente', colName: 'Completado', priority: 'medium', date: new Date(Date.now() - 3600000 * 24).toLocaleString() },
+            { id: 'log-2', text: 'Comenzó el desarrollo del Drag & Drop para el Kanban', colName: 'En Progreso', priority: 'high', date: new Date(Date.now() - 3600000 * 4).toLocaleString() },
+            { id: 'log-3', text: 'Se movió la tarea "Refactorizar variables de diseño" a completado', colName: 'Completado', priority: 'low', date: new Date(Date.now() - 3600000 * 2).toLocaleString() }
+        ];
+
+        var getBoardData = () => {
+            const rawData = localStorage.getItem(STORAGE_KEY);
+            const seedData = getSeedData();
+            if (!rawData) {
+                saveBoardData(seedData);
+                localStorage.setItem(LOG_KEY, JSON.stringify(getSeedLogs()));
+                return seedData;
+            }
+            try {
+                const parsed = JSON.parse(rawData);
+                if (!parsed || !Array.isArray(parsed.columns) || parsed.columns.length === 0) {
+                    throw new Error("Estructura de columnas inválida");
+                }
+                parsed.columns.forEach(col => {
+                    if (!col.id || !col.title || !Array.isArray(col.tasks)) {
+                        throw new Error("Columna o tareas mal formadas");
+                    }
+                });
+                return parsed;
+            } catch (e) {
+                console.warn('Datos corruptos detectados en localStorage. Restableciendo a valores iniciales seguros.', e);
+                saveBoardData(seedData);
+                localStorage.setItem(LOG_KEY, JSON.stringify(getSeedLogs()));
+                return seedData;
+            }
+        };
+
+        var saveBoardData = (data) => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        };
+
+        var getActivityLogs = () => {
+            const rawLogs = localStorage.getItem(LOG_KEY);
+            if (!rawLogs) return [];
+            try {
+                const parsed = JSON.parse(rawLogs);
+                if (!Array.isArray(parsed)) return [];
+                return parsed;
+            } catch (e) {
+                return [];
+            }
+        };
+
+        var addActivityLog = (text, colName = 'Tablero', priority = 'low') => {
+            const logs = getActivityLogs();
+            const newLog = {
+                id: generateId(),
+                text,
+                colName,
+                priority,
+                date: new Date().toLocaleString()
+            };
+            logs.unshift(newLog);
+            if (logs.length > 10) logs.pop();
+            localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+        };
+
+        // --- 2. DASHBOARD VIEW CONTROLLER (js/dashboard.js) ---
+        var renderDashboard = (container) => {
+            const data = getBoardData();
+            const logs = getActivityLogs();
+            
+            let totalTasks = 0;
+            let completedTasks = 0;
+            let inProgressTasks = 0;
+            let overdueTasks = 0;
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            let completedColId = '';
+            const completedCol = data.columns.find(col => 
+                col.id === 'col-completed' || 
+                col.title.toLowerCase().includes('complet') || 
+                col.title.toLowerCase().includes('hecho') || 
+                col.title.toLowerCase().includes('done')
+            );
+            if (completedCol) completedColId = completedCol.id;
+            else if (data.columns.length > 0) completedColId = data.columns[data.columns.length - 1].id;
+
+            let inProgressColId = '';
+            const inProgressCol = data.columns.find(col => 
+                col.id === 'col-inprogress' || 
+                col.title.toLowerCase().includes('progres') || 
+                col.title.toLowerCase().includes('proces') || 
+                col.title.toLowerCase().includes('haciendo')
+            );
+            if (inProgressCol) inProgressColId = inProgressCol.id;
+
+            data.columns.forEach(column => {
+                const count = column.tasks.length;
+                totalTasks += count;
+                if (column.id === completedColId) completedTasks += count;
+                else if (column.id === inProgressColId) inProgressTasks += count;
+                if (column.id !== completedColId) {
+                    column.tasks.forEach(task => {
+                        if (task.date && task.date < todayStr) overdueTasks++;
+                    });
+                }
+            });
+
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            const hour = new Date().getHours();
+            let greeting = '¡Hola!';
+            if (hour >= 6 && hour < 12) greeting = '¡Buenos días!';
+            else if (hour >= 12 && hour < 20) greeting = '¡Buenas tardes!';
+            else greeting = '¡Buenas noches!';
+
+            const todayTasks = [];
+            data.columns.forEach(col => {
+                if (col.id === completedColId) return;
+                col.tasks.forEach(task => {
+                    const isDueToday = task.date === todayStr;
+                    const isStartingToday = task.startDate === todayStr;
+                    const isActiveToday = task.startDate && task.date && task.startDate <= todayStr && task.date >= todayStr;
+                    if (isDueToday || isStartingToday || isActiveToday) {
+                        todayTasks.push(task);
+                    }
+                });
+            });
+
+            let html = `
+                <div class="dashboard-header-intro" style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">${greeting}, Usuario</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Aquí tienes el resumen y estado general de tus temas pendientes.</p>
+                    </div>
+                    
+                    <!-- Resumen Sysdate Inteligente -->
+                    <div class="glass-panel" style="padding: 16px 20px; border-radius: var(--border-radius-lg); flex: 1.2; min-width: 300px; max-width: 600px; border-left: 4px solid var(--accent-primary); box-shadow: var(--shadow-card);">
+                        <h3 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Resumen para Hoy
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">
+                            ${
+                                todayTasks.length === 0 
+                                ? 'No tienes tareas programadas para el día de hoy. ¡Es un buen momento para planificar o tomar un descanso!' 
+                                : `Hoy tienes <strong>${todayTasks.length}</strong> ${todayTasks.length === 1 ? 'tarea activa' : 'tareas activas'}: <span style="color: var(--text-primary); font-weight: 600;">${todayTasks.map(t => escapeHTML(t.title)).join(', ')}</span>.`
+                            }
+                        </p>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="glass-panel metric-card" id="metric-total-card" style="cursor: pointer;">
+                        <div class="metric-icon-box accent">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                        </div>
+                        <div class="metric-details">
+                            <span class="metric-title">Total Tareas</span>
+                            <span class="metric-value">${totalTasks}</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel metric-card" id="metric-completed-card" style="cursor: pointer;">
+                        <div class="metric-icon-box success">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
+                        </div>
+                        <div class="metric-details">
+                            <span class="metric-title">Completadas</span>
+                            <span class="metric-value">${completedTasks}</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel metric-card" id="metric-inprogress-card" style="cursor: pointer;">
+                        <div class="metric-icon-box warning">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                        </div>
+                        <div class="metric-details">
+                            <span class="metric-title">En Progreso</span>
+                            <span class="metric-value">${inProgressTasks}</span>
+                        </div>
+                    </div>
+                    <div class="glass-panel metric-card" id="metric-overdue-card" style="cursor: pointer;">
+                        <div class="metric-icon-box danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>
+                        </div>
+                        <div class="metric-details">
+                            <span class="metric-title">Atrasadas</span>
+                            <span class="metric-value">${overdueTasks}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="charts-row">
+                    <div class="glass-panel chart-panel">
+                        <div class="chart-header">
+                            <h3>Carga de Trabajo por Columna</h3>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Tareas por estado</span>
+                        </div>
+                        <div class="chart-container" id="bar-chart-container"></div>
+                    </div>
+                    <div class="glass-panel chart-panel">
+                        <div class="chart-header">
+                            <h3>Progreso General</h3>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Tasa de éxito</span>
+                        </div>
+                        <div class="chart-container">
+                            <div class="svg-donut-container">
+                                <svg class="donut-svg" width="160" height="160" viewBox="0 0 120 120">
+                                    <circle class="donut-ring" cx="60" cy="60" r="50" fill="transparent" stroke-width="10"></circle>
+                                    <circle class="donut-segment" cx="60" cy="60" r="50" fill="transparent" stroke-width="10" 
+                                            stroke-dasharray="314.16" stroke-dashoffset="314.16" id="donut-progress-segment"
+                                            stroke-linecap="round"></circle>
+                                </svg>
+                                <div class="donut-number">
+                                    <span class="donut-pct">${completionRate}%</span>
+                                    <span class="donut-label">Completado</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel recent-tasks-panel">
+                    <div class="chart-header" style="margin-bottom: 8px;">
+                        <h3>Actividad Reciente</h3>
+                        <button class="btn btn-secondary" id="go-to-board-btn" style="padding: 6px 12px; font-size: 0.8rem; border-radius: var(--border-radius-sm);">
+                            Ir al Tablero
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </button>
+                    </div>
+                    <div class="recent-tasks-list">
+                        ${
+                            logs.length === 0 
+                            ? `<div class="no-data-msg">No se han registrado actividades aún. Comienza a gestionar tareas en tu tablero kanban.</div>`
+                            : logs.slice(0, 5).map(log => `
+                                <div class="recent-task-item">
+                                    <div class="task-item-meta">
+                                        <span class="priority-dot ${log.priority || 'low'}"></span>
+                                        <div>
+                                            <span class="task-item-title">${escapeHTML(log.text)}</span>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 16px;">
+                                        <span class="task-item-column">${escapeHTML(log.colName)}</span>
+                                        <span class="task-item-date">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                            ${log.date.split(' ')[1] || log.date}
+                                        </span>
+                                    </div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            setTimeout(() => {
+                const segment = document.getElementById('donut-progress-segment');
+                if (segment) {
+                    const circumference = 314.16;
+                    const offset = circumference - (completionRate / 100) * circumference;
+                    segment.style.strokeDashoffset = offset;
+                }
+            }, 100);
+
+            drawBarChart(data.columns);
+
+            const goToBoardBtn = document.getElementById('go-to-board-btn');
+            if (goToBoardBtn) {
+                goToBoardBtn.addEventListener('click', () => {
+                    document.getElementById('nav-dashboard').classList.remove('active');
+                    document.getElementById('nav-kanban').classList.add('active');
+                    document.getElementById('nav-kanban').click();
+                });
+            }
+
+            const totalCard = document.getElementById('metric-total-card');
+            const completedCard = document.getElementById('metric-completed-card');
+            const inProgressCard = document.getElementById('metric-inprogress-card');
+            const overdueCard = document.getElementById('metric-overdue-card');
+
+            if (totalCard) {
+                totalCard.onclick = () => {
+                    boardState.priorityFilter = 'all';
+                    document.getElementById('nav-kanban').click();
+                };
+            }
+
+            if (overdueCard) {
+                overdueCard.onclick = () => {
+                    boardState.priorityFilter = 'overdue';
+                    document.getElementById('nav-kanban').click();
+                };
+            }
+
+            const navigateAndHighlight = (colId) => {
+                boardState.priorityFilter = 'all';
+                document.getElementById('nav-kanban').click();
+                setTimeout(() => {
+                    const col = document.querySelector(`[data-col-id="${colId}"]`);
+                    if (col) {
+                        col.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                        col.classList.add('highlight-pulse');
+                        setTimeout(() => col.classList.remove('highlight-pulse'), 2500);
+                    }
+                }, 350);
+            };
+
+            if (completedCard) {
+                completedCard.onclick = () => {
+                    navigateAndHighlight(completedColId || 'col-completed');
+                };
+            }
+
+            if (inProgressCard) {
+                inProgressCard.onclick = () => {
+                    navigateAndHighlight(inProgressColId || 'col-inprogress');
+                };
+            }
+        };
+
+        const drawBarChart = (columns) => {
+            const chartContainer = document.getElementById('bar-chart-container');
+            if (!chartContainer) return;
+            if (columns.length === 0) {
+                chartContainer.innerHTML = `<div class="no-data-msg">No hay columnas creadas.</div>`;
+                return;
+            }
+            const maxTasks = Math.max(...columns.map(col => col.tasks.length), 0);
+            let barChartHtml = `<div class="bar-chart">`;
+            columns.forEach(col => {
+                const taskCount = col.tasks.length;
+                const heightPct = maxTasks > 0 ? (taskCount / maxTasks) * 80 : 0;
+                barChartHtml += `
+                    <div class="chart-bar-wrapper">
+                        <div class="chart-bar" style="height: ${Math.max(heightPct, 3)}%;">
+                            <div class="chart-bar-value">${taskCount} ${taskCount === 1 ? 'tarea' : 'tareas'}</div>
+                        </div>
+                        <div class="chart-bar-label" title="${escapeHTML(col.title)}">${escapeHTML(col.title)}</div>
+                    </div>
+                `;
+            });
+            barChartHtml += `</div>`;
+            chartContainer.innerHTML = barChartHtml;
+        };
+
+        const escapeHTML = (str) => {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        };
+
+        // --- 3. KANBAN BOARD VIEW CONTROLLER (js/kanban.js) ---
+        const boardState = {
+            data: null,
+            searchQuery: '',
+            priorityFilter: 'all'
+        };
+
+        let modalOverlay;
+        let taskForm;
+        let modalTitle;
+        let taskIdInput;
+        let taskColIdInput;
+        let taskTitleInput;
+        let taskDescInput;
+        let taskPriorityInput;
+        let taskDateInput;
+        let taskStartDateInput;
+        let currentSubtasks = [];
+        let boardContainerRef;
+
+        var renderKanban = (container) => {
+            boardContainerRef = container;
+            if (!boardState.data) {
+                boardState.data = getBoardData();
+            }
+            container.innerHTML = `
+                <div class="kanban-view-header">
+                    <div>
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Tablero Kanban</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Gestiona tus tareas arrastrándolas entre columnas.</p>
+                    </div>
+                    <div class="kanban-actions">
+                        <div class="filter-wrapper">
+                            <label for="board-priority-filter">Prioridad:</label>
+                            <select id="board-priority-filter" class="filter-select">
+                                <option value="all" ${boardState.priorityFilter === 'all' ? 'selected' : ''}>Todos</option>
+                                <option value="low" ${boardState.priorityFilter === 'low' ? 'selected' : ''}>Baja</option>
+                                <option value="medium" ${boardState.priorityFilter === 'medium' ? 'selected' : ''}>Media</option>
+                                <option value="high" ${boardState.priorityFilter === 'high' ? 'selected' : ''}>Alta</option>
+                                <option value="overdue" ${boardState.priorityFilter === 'overdue' ? 'selected' : ''}>Atrasadas</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="add-column-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+                            Añadir Columna
+                        </button>
+                    </div>
+                </div>
+                <div class="kanban-board" id="kanban-board-workspace"></div>
+            `;
+            renderWorkspace();
+            bindBoardEvents();
+        };
+
+        const initModalCache = () => {
+            modalOverlay = document.getElementById('modal-overlay');
+            taskForm = document.getElementById('task-form');
+            modalTitle = document.getElementById('modal-title');
+            taskIdInput = document.getElementById('task-id');
+            taskColIdInput = document.getElementById('task-column-id');
+            taskTitleInput = document.getElementById('task-title-input');
+            taskDescInput = document.getElementById('task-desc-input');
+            taskPriorityInput = document.getElementById('task-priority-input');
+            taskDateInput = document.getElementById('task-date-input');
+            taskStartDateInput = document.getElementById('task-start-date-input');
+
+            const newForm = taskForm.cloneNode(true);
+            taskForm.parentNode.replaceChild(newForm, taskForm);
+            taskForm = newForm;
+
+            taskIdInput = document.getElementById('task-id');
+            taskColIdInput = document.getElementById('task-column-id');
+            taskTitleInput = document.getElementById('task-title-input');
+            taskDescInput = document.getElementById('task-desc-input');
+            taskPriorityInput = document.getElementById('task-priority-input');
+            taskDateInput = document.getElementById('task-date-input');
+            taskStartDateInput = document.getElementById('task-start-date-input');
+
+            taskForm.addEventListener('submit', handleTaskSubmit);
+
+            const closeBtn = document.getElementById('modal-close');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+            const closeModal = () => { modalOverlay.classList.remove('show'); };
+
+            closeBtn.onclick = closeModal;
+            cancelBtn.onclick = closeModal;
+            modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
+
+            const addSubtaskBtn = document.getElementById('add-subtask-btn');
+            const newSubtaskInput = document.getElementById('new-subtask-input');
+            if (addSubtaskBtn && newSubtaskInput) {
+                addSubtaskBtn.onclick = () => {
+                    const title = newSubtaskInput.value.trim();
+                    if (!title) return;
+                    currentSubtasks.push({
+                        id: generateId(),
+                        title: title,
+                        completed: false
+                    });
+                    newSubtaskInput.value = '';
+                    renderSubtasksList();
+                };
+                newSubtaskInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addSubtaskBtn.click();
+                    }
+                };
+            }
+        };
+
+        const renderWorkspace = () => {
+            const workspace = document.getElementById('kanban-board-workspace');
+            if (!workspace) return;
+            let html = '';
+            const todayStr = new Date().toISOString().split('T')[0];
+            boardState.data.columns.forEach(column => {
+                const filteredTasks = column.tasks.filter(task => {
+                    const matchesSearch = boardState.searchQuery === '' || 
+                        task.title.toLowerCase().includes(boardState.searchQuery) || 
+                        task.desc.toLowerCase().includes(boardState.searchQuery);
+                    
+                    let matchesFilter = false;
+                    if (boardState.priorityFilter === 'all') {
+                        matchesFilter = true;
+                    } else if (boardState.priorityFilter === 'overdue') {
+                        matchesFilter = task.date && task.date < todayStr && column.id !== 'col-completed';
+                    } else {
+                        matchesFilter = task.priority === boardState.priorityFilter;
+                    }
+                    return matchesSearch && matchesFilter;
+                });
+
+                html += `
+                    <div class="kanban-column" data-col-id="${column.id}" draggable="true">
+                        <div class="column-header">
+                            <div class="column-title-container">
+                                <span class="column-title" title="Doble clic para renombrar" data-col-id="${column.id}">${escapeHTML(column.title)}</span>
+                                <span class="column-count">${filteredTasks.length}</span>
+                            </div>
+                            <div class="column-actions-dropdown">
+                                <button class="column-actions-btn" aria-label="Acciones de columna">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <button class="dropdown-item rename-col-btn" data-col-id="${column.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                                        Renombrar
+                                    </button>
+                                    <button class="dropdown-item danger delete-col-btn" data-col-id="${column.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column-cards-list" data-col-id="${column.id}">
+                            ${
+                                filteredTasks.length === 0 
+                                ? `<div style="text-align: center; color: var(--text-secondary); font-size: 0.75rem; padding: 20px 0; border: 1.5px dashed var(--border-color); border-radius: var(--border-radius-md);" class="empty-col-msg">Suelta tareas aquí</div>`
+                                : filteredTasks.map(task => renderTaskCard(task, column.id)).join('')
+                            }
+                        </div>
+                        <button class="btn btn-secondary add-task-btn" style="margin-top: 14px; justify-content: center; padding: 8px 12px; font-size: 0.8rem;" data-col-id="${column.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+                            Añadir Tarea
+                        </button>
+                    </div>
+                `;
+            });
+
+            html += `
+                <div class="add-column-card" id="add-column-card-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="16"></line><line x1="8" x2="16" y1="12" y2="12"></line></svg>
+                    <span>Crear Columna</span>
+                </div>
+            `;
+            workspace.innerHTML = html;
+            initDragAndDrop();
+            bindColumnInteractions();
+        };
+
+        const renderTaskCard = (task, columnId) => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isOverdue = task.date && task.date < todayStr && columnId !== 'col-completed';
+            const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
+            let dateText = 'Sin fecha';
+            if (task.date) {
+                const parts = task.date.split('-');
+                const formattedEnd = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                if (task.startDate) {
+                    const startParts = task.startDate.split('-');
+                    const formattedStart = `${startParts[2]}/${startParts[1]}/${startParts[0]}`;
+                    dateText = `${formattedStart} - ${formattedEnd}`;
+                } else {
+                    dateText = formattedEnd;
+                }
+            }
+            return `
+                <div class="kanban-card" draggable="true" data-task-id="${task.id}" data-col-id="${columnId}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div class="card-priority-indicator ${task.priority}" title="Prioridad ${priorityLabels[task.priority]}"></div>
+                        <div class="card-actions">
+                            <button class="card-action-btn edit-task-btn" data-task-id="${task.id}" data-col-id="${columnId}" title="Editar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                            </button>
+                            <button class="card-action-btn delete delete-task-btn" data-task-id="${task.id}" data-col-id="${columnId}" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <h4 class="card-title">${escapeHTML(task.title)}</h4>
+                    ${task.desc ? `<p class="card-desc">${escapeHTML(task.desc)}</p>` : ''}
+                    ${
+                        (() => {
+                            if (task.subtasks && task.subtasks.length > 0) {
+                                const totalSubs = task.subtasks.length;
+                                const completedSubs = task.subtasks.filter(s => s.completed).length;
+                                const progressPct = Math.round((completedSubs / totalSubs) * 100);
+                                return `
+                                    <div class="card-subtask-badge" style="display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.72rem; color: var(--text-secondary); font-weight: 500;" title="Subtareas completadas">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                                        <span>Subtareas: ${completedSubs}/${totalSubs}</span>
+                                        <div style="flex: 1; height: 4px; background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-full); overflow: hidden;">
+                                            <div style="width: ${progressPct}%; height: 100%; background: var(--accent-gradient); border-radius: var(--border-radius-full);"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            return '';
+                        })()
+                    }
+                    <div class="card-footer">
+                        <span class="card-date ${isOverdue ? 'overdue' : ''}" title="${isOverdue ? '¡Tarea atrasada!' : 'Fecha de entrega'}" style="font-weight: 500;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                            ${dateText}
+                        </span>
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--priority-${task.priority}); text-transform: uppercase;">
+                            ${priorityLabels[task.priority]}
+                        </span>
+                    </div>
+                </div>
+            `;
+        };
+
+        var handleKanbanSearch = (query) => {
+            boardState.searchQuery = query;
+            renderWorkspace();
+        };
+
+        const bindBoardEvents = () => {
+            const filterSelect = document.getElementById('board-priority-filter');
+            const addColBtn = document.getElementById('add-column-btn');
+            if (filterSelect) {
+                filterSelect.addEventListener('change', (e) => {
+                    boardState.priorityFilter = e.target.value;
+                    renderWorkspace();
+                });
+            }
+            const createNewColumn = () => {
+                const newColId = generateId();
+                const newCol = { id: newColId, title: 'Nueva Columna', tasks: [] };
+                boardState.data.columns.push(newCol);
+                saveBoardData(boardState.data);
+                addActivityLog('Se añadió la columna "Nueva Columna"', 'Tablero', 'low');
+                renderWorkspace();
+                setTimeout(() => {
+                    const titleEl = document.querySelector(`.column-title[data-col-id="${newColId}"]`);
+                    if (titleEl) triggerRenameInline(titleEl, newColId);
+                }, 100);
+            };
+            if (addColBtn) addColBtn.onclick = createNewColumn;
+            
+            // Remote handler cleanup
+            const oldAddColumnBtn = document.getElementById('add-column-card-btn');
+            if (oldAddColumnBtn) {
+                const newColBtn = oldAddColumnBtn.cloneNode(true);
+                oldAddColumnBtn.parentNode.replaceChild(newColBtn, oldAddColumnBtn);
+            }
+        };
+
+        const bindColumnInteractions = () => {
+            const dropdownBtns = document.querySelectorAll('.column-actions-btn');
+            dropdownBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        if (menu !== btn.nextElementSibling) menu.classList.remove('show');
+                    });
+                    btn.nextElementSibling.classList.toggle('show');
+                });
+            });
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+            });
+            document.querySelectorAll('.column-title').forEach(titleEl => {
+                titleEl.addEventListener('dblclick', () => {
+                    const colId = titleEl.getAttribute('data-col-id');
+                    triggerRenameInline(titleEl, colId);
+                });
+            });
+            document.querySelectorAll('.rename-col-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const colId = btn.getAttribute('data-col-id');
+                    const titleEl = document.querySelector(`.column-title[data-col-id="${colId}"]`);
+                    btn.closest('.dropdown-menu').classList.remove('show');
+                    triggerRenameInline(titleEl, colId);
+                });
+            });
+            document.querySelectorAll('.delete-col-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const colId = btn.getAttribute('data-col-id');
+                    const col = boardState.data.columns.find(c => c.id === colId);
+                    if (!col) return;
+                    if (col.tasks.length > 0) {
+                        const confirmDelete = confirm(`La columna "${col.title}" contiene ${col.tasks.length} tareas. ¿Estás seguro de eliminarla? Desaparecerán todas sus tareas.`);
+                        if (!confirmDelete) return;
+                    }
+                    boardState.data.columns = boardState.data.columns.filter(c => c.id !== colId);
+                    saveBoardData(boardState.data);
+                    addActivityLog(`Se eliminó la columna "${col.title}"`, 'Tablero', 'high');
+                    renderWorkspace();
+                });
+            });
+            document.querySelectorAll('.add-task-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const colId = btn.getAttribute('data-col-id');
+                    openTaskModal(null, colId);
+                };
+            });
+            document.querySelectorAll('.edit-task-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const taskId = btn.getAttribute('data-task-id');
+                    const colId = btn.getAttribute('data-col-id');
+                    openTaskModal(taskId, colId);
+                };
+            });
+            document.querySelectorAll('.delete-task-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const taskId = btn.getAttribute('data-task-id');
+                    const colId = btn.getAttribute('data-col-id');
+                    const col = boardState.data.columns.find(c => c.id === colId);
+                    if (!col) return;
+                    const taskIndex = col.tasks.findIndex(t => t.id === taskId);
+                    if (taskIndex === -1) return;
+                    const task = col.tasks[taskIndex];
+                    if (confirm(`¿Estás seguro de eliminar la tarea "${task.title}"?`)) {
+                        col.tasks.splice(taskIndex, 1);
+                        saveBoardData(boardState.data);
+                        addActivityLog(`Se eliminó la tarea "${task.title}"`, col.title, task.priority);
+                        renderWorkspace();
+                    }
+                };
+            });
+            
+            const workspaceColumnBtn = document.getElementById('add-column-card-btn');
+            if (workspaceColumnBtn) {
+                workspaceColumnBtn.onclick = () => {
+                    const addColBtn = document.getElementById('add-column-btn');
+                    if (addColBtn) addColBtn.click();
+                };
+            }
+        };
+
+        const triggerRenameInline = (titleEl, colId) => {
+            const originalText = titleEl.textContent;
+            const parent = titleEl.parentNode;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = originalText;
+            input.className = 'column-title-input';
+            input.maxLength = 24;
+            parent.replaceChild(input, titleEl);
+            input.focus();
+            input.select();
+            const saveRename = () => {
+                const newTitle = input.value.trim();
+                if (newTitle && newTitle !== originalText) {
+                    const col = boardState.data.columns.find(c => c.id === colId);
+                    if (col) {
+                        col.title = newTitle;
+                        saveBoardData(boardState.data);
+                        addActivityLog(`Columna renombrada a "${newTitle}"`, newTitle, 'low');
+                    }
+                }
+                renderWorkspace();
+            };
+            input.onblur = saveRename;
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') saveRename();
+                if (e.key === 'Escape') renderWorkspace();
+            };
+        };
+
+        const getGoogleCalendarUrl = (task) => {
+            const title = encodeURIComponent(task.title);
+            const desc = encodeURIComponent(task.desc || '');
+            
+            let start = task.startDate ? task.startDate.replace(/-/g, '') : task.date.replace(/-/g, '');
+            
+            let endDateObj = new Date(task.date);
+            endDateObj.setDate(endDateObj.getDate() + 1);
+            let end = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
+            
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${desc}`;
+        };
+
+        const downloadIcsFile = (task) => {
+            const title = task.title;
+            const desc = task.desc || '';
+            const start = task.startDate ? task.startDate.replace(/-/g, '') : task.date.replace(/-/g, '');
+            
+            let endDateObj = new Date(task.date);
+            endDateObj.setDate(endDateObj.getDate() + 1);
+            const end = endDateObj.toISOString().split('T')[0].replace(/-/g, '');
+            
+            const icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Veloce Tracker//Task Calendar//ES',
+                'BEGIN:VEVENT',
+                `UID:${task.id}@veloce.tracker`,
+                `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+                `DTSTART;VALUE=DATE:${start}`,
+                `DTEND;VALUE=DATE:${end}`,
+                `SUMMARY:${title}`,
+                `DESCRIPTION:${desc.replace(/\n/g, '\\n')}`,
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+            
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `${title.replace(/\s+/g, '_')}.ics`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        const renderSubtasksList = () => {
+            const container = document.getElementById('subtasks-list-container');
+            const progressText = document.getElementById('subtasks-progress');
+            const progressBar = document.getElementById('subtasks-progress-bar');
+            if (!container) return;
+            
+            if (currentSubtasks.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 0.8rem; padding: 10px 0;">No hay subtareas aún.</div>`;
+                if (progressText) progressText.textContent = '0/0 (0%)';
+                if (progressBar) progressBar.style.width = '0%';
+                return;
+            }
+            
+            const completedCount = currentSubtasks.filter(s => s.completed).length;
+            const pct = Math.round((completedCount / currentSubtasks.length) * 100);
+            
+            if (progressText) progressText.textContent = `${completedCount}/${currentSubtasks.length} (${pct}%)`;
+            if (progressBar) progressBar.style.width = `${pct}%`;
+            
+            let html = '';
+            currentSubtasks.forEach((sub, idx) => {
+                html += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255,255,255,0.015); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); transition: background-color 0.2s;" class="subtask-row">
+                        <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                            <input type="checkbox" class="subtask-checkbox" data-idx="${idx}" ${sub.completed ? 'checked' : ''} style="cursor: pointer; width: 14px; height: 14px;">
+                            <span style="font-size: 0.82rem; ${sub.completed ? 'text-decoration: line-through; color: var(--text-secondary);' : 'color: var(--text-primary);'}; word-break: break-all;">${escapeHTML(sub.title)}</span>
+                        </div>
+                        <button type="button" class="delete-subtask-btn" data-idx="${idx}" style="background: none; border: none; color: var(--priority-high); cursor: pointer; padding: 2px; display: flex; align-items: center;" title="Eliminar subtarea">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            
+            container.querySelectorAll('.subtask-checkbox').forEach(cb => {
+                cb.onchange = (e) => {
+                    const idx = parseInt(cb.getAttribute('data-idx'));
+                    currentSubtasks[idx].completed = cb.checked;
+                    renderSubtasksList();
+                };
+            });
+            
+            container.querySelectorAll('.delete-subtask-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    currentSubtasks.splice(idx, 1);
+                    renderSubtasksList();
+                };
+            });
+        };
+
+        const openTaskModal = (taskId = null, colId) => {
+            taskForm.reset();
+            taskIdInput.value = taskId || '';
+            taskColIdInput.value = colId;
+            const col = boardState.data.columns.find(c => c.id === colId);
+            const colTitle = col ? col.title : 'Columna';
+            
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            taskStartDateInput.value = today.toISOString().split('T')[0];
+            taskDateInput.value = tomorrow.toISOString().split('T')[0];
+            
+            const calendarGroup = document.getElementById('calendar-export-group');
+            if (taskId) {
+                modalTitle.textContent = 'Editar Tarea';
+                const task = col.tasks.find(t => t.id === taskId);
+                if (task) {
+                    taskTitleInput.value = task.title;
+                    taskDescInput.value = task.desc || '';
+                    taskPriorityInput.value = task.priority;
+                    taskStartDateInput.value = task.startDate || '';
+                    taskDateInput.value = task.date || '';
+                    
+                    currentSubtasks = task.subtasks ? JSON.parse(JSON.stringify(task.subtasks)) : [];
+                    
+                    if (calendarGroup) {
+                        calendarGroup.style.display = 'block';
+                        const googleBtn = document.getElementById('export-google-btn');
+                        const appleBtn = document.getElementById('export-apple-btn');
+                        if (googleBtn) googleBtn.href = getGoogleCalendarUrl(task);
+                        if (appleBtn) appleBtn.onclick = () => downloadIcsFile(task);
+                    }
+                }
+            } else {
+                modalTitle.textContent = `Añadir Tarea en "${colTitle}"`;
+                currentSubtasks = [];
+                if (calendarGroup) calendarGroup.style.display = 'none';
+            }
+            renderSubtasksList();
+            modalOverlay.classList.add('show');
+            taskTitleInput.focus();
+        };
+
+        const handleTaskSubmit = (e) => {
+            try {
+                e.preventDefault();
+                const taskId = taskIdInput.value;
+                const colId = taskColIdInput.value;
+                const title = taskTitleInput.value.trim();
+                const desc = taskDescInput.value.trim();
+                const priority = taskPriorityInput.value;
+                const startDate = taskStartDateInput.value;
+                const date = taskDateInput.value;
+                const col = boardState.data.columns.find(c => c.id === colId);
+                if (!col) return;
+                if (taskId) {
+                    const task = col.tasks.find(t => t.id === taskId);
+                    if (task) {
+                        task.title = title;
+                        task.desc = desc;
+                        task.priority = priority;
+                        task.startDate = startDate;
+                        task.date = date;
+                        task.subtasks = currentSubtasks;
+                        addActivityLog(`Tarea actualizada: "${title}"`, col.title, priority);
+                    }
+                } else {
+                    const newTask = { id: generateId(), title, desc, priority, startDate, date, subtasks: currentSubtasks };
+                    col.tasks.push(newTask);
+                    addActivityLog(`Tarea creada: "${title}"`, col.title, priority);
+                }
+                saveBoardData(boardState.data);
+                modalOverlay.classList.remove('show');
+                renderWorkspace();
+            } catch (err) {
+                console.error("Error en handleTaskSubmit:", err);
+                if (window.showAppError) {
+                    window.showAppError(err.message, err.stack || err.toString());
+                }
+            }
+        };
+
+        const initDragAndDrop = () => {
+            const cards = document.querySelectorAll('.kanban-card');
+            const lists = document.querySelectorAll('.column-cards-list');
+            
+            // --- Card Drag and Drop ---
+            cards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    e.stopPropagation();
+                    const taskId = card.getAttribute('data-task-id');
+                    const sourceColId = card.getAttribute('data-col-id');
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ taskId, sourceColId }));
+                    e.dataTransfer.effectAllowed = 'move';
+                    setTimeout(() => card.classList.add('dragging'), 0);
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    document.querySelectorAll('.column-cards-list').forEach(l => l.classList.remove('drag-over'));
+                });
+            });
+            lists.forEach(list => {
+                const colId = list.getAttribute('data-col-id');
+                list.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const draggingCard = document.querySelector('.dragging');
+                    if (!draggingCard) return;
+                    const afterElement = getDragAfterElement(list, e.clientY);
+                    if (afterElement == null) {
+                        list.appendChild(draggingCard);
+                    } else {
+                        list.insertBefore(draggingCard, afterElement);
+                    }
+                });
+                list.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    list.classList.add('drag-over');
+                });
+                list.addEventListener('dragleave', () => {
+                    list.classList.remove('drag-over');
+                });
+                list.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    list.classList.remove('drag-over');
+                    try {
+                        const dragDataStr = e.dataTransfer.getData('text/plain');
+                        if (!dragDataStr) return;
+                        const dragData = JSON.parse(dragDataStr);
+                        const { taskId, sourceColId } = dragData;
+                        const sourceCol = boardState.data.columns.find(c => c.id === sourceColId);
+                        const destCol = boardState.data.columns.find(c => c.id === colId);
+                        if (!sourceCol || !destCol) return;
+                        const taskIndex = sourceCol.tasks.findIndex(t => t.id === taskId);
+                        if (taskIndex === -1) return;
+                        const [task] = sourceCol.tasks.splice(taskIndex, 1);
+                        const cardElements = Array.from(list.querySelectorAll('.kanban-card:not(.dragging)'));
+                        const dropIndex = cardElements.indexOf(document.querySelector('.dragging'));
+                        if (dropIndex === -1 || dropIndex >= destCol.tasks.length) {
+                            destCol.tasks.push(task);
+                        } else {
+                            destCol.tasks.splice(dropIndex, 0, task);
+                        }
+                        saveBoardData(boardState.data);
+                        if (sourceColId !== colId) {
+                            addActivityLog(`Se movió "${task.title}" a "${destCol.title}"`, destCol.title, task.priority);
+                        } else {
+                            addActivityLog(`Se reordenó "${task.title}"`, destCol.title, task.priority);
+                        }
+                        renderWorkspace();
+                    } catch (err) {
+                        console.error('Error al soltar tarjeta', err);
+                    }
+                });
+            });
+
+            // --- Column Drag and Drop ---
+            const columns = document.querySelectorAll('.kanban-column');
+            const boardWorkspace = document.getElementById('kanban-board-workspace');
+            
+            columns.forEach(col => {
+                col.addEventListener('dragstart', (e) => {
+                    if (e.target.classList.contains('kanban-column')) {
+                        const colId = col.getAttribute('data-col-id');
+                        e.dataTransfer.setData('text/column', colId);
+                        e.dataTransfer.effectAllowed = 'move';
+                        setTimeout(() => col.classList.add('dragging-column'), 0);
+                    }
+                });
+                col.addEventListener('dragend', () => {
+                    col.classList.remove('dragging-column');
+                    document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('column-drag-over'));
+                });
+            });
+
+            if (boardWorkspace) {
+                boardWorkspace.addEventListener('dragover', (e) => {
+                    const draggingCol = document.querySelector('.dragging-column');
+                    if (!draggingCol) return;
+                    e.preventDefault();
+                    
+                    const afterCol = getDragAfterColumn(boardWorkspace, e.clientX);
+                    if (afterCol == null) {
+                        const addColBtn = document.getElementById('add-column-card-btn');
+                        if (addColBtn) {
+                            boardWorkspace.insertBefore(draggingCol, addColBtn);
+                        } else {
+                            boardWorkspace.appendChild(draggingCol);
+                        }
+                    } else {
+                        boardWorkspace.insertBefore(draggingCol, afterCol);
+                    }
+                });
+                
+                boardWorkspace.addEventListener('drop', (e) => {
+                    const draggingCol = document.querySelector('.dragging-column');
+                    if (!draggingCol) return;
+                    e.preventDefault();
+                    
+                    try {
+                        const sourceColId = draggingCol.getAttribute('data-col-id');
+                        const currentColumnsInDOM = Array.from(boardWorkspace.querySelectorAll('.kanban-column'));
+                        const finalIdx = currentColumnsInDOM.indexOf(draggingCol);
+                        
+                        const colArray = boardState.data.columns;
+                        const sourceIdx = colArray.findIndex(c => c.id === sourceColId);
+                        
+                        if (sourceIdx !== -1 && finalIdx !== -1 && sourceIdx !== finalIdx) {
+                            const [removedCol] = colArray.splice(sourceIdx, 1);
+                            colArray.splice(finalIdx, 0, removedCol);
+                            
+                            saveBoardData(boardState.data);
+                            addActivityLog(`Se reordenó la columna "${removedCol.title}"`, removedCol.title, 'low');
+                            renderWorkspace();
+                        }
+                    } catch (err) {
+                        console.error('Error al reordenar columnas', err);
+                    }
+                });
+            }
+        };
+
+        const getDragAfterElement = (container, y) => {
+            const draggableElements = Array.from(container.querySelectorAll('.kanban-card:not(.dragging)'));
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        };
+
+        const getDragAfterColumn = (container, x) => {
+            const draggableElements = Array.from(container.querySelectorAll('.kanban-column:not(.dragging-column)'));
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = x - box.left - box.width / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        };
+
+        // --- 3.5. TIMELINE & CALENDAR VIEW CONTROLLER ---
+        const timelineState = {
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth(),
+            subView: localStorage.getItem('veloce_timeline_subview') || 'calendar' // 'calendar' o 'gantt'
+        };
+
+        var renderTimeline = (container) => {
+            const data = getBoardData();
+            const year = timelineState.currentYear;
+            const month = timelineState.currentMonth;
+            
+            const monthNames = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+            
+            const monthTitleStr = `${monthNames[month]} ${year}`;
+            
+            container.innerHTML = `
+                <div class="timeline-container">
+                    <div class="timeline-header">
+                        <div>
+                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Línea de Tiempo</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica y visualiza tus entregas mensuales.</p>
+                        </div>
+                        
+                        <div class="timeline-nav-controls">
+                            <div class="view-toggle-segmented" style="margin-right: 12px;">
+                                <button class="toggle-segment ${timelineState.subView === 'calendar' ? 'active' : ''}" id="toggle-calendar-btn">Calendario</button>
+                                <button class="toggle-segment ${timelineState.subView === 'gantt' ? 'active' : ''}" id="toggle-gantt-btn">Cronograma</button>
+                            </div>
+                            <span class="timeline-month-title">${monthTitleStr}</span>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" id="timeline-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                                <button class="btn btn-secondary" id="timeline-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="timeline-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${timelineState.subView === 'calendar' ? `
+                        <div class="calendar-wrapper">
+                            <div class="calendar-weekdays-grid">
+                                <div class="weekday-label">Lun</div>
+                                <div class="weekday-label">Mar</div>
+                                <div class="weekday-label">Mié</div>
+                                <div class="weekday-label">Jue</div>
+                                <div class="weekday-label">Vie</div>
+                                <div class="weekday-label">Sáb</div>
+                                <div class="weekday-label">Dom</div>
+                            </div>
+                            
+                            <div class="calendar-days-grid" id="calendar-days-grid"></div>
+                        </div>
+                    ` : `
+                        <div class="gantt-container">
+                            <div class="gantt-scroll-canvas">
+                                <div class="gantt-grid-table">
+                                    <div class="gantt-header-row" id="gantt-header-row"></div>
+                                    <div id="gantt-rows-container"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            if (timelineState.subView === 'calendar') {
+                renderCalendarDays(year, month, data);
+                bindCalendarInteractions();
+            } else {
+                renderGanttView(year, month, data);
+                bindGanttInteractions();
+            }
+            
+            document.getElementById('toggle-calendar-btn').onclick = () => {
+                timelineState.subView = 'calendar';
+                localStorage.setItem('veloce_timeline_subview', 'calendar');
+                renderTimeline(container);
+            };
+            
+            document.getElementById('toggle-gantt-btn').onclick = () => {
+                timelineState.subView = 'gantt';
+                localStorage.setItem('veloce_timeline_subview', 'gantt');
+                renderTimeline(container);
+            };
+            
+            document.getElementById('timeline-prev-btn').onclick = () => {
+                timelineState.currentMonth--;
+                if (timelineState.currentMonth < 0) {
+                    timelineState.currentMonth = 11;
+                    timelineState.currentYear--;
+                }
+                renderTimeline(container);
+            };
+            
+            document.getElementById('timeline-next-btn').onclick = () => {
+                timelineState.currentMonth++;
+                if (timelineState.currentMonth > 11) {
+                    timelineState.currentMonth = 0;
+                    timelineState.currentYear++;
+                }
+                renderTimeline(container);
+            };
+            
+            document.getElementById('timeline-today-btn').onclick = () => {
+                timelineState.currentYear = new Date().getFullYear();
+                timelineState.currentMonth = new Date().getMonth();
+                renderTimeline(container);
+            };
+        };
+
+        const renderCalendarDays = (year, month, data) => {
+            const grid = document.getElementById('calendar-days-grid');
+            if (!grid) return;
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            let firstDayVal = new Date(year, month, 1).getDay();
+            let firstDayOffset = (firstDayVal + 6) % 7;
+            
+            const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+            const totalDaysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            let html = '';
+            
+            for (let i = firstDayOffset - 1; i >= 0; i--) {
+                const dayNum = totalDaysInPrevMonth - i;
+                const prevMonth = month - 1 < 0 ? 11 : month - 1;
+                const prevYear = month - 1 < 0 ? year - 1 : year;
+                const dateStr = formatDateString(prevYear, prevMonth, dayNum);
+                html += renderDayBoxHtml(dayNum, dateStr, todayStr, true, data);
+            }
+            
+            for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
+                const dateStr = formatDateString(year, month, dayNum);
+                html += renderDayBoxHtml(dayNum, dateStr, todayStr, false, data);
+            }
+            
+            const remainingCells = 42 - (firstDayOffset + totalDaysInMonth);
+            for (let dayNum = 1; dayNum <= remainingCells; dayNum++) {
+                const nextMonth = month + 1 > 11 ? 0 : month + 1;
+                const nextYear = month + 1 > 11 ? year + 1 : year;
+                const dateStr = formatDateString(nextYear, nextMonth, dayNum);
+                html += renderDayBoxHtml(dayNum, dateStr, todayStr, true, data);
+            }
+            
+            grid.innerHTML = html;
+        };
+
+        const formatDateString = (year, month, day) => {
+            const m = String(month + 1).padStart(2, '0');
+            const d = String(day).padStart(2, '0');
+            return `${year}-${m}-${d}`;
+        };
+
+        const renderDayBoxHtml = (dayNum, dateStr, todayStr, isOtherMonth, data) => {
+            const isToday = dateStr === todayStr;
+            const otherMonthClass = isOtherMonth ? 'other-month' : '';
+            const todayClass = isToday ? 'today' : '';
+            
+            const dayTasks = [];
+            data.columns.forEach(col => {
+                col.tasks.forEach(task => {
+                    if (task.date === dateStr) {
+                        dayTasks.push({ ...task, columnId: col.id, columnTitle: col.title });
+                    }
+                });
+            });
+            
+            const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
+            
+            let tasksHtml = '';
+            dayTasks.forEach(task => {
+                const isCompleted = task.columnId === 'col-completed';
+                const completedClass = isCompleted ? 'completed' : '';
+                tasksHtml += `
+                    <div class="calendar-task-pill ${task.priority} ${completedClass}" 
+                         data-task-id="${task.id}" 
+                         data-col-id="${task.columnId}" 
+                         title="${escapeHTML(task.title)} (${priorityLabels[task.priority]})">
+                        ${isCompleted ? '✓ ' : ''}${escapeHTML(task.title)}
+                    </div>
+                `;
+            });
+            
+            return `
+                <div class="calendar-day-box ${otherMonthClass} ${todayClass}" data-date="${dateStr}">
+                    <div class="day-header">
+                        <span class="day-number">${dayNum}</span>
+                        <button class="calendar-day-add-btn" data-date="${dateStr}" title="Añadir tarea para este día">+</button>
+                    </div>
+                    <div class="calendar-tasks-container">
+                        ${tasksHtml}
+                    </div>
+                </div>
+            `;
+        };
+
+        const bindCalendarInteractions = () => {
+            const pills = document.querySelectorAll('.calendar-task-pill');
+            pills.forEach(pill => {
+                pill.onclick = (e) => {
+                    e.stopPropagation();
+                    const taskId = pill.getAttribute('data-task-id');
+                    const colId = pill.getAttribute('data-col-id');
+                    
+                    if (typeof openTaskModal === 'function') {
+                        if (!boardState.data) {
+                            boardState.data = getBoardData();
+                        }
+                        openTaskModal(taskId, colId);
+                        
+                        const form = document.getElementById('task-form');
+                        
+                        const refreshTimeline = () => {
+                            setTimeout(() => {
+                                if (state.currentView === 'timeline') {
+                                    renderTimeline(DOM.appContent);
+                                }
+                                form.removeEventListener('submit', refreshTimeline);
+                            }, 50);
+                        };
+                        form.addEventListener('submit', refreshTimeline);
+                    }
+                };
+            });
+            
+            const addBtns = document.querySelectorAll('.calendar-day-add-btn');
+            addBtns.forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const dateStr = btn.getAttribute('data-date');
+                    const data = getBoardData();
+                    const firstColId = data.columns.length > 0 ? data.columns[0].id : 'col-todo';
+                    
+                    if (typeof openTaskModal === 'function') {
+                        if (!boardState.data) {
+                            boardState.data = data;
+                        }
+                        openTaskModal(null, firstColId);
+                        
+                        const dateInput = document.getElementById('task-date-input');
+                        if (dateInput) dateInput.value = dateStr;
+                        
+                        const form = document.getElementById('task-form');
+                        const refreshTimeline = () => {
+                            setTimeout(() => {
+                                if (state.currentView === 'timeline') {
+                                    renderTimeline(DOM.appContent);
+                                }
+                                form.removeEventListener('submit', refreshTimeline);
+                            }, 50);
+                        };
+                        form.addEventListener('submit', refreshTimeline);
+                    }
+                };
+            });
+        };
+
+        const renderGanttView = (year, month, data) => {
+            const headerRow = document.getElementById('gantt-header-row');
+            const rowsContainer = document.getElementById('gantt-rows-container');
+            if (!headerRow || !rowsContainer) return;
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            
+            let headerHtml = `<div class="gantt-stage-header-cell">Estado / Flujo</div>`;
+            for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
+                const dateStr = formatDateString(year, month, dayNum);
+                const dayOfWeek = new Date(year, month, dayNum).getDay();
+                const dayName = dayNames[dayOfWeek];
+                const isToday = dateStr === todayStr;
+                const todayClass = isToday ? 'today' : '';
+                
+                headerHtml += `
+                    <div class="gantt-day-header-cell ${todayClass}">
+                        <span class="day-number">${dayNum}</span>
+                        <span class="day-name">${dayName}</span>
+                    </div>
+                `;
+            }
+            headerRow.innerHTML = headerHtml;
+            
+            let rowsHtml = '';
+            data.columns.forEach(col => {
+                rowsHtml += `
+                    <div class="gantt-row">
+                        <div class="gantt-stage-label">
+                            <span>${escapeHTML(col.title)}</span>
+                            <span class="stage-count-badge">${col.tasks.length} tareas</span>
+                        </div>
+                `;
+                
+                for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
+                    const dateStr = formatDateString(year, month, dayNum);
+                    const isToday = dateStr === todayStr;
+                    const todayClass = isToday ? 'today' : '';
+                    
+                    const cellTasks = col.tasks.filter(t => t.date === dateStr);
+                    
+                    let tasksHtml = '';
+                    cellTasks.forEach(task => {
+                        const isCompleted = col.id === 'col-completed';
+                        const completedClass = isCompleted ? 'completed' : '';
+                        tasksHtml += `
+                            <div class="gantt-task-card ${task.priority} ${completedClass}" 
+                                 data-task-id="${task.id}" 
+                                 data-col-id="${col.id}"
+                                 title="${escapeHTML(task.title)}">
+                                <div style="font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(task.title)}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    const addBtnHtml = `
+                        <button class="gantt-cell-add-btn" data-date="${dateStr}" data-col-id="${col.id}" title="Añadir tarea">+</button>
+                    `;
+                    
+                    rowsHtml += `
+                        <div class="gantt-cell ${todayClass}">
+                            ${tasksHtml || addBtnHtml}
+                        </div>
+                    `;
+                }
+                
+                rowsHtml += `</div>`;
+            });
+            
+            rowsContainer.innerHTML = rowsHtml;
+        };
+
+        const bindGanttInteractions = () => {
+            const cards = document.querySelectorAll('.gantt-task-card');
+            cards.forEach(card => {
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    const taskId = card.getAttribute('data-task-id');
+                    const colId = card.getAttribute('data-col-id');
+                    
+                    if (typeof openTaskModal === 'function') {
+                        if (!boardState.data) {
+                            boardState.data = getBoardData();
+                        }
+                        openTaskModal(taskId, colId);
+                        
+                        const form = document.getElementById('task-form');
+                        const refreshTimeline = () => {
+                            setTimeout(() => {
+                                if (state.currentView === 'timeline') {
+                                    renderTimeline(DOM.appContent);
+                                }
+                                form.removeEventListener('submit', refreshTimeline);
+                            }, 50);
+                        };
+                        form.addEventListener('submit', refreshTimeline);
+                    }
+                };
+            });
+            
+            const addBtns = document.querySelectorAll('.gantt-cell-add-btn');
+            addBtns.forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const dateStr = btn.getAttribute('data-date');
+                    const colId = btn.getAttribute('data-col-id');
+                    
+                    if (typeof openTaskModal === 'function') {
+                        if (!boardState.data) {
+                            boardState.data = getBoardData();
+                        }
+                        openTaskModal(null, colId);
+                        
+                        const dateInput = document.getElementById('task-date-input');
+                        if (dateInput) dateInput.value = dateStr;
+                        
+                        const form = document.getElementById('task-form');
+                        const refreshTimeline = () => {
+                            setTimeout(() => {
+                                if (state.currentView === 'timeline') {
+                                    renderTimeline(DOM.appContent);
+                                }
+                                form.removeEventListener('submit', refreshTimeline);
+                            }, 50);
+                        };
+                        form.addEventListener('submit', refreshTimeline);
+                    }
+                };
+            });
+        };
+
+        // --- 4. MAIN ORCHESTRATOR ENTRYPOINT (js/app.js) ---
+        const state = {
+            currentView: 'dashboard',
+            theme: 'dark'
+        };
+
+        const DOM = {
+            appContent: document.getElementById('app-content'),
+            navDashboard: document.getElementById('nav-dashboard'),
+            navKanban: document.getElementById('nav-kanban'),
+            navTimeline: document.getElementById('nav-timeline'),
+            themeToggle: document.getElementById('theme-toggle'),
+            mobileToggle: document.getElementById('mobile-toggle'),
+            sidebar: document.getElementById('sidebar'),
+            currentDate: document.getElementById('current-date'),
+            searchInput: document.getElementById('search-input'),
+            searchContainer: document.getElementById('global-search-container')
+        };
+
+        const initTheme = () => {
+            const savedTheme = localStorage.getItem('veloce_theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            state.theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            applyTheme();
+            DOM.themeToggle.addEventListener('click', () => {
+                state.theme = state.theme === 'dark' ? 'light' : 'dark';
+                applyTheme();
+            });
+        };
+
+        const applyTheme = () => {
+            const textSpan = DOM.themeToggle.querySelector('.theme-toggle-text');
+            if (state.theme === 'dark') {
+                document.body.classList.remove('light-theme');
+                document.body.classList.add('dark-theme');
+                textSpan.textContent = 'Modo Claro';
+                localStorage.setItem('veloce_theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                document.body.classList.add('light-theme');
+                textSpan.textContent = 'Modo Oscuro';
+                localStorage.setItem('veloce_theme', 'light');
+            }
+        };
+
+        const initDateTime = () => {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            let dateStr = today.toLocaleDateString('es-ES', options);
+            dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+            DOM.currentDate.textContent = dateStr;
+        };
+
+        const initNavigation = () => {
+            const buttons = [DOM.navDashboard, DOM.navKanban, DOM.navTimeline];
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const button = e.currentTarget;
+                    const targetView = button.getAttribute('data-view');
+                    if (targetView === state.currentView) return;
+                    buttons.forEach(b => b.classList.remove('active'));
+                    button.classList.add('active');
+                    switchView(targetView);
+                    DOM.sidebar.classList.remove('mobile-open');
+                });
+            });
+        };
+
+        var switchView = (viewName) => {
+            try {
+                state.currentView = viewName;
+                DOM.searchInput.value = '';
+                DOM.appContent.style.animation = 'none';
+                void DOM.appContent.offsetWidth; 
+                DOM.appContent.style.animation = 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+                
+                if (viewName === 'dashboard') {
+                    DOM.searchContainer.classList.add('hidden');
+                    renderDashboard(DOM.appContent);
+                } else if (viewName === 'kanban') {
+                    DOM.searchContainer.classList.remove('hidden');
+                    renderKanban(DOM.appContent);
+                } else if (viewName === 'timeline') {
+                    DOM.searchContainer.classList.add('hidden');
+                    renderTimeline(DOM.appContent);
+                }
+            } catch (err) {
+                console.error("Fallo en switchView:", err);
+                if (window.showAppError) {
+                    window.showAppError(err.message, err.stack || err.toString());
+                }
+            }
+        };
+
+        const initMobileMenu = () => {
+            DOM.mobileToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                DOM.sidebar.classList.toggle('mobile-open');
+            });
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && 
+                    DOM.sidebar.classList.contains('mobile-open') && 
+                    !DOM.sidebar.contains(e.target) && 
+                    !DOM.mobileToggle.contains(e.target)) {
+                    DOM.sidebar.classList.remove('mobile-open');
+                }
+            });
+        };
+
+        const initSearch = () => {
+            DOM.searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                if (state.currentView === 'kanban') {
+                    handleKanbanSearch(query);
+                }
+            });
+        };
+
+        const init = () => {
+            try {
+                initModalCache();
+                initTheme();
+                initDateTime();
+                initNavigation();
+                initMobileMenu();
+                initSearch();
+                switchView(state.currentView);
+            } catch (err) {
+                console.error("Fallo en inicialización de Veloce Tracker:", err);
+                if (window.showAppError) {
+                    window.showAppError(err.message, err.stack || err.toString());
+                }
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
