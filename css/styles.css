@@ -52,6 +52,13 @@
     --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
     --accent-hover: #4f46e5;
     --glass-shimmer: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0) 50%);
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.09);
+}
+
+body.light-theme {
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(0, 0, 0, 0.08);
 }
 
 /* Theme Application mapping */
@@ -2506,7 +2513,7 @@ body.light-theme .icon-dark {
 }
 
 .expense-modal-card {
-    background: var(--surface-elevated);
+    background: var(--modal-bg);
     border: 1px solid var(--glass-border);
     border-radius: var(--border-radius-lg);
     padding: 0;
@@ -2718,4 +2725,144 @@ body.light-theme .icon-dark {
         flex-direction: column;
         align-items: center;
     }
+}
+
+/* === ECONOMIC INDICATORS MINI PANEL === */
+.indicators-mini-panel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 20px;
+}
+.indicator-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 14px;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--border-radius-sm);
+    min-width: 70px;
+}
+.ind-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+}
+.ind-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.indicators-loading {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding: 4px 0;
+}
+
+/* === GANTT MINI SUMMARY === */
+.gantt-mini-summary {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-md);
+    margin-bottom: 16px;
+}
+.gantt-summary-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.gantt-summary-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.gantt-summary-count {
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+/* === LOGIN THEME TOGGLE === */
+.login-theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.login-theme-toggle:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+/* === EXPENSE EDIT/SALDADO ACTIONS === */
+.expense-row-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.expense-edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+.expense-edit-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+.settlement-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.btn-saldado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-saldado:hover {
+    background: rgba(16, 185, 129, 0.22);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
 }
