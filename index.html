@@ -94,9 +94,17 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M11 3v18"></path><path d="M16 3v18"></path><path d="M8 3v18"></path></svg>
                     <span>Tablero Kanban</span>
                 </button>
-                <button class="nav-btn" data-view="timeline" id="nav-timeline">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span>Línea de Tiempo</span>
+                <button class="nav-btn" data-view="calendar" id="nav-calendar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                    <span>Calendario</span>
+                </button>
+                <button class="nav-btn" data-view="gantt" id="nav-gantt">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 3v18h18"></path><path d="M7 14h6"></path><path d="M11 9h8"></path><path d="M7 5h4"></path></svg>
+                    <span>Cronograma</span>
+                </button>
+                <button class="nav-btn" data-view="expenses" id="nav-expenses">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Gastos</span>
                 </button>
             </nav>
 
@@ -131,17 +139,6 @@
                     <input type="text" placeholder="Buscar tareas..." id="search-input" class="search-input">
                 </div>
                 <div class="top-bar-actions">
-                    <!-- Scope Switcher segment control -->
-                    <div class="scope-switcher" id="scope-switcher">
-                        <button class="scope-btn active" data-scope="personal" id="scope-personal-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            Personal
-                        </button>
-                        <button class="scope-btn" data-scope="shared" id="scope-shared-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                            Compartido
-                        </button>
-                    </div>
                     <div class="date-badge" id="current-date">Cargando fecha...</div>
                 </div>
             </header>
@@ -182,6 +179,17 @@
                             <option value="low">Baja</option>
                             <option value="medium" selected>Media</option>
                             <option value="high">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-category-input">Categoría</label>
+                        <select id="task-category-input" required>
+                            <option value="Casa" selected>Casa</option>
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Supermercado">Supermercado</option>
+                            <option value="Mascotas">Mascotas</option>
+                            <option value="Finanzas">Finanzas</option>
+                            <option value="Ocio">Ocio</option>
                         </select>
                     </div>
                 </div>
@@ -255,27 +263,11 @@
         };
 
         var getActiveStorageKey = () => {
-            const scope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-            if (scope === 'shared') {
-                return 'oxiflow_kanban_data_shared';
-            }
-            const session = getActiveUserSession();
-            if (session && session.email) {
-                return `oxiflow_kanban_data_${session.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            }
-            return 'oxiflow_kanban_data_default';
+            return 'oxiflow_kanban_data_shared';
         };
 
         var getActiveLogsKey = () => {
-            const scope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-            if (scope === 'shared') {
-                return 'oxiflow_kanban_logs_shared';
-            }
-            const session = getActiveUserSession();
-            if (session && session.email) {
-                return `oxiflow_kanban_logs_${session.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-            }
-            return 'oxiflow_kanban_logs_default';
+            return 'oxiflow_kanban_logs_shared';
         };
 
         // Helper to generate IDs
@@ -295,22 +287,26 @@
                 columns: [
                     {
                         id: 'col-backlog',
-                        title: 'Backlog',
+                        title: 'Backlog Chores',
                         color: '#64748b', // Slate
                         tasks: [
                             {
                                 id: 'task-1',
-                                title: 'Investigar APIs de integración',
-                                desc: 'Evaluar alternativas para conectar el servicio de notificaciones con la plataforma externa.',
+                                title: 'Limpieza a fondo del horno',
+                                desc: 'Desengrasar y limpiar a fondo la cocina y el horno con productos biodegradables.',
                                 priority: 'low',
-                                date: formatDate(6)
+                                date: formatDate(6),
+                                category: 'Casa',
+                                creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
                             },
                             {
                                 id: 'task-2',
-                                title: 'Reunión de kickoff con cliente',
-                                desc: 'Definir el alcance final del proyecto y alinear expectativas técnicas.',
+                                title: 'Comprar alimento para los perros',
+                                desc: 'Comprar saco de comida premium en la tienda de mascotas cercana.',
                                 priority: 'medium',
-                                date: formatDate(4)
+                                date: formatDate(4),
+                                category: 'Mascotas',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                             }
                         ]
                     },
@@ -321,17 +317,21 @@
                         tasks: [
                             {
                                 id: 'task-3',
-                                title: 'Diseñar interfaz del Dashboard',
-                                desc: 'Crear propuestas visuales premium en alta fidelidad utilizando el sistema de colores de la marca.',
+                                title: 'Hacer las compras del supermercado',
+                                desc: 'Comprar frutas, verduras, lácteos y artículos de despensa semanal.',
                                 priority: 'high',
-                                date: formatDate(2)
+                                date: formatDate(2),
+                                category: 'Supermercado',
+                                creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
                             },
                             {
                                 id: 'task-4',
-                                title: 'Escribir documentación del onboarding',
-                                desc: 'Redactar los pasos iniciales para el ingreso de nuevos desarrolladores al repositorio.',
+                                title: 'Planificar menú semanal de almuerzos',
+                                desc: 'Escribir las opciones saludables para cocinar durante la semana.',
                                 priority: 'low',
-                                date: formatDate(3)
+                                date: formatDate(3),
+                                category: 'Casa',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                             }
                         ]
                     },
@@ -342,10 +342,12 @@
                         tasks: [
                             {
                                 id: 'task-5',
-                                title: 'Implementar Drag & Drop en Kanban',
-                                desc: 'Utilizar el API nativo de HTML5 con efectos visuales fluidos, animaciones y soporte táctil.',
+                                title: 'Lavar y ordenar la ropa blanca',
+                                desc: 'Sábanas, toallas y fundas de almohada de la habitación principal.',
                                 priority: 'high',
-                                date: formatDate(1)
+                                date: formatDate(1),
+                                category: 'Casa',
+                                creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
                             }
                         ]
                     },
@@ -356,19 +358,49 @@
                         tasks: [
                             {
                                 id: 'task-6',
-                                title: 'Configurar entorno de desarrollo',
-                                desc: 'Instalar servidores locales, definir linters de código y verificar conexiones a base de datos.',
-                                priority: 'medium',
-                                date: formatDate(-1)
+                                title: 'Pagar alquiler y gastos comunes',
+                                desc: 'Transferencia mensual realizada con éxito del presupuesto familiar.',
+                                priority: 'high',
+                                date: formatDate(-1),
+                                category: 'Finanzas',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                             },
                             {
                                 id: 'task-7',
-                                title: 'Refactorizar variables de diseño CSS',
-                                desc: 'Migrar estilos duros a variables CSS adaptables para facilitar el soporte de temas.',
-                                priority: 'low',
-                                date: formatDate(-2)
+                                title: 'Pasear a los perros y cepillarlos',
+                                desc: 'Paseo largo de la tarde por el parque y cepillado diario.',
+                                priority: 'medium',
+                                date: formatDate(-2),
+                                category: 'Mascotas',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                             }
                         ]
+                    }
+                ],
+                expenses: [
+                    {
+                        id: 'exp-1',
+                        title: 'Compra semanal Jumbo',
+                        amount: 85.00,
+                        paidBy: 'oxi@oxiflow.com',
+                        date: formatDate(-2),
+                        category: 'Supermercado'
+                    },
+                    {
+                        id: 'exp-2',
+                        title: 'Vacunas Veterinario (Perro)',
+                        amount: 50.00,
+                        paidBy: 'javi@oxiflow.com',
+                        date: formatDate(-1),
+                        category: 'Mascotas'
+                    },
+                    {
+                        id: 'exp-3',
+                        title: 'Artículos de limpieza Hogar',
+                        amount: 15.00,
+                        paidBy: 'oxi@oxiflow.com',
+                        date: formatDate(0),
+                        category: 'Casa'
                     }
                 ]
             };
@@ -378,23 +410,23 @@
             return [
                 {
                     id: 'log-1',
-                    text: 'Entorno de desarrollo configurado correctamente',
+                    text: 'Alquiler y gastos comunes pagados',
                     colName: 'Completado',
-                    priority: 'medium',
+                    priority: 'high',
                     date: new Date(Date.now() - 3600000 * 24).toLocaleString()
                 },
                 {
                     id: 'log-2',
-                    text: 'Comenzó el desarrollo del Drag & Drop para el Kanban',
-                    colName: 'En Progreso',
-                    priority: 'high',
-                    date: new Date(Date.now() - 3600000 * 4).toLocaleString()
+                    text: 'Paseo de perros y cepillado realizado',
+                    colName: 'Completado',
+                    priority: 'medium',
+                    date: new Date(Date.now() - 3600000 * 12).toLocaleString()
                 },
                 {
                     id: 'log-3',
-                    text: 'Se movió la tarea "Refactorizar variables de diseño" a completado',
-                    colName: 'Completado',
-                    priority: 'low',
+                    text: 'Comenzó el lavado de la ropa blanca',
+                    colName: 'En Progreso',
+                    priority: 'high',
                     date: new Date(Date.now() - 3600000 * 2).toLocaleString()
                 }
             ];
@@ -787,7 +819,9 @@
         const boardState = {
             data: null,
             searchQuery: '',
-            priorityFilter: 'all'
+            priorityFilter: 'all',
+            creatorFilter: 'all',
+            categoryFilter: 'all'
         };
 
         // Modal Elements Cache
@@ -800,6 +834,8 @@
         let taskDescInput;
         let taskPriorityInput;
         let taskDateInput;
+        let taskStartDateInput;
+        let taskCategoryInput;
         let boardContainerRef;
 
         /**
@@ -822,10 +858,10 @@
                         <p style="color: var(--text-secondary); font-size: 0.95rem;">Gestiona tus tareas arrastrándolas entre columnas.</p>
                     </div>
                     
-                    <div class="kanban-actions">
+                    <div class="kanban-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                         <!-- Priority Filter -->
-                        <div class="filter-wrapper">
-                            <label for="board-priority-filter">Prioridad:</label>
+                        <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <label for="board-priority-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Prioridad:</label>
                             <select id="board-priority-filter" class="filter-select">
                                 <option value="all" ${boardState.priorityFilter === 'all' ? 'selected' : ''}>Todos</option>
                                 <option value="low" ${boardState.priorityFilter === 'low' ? 'selected' : ''}>Baja</option>
@@ -834,7 +870,31 @@
                             </select>
                         </div>
                         
-                        <button class="btn btn-primary" id="add-column-btn">
+                        <!-- Creator Filter -->
+                        <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <label for="board-creator-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Dueño:</label>
+                            <select id="board-creator-filter" class="filter-select">
+                                <option value="all" ${boardState.creatorFilter === 'all' ? 'selected' : ''}>Todos</option>
+                                <option value="oxi@oxiflow.com" ${boardState.creatorFilter === 'oxi@oxiflow.com' ? 'selected' : ''}>Oxi</option>
+                                <option value="javi@oxiflow.com" ${boardState.creatorFilter === 'javi@oxiflow.com' ? 'selected' : ''}>Javi</option>
+                            </select>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <label for="board-category-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Categoría:</label>
+                            <select id="board-category-filter" class="filter-select">
+                                <option value="all" ${boardState.categoryFilter === 'all' ? 'selected' : ''}>Todos</option>
+                                <option value="Casa" ${boardState.categoryFilter === 'Casa' ? 'selected' : ''}>Casa</option>
+                                <option value="Trabajo" ${boardState.categoryFilter === 'Trabajo' ? 'selected' : ''}>Trabajo</option>
+                                <option value="Supermercado" ${boardState.categoryFilter === 'Supermercado' ? 'selected' : ''}>Supermercado</option>
+                                <option value="Mascotas" ${boardState.categoryFilter === 'Mascotas' ? 'selected' : ''}>Mascotas</option>
+                                <option value="Finanzas" ${boardState.categoryFilter === 'Finanzas' ? 'selected' : ''}>Finanzas</option>
+                                <option value="Ocio" ${boardState.categoryFilter === 'Ocio' ? 'selected' : ''}>Ocio</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="add-column-btn" style="margin-left: auto;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
                             Añadir Columna
                         </button>
@@ -870,6 +930,8 @@
             taskDescInput = document.getElementById('task-desc-input');
             taskPriorityInput = document.getElementById('task-priority-input');
             taskDateInput = document.getElementById('task-date-input');
+            taskStartDateInput = document.getElementById('task-start-date-input');
+            taskCategoryInput = document.getElementById('task-category-input');
 
             // Remove any previous submit listener to prevent multiple submissions
             const newForm = taskForm.cloneNode(true);
@@ -883,6 +945,8 @@
             taskDescInput = document.getElementById('task-desc-input');
             taskPriorityInput = document.getElementById('task-priority-input');
             taskDateInput = document.getElementById('task-date-input');
+            taskStartDateInput = document.getElementById('task-start-date-input');
+            taskCategoryInput = document.getElementById('task-category-input');
 
             taskForm.addEventListener('submit', handleTaskSubmit);
 
@@ -920,7 +984,15 @@
                     const matchesPriority = boardState.priorityFilter === 'all' || 
                         task.priority === boardState.priorityFilter;
                         
-                    return matchesSearch && matchesPriority;
+                    const taskCreatorEmail = task.creator ? task.creator.email : 'oxi@oxiflow.com';
+                    const matchesCreator = boardState.creatorFilter === 'all' || 
+                        taskCreatorEmail === boardState.creatorFilter;
+                        
+                    const taskCategory = task.category || 'Casa';
+                    const matchesCategory = boardState.categoryFilter === 'all' || 
+                        taskCategory === boardState.categoryFilter;
+                        
+                    return matchesSearch && matchesPriority && matchesCreator && matchesCategory;
                 });
 
                 const colColor = column.color || '#6366f1';
@@ -1019,10 +1091,31 @@
             const col = boardState.data.columns.find(c => c.id === columnId);
             const colColor = col ? col.color || '#6366f1' : '#6366f1';
 
+            const categoryColors = {
+                'Casa': { bg: 'rgba(168, 85, 247, 0.15)', text: '#a855f7', border: 'rgba(168, 85, 247, 0.3)' },
+                'Trabajo': { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' },
+                'Supermercado': { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', border: 'rgba(16, 185, 129, 0.3)' },
+                'Mascotas': { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
+                'Finanzas': { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', border: 'rgba(239, 68, 68, 0.3)' },
+                'Ocio': { bg: 'rgba(20, 184, 166, 0.15)', text: '#20b8a6', border: 'rgba(20, 184, 166, 0.3)' }
+            };
+
+            const cat = task.category || 'Casa';
+            const styling = categoryColors[cat] || { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', border: 'rgba(100, 116, 139, 0.3)' };
+
+            const creator = task.creator || { name: 'Oxi', email: 'oxi@oxiflow.com' };
+            const initials = creator.name ? creator.name.charAt(0).toUpperCase() : 'U';
+            const isJavi = creator.name && creator.name.toLowerCase().includes('javi');
+            const avatarBg = isJavi 
+                ? 'linear-gradient(135deg, #ec4899, #d946ef)' // Rose/Fuchsia for Javi
+                : 'linear-gradient(135deg, #3b82f6, #6366f1)'; // Blue/Indigo for Oxi
+
             return `
                 <div class="kanban-card" draggable="true" data-task-id="${task.id}" data-col-id="${columnId}" style="border-left: 4px solid ${colColor};" onmouseenter="this.style.borderColor = '${colColor}'; this.style.boxShadow = '0 8px 20px -4px ${colColor}40'; this.style.transform = 'translateY(-2px)'" onmouseleave="this.style.borderColor = ''; this.style.boxShadow = ''; this.style.transform = ''">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div class="card-priority-indicator ${task.priority}" title="Prioridad ${priorityLabels[task.priority]}"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; background: ${styling.bg}; color: ${styling.text}; border: 1px solid ${styling.border}; text-transform: uppercase;">
+                            ${escapeHTML(cat)}
+                        </span>
                         <div class="card-actions">
                             <button class="card-action-btn edit-task-btn" data-task-id="${task.id}" data-col-id="${columnId}" title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
@@ -1034,14 +1127,19 @@
                     </div>
                     <h4 class="card-title">${escapeHTML(task.title)}</h4>
                     ${task.desc ? `<p class="card-desc">${escapeHTML(task.desc)}</p>` : ''}
-                    <div class="card-footer">
-                        <span class="card-date ${isOverdue ? 'overdue' : ''}" title="${isOverdue ? '¡Tarea atrasada!' : 'Fecha de entrega'}" style="font-weight: 500;">
+                    <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px;">
+                        <span class="card-date ${isOverdue ? 'overdue' : ''}" title="${isOverdue ? '¡Tarea atrasada!' : 'Fecha de entrega'}" style="font-weight: 500; display: flex; align-items: center; gap: 4px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
                             ${dateText}
                         </span>
-                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--priority-${task.priority}); text-transform: uppercase;">
-                            ${priorityLabels[task.priority]}
-                        </span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--priority-${task.priority}); text-transform: uppercase;">
+                                ${priorityLabels[task.priority]}
+                            </span>
+                            <div class="creator-avatar-bubble" title="Creado por ${escapeHTML(creator.name)}" style="width: 24px; height: 24px; border-radius: 50%; background: ${avatarBg}; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                ${initials}
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1062,12 +1160,30 @@
          */
         const bindBoardEvents = () => {
             const filterSelect = document.getElementById('board-priority-filter');
+            const creatorSelect = document.getElementById('board-creator-filter');
+            const categorySelect = document.getElementById('board-category-filter');
             const addColBtn = document.getElementById('add-column-btn');
 
             // Priority filter hook
             if (filterSelect) {
                 filterSelect.addEventListener('change', (e) => {
                     boardState.priorityFilter = e.target.value;
+                    renderWorkspace();
+                });
+            }
+
+            // Creator filter hook
+            if (creatorSelect) {
+                creatorSelect.addEventListener('change', (e) => {
+                    boardState.creatorFilter = e.target.value;
+                    renderWorkspace();
+                });
+            }
+
+            // Category filter hook
+            if (categorySelect) {
+                categorySelect.addEventListener('change', (e) => {
+                    boardState.categoryFilter = e.target.value;
                     renderWorkspace();
                 });
             }
@@ -1371,6 +1487,7 @@
                     taskPriorityInput.value = task.priority;
                     taskStartDateInput.value = task.startDate || '';
                     taskDateInput.value = task.date || '';
+                    taskCategoryInput.value = task.category || 'Casa';
                     
                     currentSubtasks = task.subtasks ? JSON.parse(JSON.stringify(task.subtasks)) : [];
                     
@@ -1384,6 +1501,7 @@
                 }
             } else {
                 modalTitle.textContent = `Añadir Tarea en "${colTitle}"`;
+                taskCategoryInput.value = 'Casa';
                 currentSubtasks = [];
                 if (calendarGroup) calendarGroup.style.display = 'none';
             }
@@ -1402,6 +1520,7 @@
                 const priority = taskPriorityInput.value;
                 const startDate = taskStartDateInput.value;
                 const date = taskDateInput.value;
+                const category = taskCategoryInput.value || 'Casa';
                 const col = boardState.data.columns.find(c => c.id === colId);
                 if (!col) return;
                 if (taskId) {
@@ -1412,11 +1531,26 @@
                         task.priority = priority;
                         task.startDate = startDate;
                         task.date = date;
+                        task.category = category;
                         task.subtasks = currentSubtasks;
+                        if (!task.creator) {
+                            task.creator = getActiveUserSession() || { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' };
+                        }
                         addActivityLog(`Tarea actualizada: "${title}"`, col.title, priority);
                     }
                 } else {
-                    const newTask = { id: generateId(), title, desc, priority, startDate, date, subtasks: currentSubtasks };
+                    const activeSession = getActiveUserSession() || { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' };
+                    const newTask = { 
+                        id: generateId(), 
+                        title, 
+                        desc, 
+                        priority, 
+                        startDate, 
+                        date, 
+                        subtasks: currentSubtasks,
+                        category: category,
+                        creator: activeSession
+                    };
                     col.tasks.push(newTask);
                     addActivityLog(`Tarea creada: "${title}"`, col.title, priority);
                 }
@@ -1597,16 +1731,20 @@
         };
 
         // --- 3.5. TIMELINE & CALENDAR VIEW CONTROLLER ---
-        const timelineState = {
+        const calendarState = {
             currentYear: new Date().getFullYear(),
-            currentMonth: new Date().getMonth(),
-            subView: localStorage.getItem('oxiflow_timeline_subview') || 'calendar' // 'calendar' o 'gantt'
+            currentMonth: new Date().getMonth()
         };
 
-        var renderTimeline = (container) => {
+        const ganttState = {
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth()
+        };
+
+        var renderCalendar = (container) => {
             const data = getBoardData();
-            const year = timelineState.currentYear;
-            const month = timelineState.currentMonth;
+            const year = calendarState.currentYear;
+            const month = calendarState.currentMonth;
             
             const monthNames = [
                 "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -1619,97 +1757,138 @@
                 <div class="timeline-container">
                     <div class="timeline-header">
                         <div>
-                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Línea de Tiempo</h1>
-                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica y visualiza tus entregas mensuales.</p>
+                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Calendario Familiar</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica tus actividades y visualiza eventos y gastos mensuales.</p>
                         </div>
                         
                         <div class="timeline-nav-controls">
-                            <div class="view-toggle-segmented" style="margin-right: 12px;">
-                                <button class="toggle-segment ${timelineState.subView === 'calendar' ? 'active' : ''}" id="toggle-calendar-btn">Calendario</button>
-                                <button class="toggle-segment ${timelineState.subView === 'gantt' ? 'active' : ''}" id="toggle-gantt-btn">Cronograma</button>
-                            </div>
                             <span class="timeline-month-title">${monthTitleStr}</span>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" id="timeline-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
+                                <button class="btn btn-secondary" id="calendar-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                 </button>
-                                <button class="btn btn-secondary" id="timeline-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
-                                <button class="btn btn-secondary" id="timeline-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
+                                <button class="btn btn-secondary" id="calendar-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="calendar-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                 </button>
                             </div>
                         </div>
                     </div>
                     
-                    ${timelineState.subView === 'calendar' ? `
-                        <div class="calendar-wrapper">
-                            <div class="calendar-weekdays-grid">
-                                <div class="weekday-label">Lun</div>
-                                <div class="weekday-label">Mar</div>
-                                <div class="weekday-label">Mié</div>
-                                <div class="weekday-label">Jue</div>
-                                <div class="weekday-label">Vie</div>
-                                <div class="weekday-label">Sáb</div>
-                                <div class="weekday-label">Dom</div>
-                            </div>
-                            
-                            <div class="calendar-days-grid" id="calendar-days-grid"></div>
+                    <div class="calendar-wrapper">
+                        <div class="calendar-weekdays-grid">
+                            <div class="weekday-label">Lun</div>
+                            <div class="weekday-label">Mar</div>
+                            <div class="weekday-label">Mié</div>
+                            <div class="weekday-label">Jue</div>
+                            <div class="weekday-label">Vie</div>
+                            <div class="weekday-label">Sáb</div>
+                            <div class="weekday-label">Dom</div>
                         </div>
-                    ` : `
-                        <div class="gantt-container">
-                            <div class="gantt-scroll-canvas">
-                                <div class="gantt-grid-table">
-                                    <div class="gantt-header-row" id="gantt-header-row"></div>
-                                    <div id="gantt-rows-container"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `}
+                        
+                        <div class="calendar-days-grid" id="calendar-days-grid"></div>
+                    </div>
                 </div>
             `;
             
-            if (timelineState.subView === 'calendar') {
-                renderCalendarDays(year, month, data);
-                bindCalendarInteractions();
-            } else {
-                renderGanttView(year, month, data);
-                bindGanttInteractions();
-            }
+            renderCalendarDays(year, month, data);
+            bindCalendarInteractions();
             
-            document.getElementById('toggle-calendar-btn').onclick = () => {
-                timelineState.subView = 'calendar';
-                localStorage.setItem('oxiflow_timeline_subview', 'calendar');
-                renderTimeline(container);
-            };
-            
-            document.getElementById('toggle-gantt-btn').onclick = () => {
-                timelineState.subView = 'gantt';
-                localStorage.setItem('oxiflow_timeline_subview', 'gantt');
-                renderTimeline(container);
-            };
-            
-            document.getElementById('timeline-prev-btn').onclick = () => {
-                timelineState.currentMonth--;
-                if (timelineState.currentMonth < 0) {
-                    timelineState.currentMonth = 11;
-                    timelineState.currentYear--;
+            document.getElementById('calendar-prev-btn').onclick = () => {
+                calendarState.currentMonth--;
+                if (calendarState.currentMonth < 0) {
+                    calendarState.currentMonth = 11;
+                    calendarState.currentYear--;
                 }
-                renderTimeline(container);
+                renderCalendar(container);
             };
             
-            document.getElementById('timeline-next-btn').onclick = () => {
-                timelineState.currentMonth++;
-                if (timelineState.currentMonth > 11) {
-                    timelineState.currentMonth = 0;
-                    timelineState.currentYear++;
+            document.getElementById('calendar-next-btn').onclick = () => {
+                calendarState.currentMonth++;
+                if (calendarState.currentMonth > 11) {
+                    calendarState.currentMonth = 0;
+                    calendarState.currentYear++;
                 }
-                renderTimeline(container);
+                renderCalendar(container);
             };
             
-            document.getElementById('timeline-today-btn').onclick = () => {
-                timelineState.currentYear = new Date().getFullYear();
-                timelineState.currentMonth = new Date().getMonth();
-                renderTimeline(container);
+            document.getElementById('calendar-today-btn').onclick = () => {
+                calendarState.currentYear = new Date().getFullYear();
+                calendarState.currentMonth = new Date().getMonth();
+                renderCalendar(container);
+            };
+        };
+
+        var renderGantt = (container) => {
+            const data = getBoardData();
+            const year = ganttState.currentYear;
+            const month = ganttState.currentMonth;
+            
+            const monthNames = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+            
+            const monthTitleStr = `${monthNames[month]} ${year}`;
+            
+            container.innerHTML = `
+                <div class="timeline-container">
+                    <div class="timeline-header">
+                        <div>
+                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Cronograma Gantt</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica las tareas semanales y mensuales en el hogar.</p>
+                        </div>
+                        
+                        <div class="timeline-nav-controls">
+                            <span class="timeline-month-title">${monthTitleStr}</span>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" id="gantt-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                                <button class="btn btn-secondary" id="gantt-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="gantt-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-container">
+                        <div class="gantt-scroll-canvas">
+                            <div class="gantt-grid-table">
+                                <div class="gantt-header-row" id="gantt-header-row"></div>
+                                <div id="gantt-rows-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            renderGanttView(year, month, data);
+            bindGanttInteractions();
+            
+            document.getElementById('gantt-prev-btn').onclick = () => {
+                ganttState.currentMonth--;
+                if (ganttState.currentMonth < 0) {
+                    ganttState.currentMonth = 11;
+                    ganttState.currentYear--;
+                }
+                renderGantt(container);
+            };
+            
+            document.getElementById('gantt-next-btn').onclick = () => {
+                ganttState.currentMonth++;
+                if (ganttState.currentMonth > 11) {
+                    ganttState.currentMonth = 0;
+                    ganttState.currentYear++;
+                }
+                renderGantt(container);
+            };
+            
+            document.getElementById('gantt-today-btn').onclick = () => {
+                ganttState.currentYear = new Date().getFullYear();
+                ganttState.currentMonth = new Date().getMonth();
+                renderGantt(container);
             };
         };
 
@@ -1772,6 +1951,15 @@
                 });
             });
             
+            const dayExpenses = [];
+            if (data.expenses && Array.isArray(data.expenses)) {
+                data.expenses.forEach(exp => {
+                    if (exp.date === dateStr) {
+                        dayExpenses.push(exp);
+                    }
+                });
+            }
+            
             const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
             
             let tasksHtml = '';
@@ -1787,6 +1975,19 @@
                     </div>
                 `;
             });
+
+            let expensesHtml = '';
+            dayExpenses.forEach(exp => {
+                expensesHtml += `
+                    <div class="calendar-expense-pill" 
+                         style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 4px; padding: 2px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 3px; display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
+                         title="Gasto: ${escapeHTML(exp.title)} ($${exp.amount.toFixed(2)})"
+                         onclick="switchView('expenses')">
+                        <span>$${exp.amount.toFixed(2)}</span>
+                        <span style="font-weight: 500; font-size: 0.62rem; opacity: 0.85;">${escapeHTML(exp.title)}</span>
+                    </div>
+                `;
+            });
             
             return `
                 <div class="calendar-day-box ${otherMonthClass} ${todayClass}" data-date="${dateStr}">
@@ -1796,6 +1997,7 @@
                     </div>
                     <div class="calendar-tasks-container">
                         ${tasksHtml}
+                        ${expensesHtml}
                     </div>
                 </div>
             `;
@@ -1819,8 +2021,8 @@
                         
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'calendar') {
+                                    renderCalendar(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1850,8 +2052,8 @@
                         const form = document.getElementById('task-form');
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'calendar') {
+                                    renderCalendar(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1955,8 +2157,8 @@
                         const form = document.getElementById('task-form');
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'gantt') {
+                                    renderGantt(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1985,8 +2187,8 @@
                         const form = document.getElementById('task-form');
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'gantt') {
+                                    renderGantt(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1994,6 +2196,260 @@
                         form.addEventListener('submit', refreshTimeline);
                     }
                 };
+            });
+        };
+
+        // --- 3.5 EXPENSES MODULE ---
+        const EXPENSE_CATEGORIES = ['Supermercado', 'Casa', 'Mascotas', 'Finanzas', 'Ocio', 'Transporte', 'Salud', 'Otro'];
+        
+        const getCategoryColor = (cat) => {
+            const map = {
+                'Casa': '#a855f7', 'Supermercado': '#22c55e', 'Mascotas': '#f59e0b',
+                'Finanzas': '#3b82f6', 'Trabajo': '#6366f1', 'Ocio': '#ec4899',
+                'Transporte': '#14b8a6', 'Salud': '#ef4444', 'Otro': '#94a3b8'
+            };
+            return map[cat] || '#94a3b8';
+        };
+
+        var renderExpenses = (container) => {
+            const data = getBoardData();
+            const expenses = data.expenses || [];
+            
+            // Calculate balances
+            const totals = { 'oxi@oxiflow.com': 0, 'javi@oxiflow.com': 0 };
+            let grandTotal = 0;
+            expenses.forEach(exp => {
+                const amt = parseFloat(exp.amount) || 0;
+                if (totals[exp.paidBy] !== undefined) totals[exp.paidBy] += amt;
+                grandTotal += amt;
+            });
+
+            const oxiTotal = totals['oxi@oxiflow.com'];
+            const javiTotal = totals['javi@oxiflow.com'];
+            const fairShare = grandTotal / 2;
+            const oxiBalance = oxiTotal - fairShare;
+            const javiBalance = javiTotal - fairShare;
+
+            let settlementHTML = '';
+            if (Math.abs(oxiBalance) < 0.01) {
+                settlementHTML = `<div class="settlement-card settled"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>¡Cuentas perfectamente saldadas! 🎉</span></div>`;
+            } else if (oxiBalance > 0) {
+                settlementHTML = `<div class="settlement-card owes"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span><strong>Javi</strong> le debe <strong>$${Math.abs(oxiBalance).toFixed(2)}</strong> a <strong>Oxi</strong></span></div>`;
+            } else {
+                settlementHTML = `<div class="settlement-card owes"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span><strong>Oxi</strong> le debe <strong>$${Math.abs(javiBalance).toFixed(2)}</strong> a <strong>Javi</strong></span></div>`;
+            }
+
+            const expenseRows = expenses.map((exp, idx) => {
+                const isOxi = exp.paidBy === 'oxi@oxiflow.com';
+                const paidByName = isOxi ? 'Oxi' : 'Javi';
+                const avatarClass = isOxi ? 'avatar-oxi' : 'avatar-javi';
+                const initial = isOxi ? 'O' : 'J';
+                const catColor = getCategoryColor(exp.category);
+                const dateStr = exp.date ? new Date(exp.date + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
+                
+                return `
+                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.05}s both;">
+                        <td class="expense-concept">${exp.concept || 'Sin concepto'}</td>
+                        <td class="expense-amount">$${(parseFloat(exp.amount) || 0).toFixed(2)}</td>
+                        <td>
+                            <div class="expense-paid-by">
+                                <div class="expense-avatar ${avatarClass}">${initial}</div>
+                                <span>${paidByName}</span>
+                            </div>
+                        </td>
+                        <td>${dateStr}</td>
+                        <td><span class="expense-cat-tag" style="--cat-color: ${catColor};">${exp.category || 'Otro'}</span></td>
+                        <td>
+                            <button class="expense-delete-btn" data-idx="${idx}" title="Eliminar gasto" aria-label="Eliminar gasto">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                            </button>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="expenses-container">
+                    <div class="expenses-header">
+                        <div>
+                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">💰 Control de Gastos</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Gestión y liquidación de gastos compartidos en el hogar.</p>
+                        </div>
+                        <button class="btn btn-primary" id="add-expense-btn" style="padding: 10px 20px; border-radius: var(--border-radius-md); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+                            Añadir Gasto
+                        </button>
+                    </div>
+
+                    <div class="expenses-balance-grid">
+                        <div class="balance-card balance-oxi">
+                            <div class="balance-avatar avatar-oxi">O</div>
+                            <div class="balance-info">
+                                <span class="balance-name">Oxi</span>
+                                <span class="balance-amount">$${oxiTotal.toFixed(2)}</span>
+                            </div>
+                            <div class="balance-label">Aportado</div>
+                        </div>
+                        <div class="balance-card balance-javi">
+                            <div class="balance-avatar avatar-javi">J</div>
+                            <div class="balance-info">
+                                <span class="balance-name">Javi</span>
+                                <span class="balance-amount">$${javiTotal.toFixed(2)}</span>
+                            </div>
+                            <div class="balance-label">Aportado</div>
+                        </div>
+                        <div class="balance-card balance-total">
+                            <div class="balance-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
+                            </div>
+                            <div class="balance-info">
+                                <span class="balance-name">Total Gastos</span>
+                                <span class="balance-amount">$${grandTotal.toFixed(2)}</span>
+                            </div>
+                            <div class="balance-label">Compartido</div>
+                        </div>
+                    </div>
+
+                    ${settlementHTML}
+
+                    <div class="expenses-table-wrapper">
+                        <table class="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Monto</th>
+                                    <th>Pagado por</th>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${expenseRows || '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">No hay gastos registrados aún. ¡Añade tu primer gasto!</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Bind add expense button
+            document.getElementById('add-expense-btn')?.addEventListener('click', () => {
+                openExpenseModal();
+            });
+
+            // Bind delete buttons
+            container.querySelectorAll('.expense-delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    if (confirm('¿Eliminar este gasto?')) {
+                        const d = getBoardData();
+                        d.expenses.splice(idx, 1);
+                        saveBoardData(d);
+                        renderExpenses(container);
+                        addActivityLog('Gasto eliminado', 'Gastos', 'low');
+                    }
+                });
+            });
+        };
+
+        const openExpenseModal = () => {
+            // Remove any existing modal
+            document.getElementById('expense-modal-overlay')?.remove();
+
+            const catOptions = EXPENSE_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const overlay = document.createElement('div');
+            overlay.className = 'expense-modal-overlay show';
+            overlay.id = 'expense-modal-overlay';
+            overlay.innerHTML = `
+                <div class="expense-modal-card">
+                    <div class="expense-modal-header">
+                        <h3>Nuevo Gasto Compartido</h3>
+                        <button class="expense-modal-close" id="expense-modal-close" aria-label="Cerrar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+                        </button>
+                    </div>
+                    <form id="expense-form" class="expense-form">
+                        <div class="form-group">
+                            <label for="expense-concept">Concepto</label>
+                            <input type="text" id="expense-concept" placeholder="Ej: Compra semanal Jumbo" required>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="expense-amount">Monto ($)</label>
+                                <input type="number" id="expense-amount" placeholder="0.00" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expense-date">Fecha</label>
+                                <input type="date" id="expense-date" value="${todayStr}" required>
+                            </div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="expense-paid-by">Pagado por</label>
+                                <select id="expense-paid-by" required>
+                                    <option value="oxi@oxiflow.com">Oxi</option>
+                                    <option value="javi@oxiflow.com">Javi</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="expense-category">Categoría</label>
+                                <select id="expense-category" required>
+                                    ${catOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 700; font-size: 1rem; margin-top: 8px;">
+                            Guardar Gasto
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Auto-select current user
+            const session = getActiveUserSession();
+            if (session && session.email) {
+                const sel = overlay.querySelector('#expense-paid-by');
+                if (sel) sel.value = session.email;
+            }
+
+            // Close button
+            overlay.querySelector('#expense-modal-close').addEventListener('click', () => {
+                overlay.classList.remove('show');
+                setTimeout(() => overlay.remove(), 300);
+            });
+
+            // Click backdrop to close
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                    setTimeout(() => overlay.remove(), 300);
+                }
+            });
+
+            // Form submit
+            overlay.querySelector('#expense-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const concept = document.getElementById('expense-concept').value.trim();
+                const amount = parseFloat(document.getElementById('expense-amount').value);
+                const date = document.getElementById('expense-date').value;
+                const paidBy = document.getElementById('expense-paid-by').value;
+                const category = document.getElementById('expense-category').value;
+
+                if (!concept || !amount || amount <= 0) return;
+
+                const d = getBoardData();
+                if (!d.expenses) d.expenses = [];
+                d.expenses.push({ concept, amount, date, paidBy, category, id: Date.now().toString(36) });
+                saveBoardData(d);
+
+                overlay.classList.remove('show');
+                setTimeout(() => overlay.remove(), 300);
+
+                renderExpenses(DOM.appContent);
+                addActivityLog(`Gasto añadido: ${concept} ($${amount.toFixed(2)})`, 'Gastos', 'medium');
             });
         };
 
@@ -2008,7 +2464,9 @@
             appContent: document.getElementById('app-content'),
             navDashboard: document.getElementById('nav-dashboard'),
             navKanban: document.getElementById('nav-kanban'),
-            navTimeline: document.getElementById('nav-timeline'),
+            navCalendar: document.getElementById('nav-calendar'),
+            navGantt: document.getElementById('nav-gantt'),
+            navExpenses: document.getElementById('nav-expenses'),
             themeToggle: document.getElementById('theme-toggle'),
             mobileToggle: document.getElementById('mobile-toggle'),
             sidebar: document.getElementById('sidebar'),
@@ -2058,7 +2516,7 @@
 
         // Single Page App Router
         const initNavigation = () => {
-            const buttons = [DOM.navDashboard, DOM.navKanban, DOM.navTimeline];
+            const buttons = [DOM.navDashboard, DOM.navKanban, DOM.navCalendar, DOM.navGantt, DOM.navExpenses];
             
             buttons.forEach(btn => {
                 if (!btn) return;
@@ -2093,9 +2551,15 @@
                 } else if (viewName === 'kanban') {
                     DOM.searchContainer.classList.remove('hidden');
                     renderKanban(DOM.appContent);
-                } else if (viewName === 'timeline') {
+                } else if (viewName === 'calendar') {
                     DOM.searchContainer.classList.add('hidden');
-                    renderTimeline(DOM.appContent);
+                    renderCalendar(DOM.appContent);
+                } else if (viewName === 'gantt') {
+                    DOM.searchContainer.classList.add('hidden');
+                    renderGantt(DOM.appContent);
+                } else if (viewName === 'expenses') {
+                    DOM.searchContainer.classList.add('hidden');
+                    renderExpenses(DOM.appContent);
                 }
             } catch (err) {
                 console.error("Fallo en switchView:", err);
@@ -2132,14 +2596,11 @@
             });
         };
 
-        // Google GSI authentication logic and lock overlay control
-        const initGoogleLogin = () => {
+        // Direct Login — Oxi & Javi profile card selector
+        const initDirectLogin = () => {
             const loginOverlay = document.getElementById('login-overlay');
-            const googleLoginBtn = document.getElementById('google-login-btn');
             const logoutBtn = document.getElementById('logout-btn');
-            const gModal = document.getElementById('g-modal-overlay');
-            const gCancelBtn = document.getElementById('g-cancel-btn');
-            const gAccountItems = document.querySelectorAll('.g-account-item');
+            const profileCards = document.querySelectorAll('.login-profile-card');
 
             const updateUserProfileUI = (user) => {
                 const avatarEl = document.querySelector('.sidebar .user-profile .avatar');
@@ -2148,13 +2609,25 @@
                 
                 if (avatarEl && nameEl && roleEl) {
                     if (user) {
-                        avatarEl.innerHTML = `<img src="${user.picture}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                        const isOxi = user.email === 'oxi@oxiflow.com';
+                        const gradient = isOxi ? 'linear-gradient(135deg, #6366f1, #3b82f6)' : 'linear-gradient(135deg, #ec4899, #a855f7)';
+                        const initial = isOxi ? 'O' : 'J';
+                        avatarEl.innerHTML = '';
+                        avatarEl.textContent = initial;
+                        avatarEl.style.background = gradient;
+                        avatarEl.style.color = 'white';
+                        avatarEl.style.fontWeight = '800';
+                        avatarEl.style.display = 'flex';
+                        avatarEl.style.alignItems = 'center';
+                        avatarEl.style.justifyContent = 'center';
                         nameEl.textContent = user.name;
                         roleEl.textContent = user.email;
                     } else {
                         avatarEl.innerHTML = 'U';
-                        nameEl.textContent = 'Usuario Demo';
-                        roleEl.textContent = 'Administrador';
+                        avatarEl.style.background = '';
+                        avatarEl.style.color = '';
+                        nameEl.textContent = 'Sin sesión';
+                        roleEl.textContent = 'Selecciona tu perfil';
                     }
                 }
             };
@@ -2168,50 +2641,20 @@
                 loginOverlay.classList.remove('hidden');
             }
 
-            if (googleLoginBtn) {
-                googleLoginBtn.addEventListener('click', () => {
-                    gModal.classList.add('show');
-                });
-            }
-
-            if (gCancelBtn) {
-                gCancelBtn.addEventListener('click', () => {
-                    gModal.classList.remove('show');
-                });
-            }
-
-            gAccountItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const name = item.getAttribute('data-name');
-                    const email = item.getAttribute('data-email');
-                    const picture = item.getAttribute('data-picture');
+            profileCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const name = card.getAttribute('data-name');
+                    const email = card.getAttribute('data-email');
                     
-                    gModal.classList.remove('show');
+                    const user = { name, email, picture: 'icon.svg' };
+                    localStorage.setItem('oxiflow_user_session', JSON.stringify(user));
                     
-                    const originalContent = googleLoginBtn.innerHTML;
-                    googleLoginBtn.disabled = true;
-                    googleLoginBtn.innerHTML = `
-                        <svg class="animate-spin" style="width: 18px; height: 18px; margin-right: 8px; animation: rotateLogo 1s linear infinite;" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity: 0.25;"></circle>
-                            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity: 0.75;"></path>
-                        </svg>
-                        Verificando cuenta Google...
-                    `;
+                    loginOverlay.classList.add('hidden');
+                    updateUserProfileUI(user);
                     
-                    setTimeout(() => {
-                        const user = { name, email, picture };
-                        localStorage.setItem('oxiflow_user_session', JSON.stringify(user));
-                        
-                        googleLoginBtn.disabled = false;
-                        googleLoginBtn.innerHTML = originalContent;
-                        
-                        loginOverlay.classList.add('hidden');
-                        updateUserProfileUI(user);
-                        
-                        state.currentView = 'dashboard';
-                        switchView(state.currentView);
-                        addActivityLog(`Sesión iniciada con Google`, 'Tablero', 'low');
-                    }, 1200);
+                    state.currentView = 'dashboard';
+                    switchView(state.currentView);
+                    addActivityLog(`${name} ha iniciado sesión`, 'Tablero', 'low');
                 });
             });
 
@@ -2219,7 +2662,9 @@
                 logoutBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     if (confirm('¿Estás seguro de que deseas cerrar tu sesión en Oxiflow Kanban?')) {
-                        addActivityLog(`Sesión cerrada`, 'Tablero', 'low');
+                        const session = getActiveUserSession();
+                        const name = session ? session.name : 'Usuario';
+                        addActivityLog(`${name} cerró sesión`, 'Tablero', 'low');
                         localStorage.removeItem('oxiflow_user_session');
                         updateUserProfileUI(null);
                         loginOverlay.classList.remove('hidden');
@@ -2229,44 +2674,6 @@
             }
         };
 
-        // Scope switcher controls (Personal vs. Shared)
-        const initScopeSwitcher = () => {
-            const scopePersonalBtn = document.getElementById('scope-personal-btn');
-            const scopeSharedBtn = document.getElementById('scope-shared-btn');
-
-            if (!scopePersonalBtn || !scopeSharedBtn) return;
-
-            const savedScope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-            
-            if (savedScope === 'shared') {
-                scopePersonalBtn.classList.remove('active');
-                scopeSharedBtn.classList.add('active');
-            } else {
-                scopePersonalBtn.classList.add('active');
-                scopeSharedBtn.classList.remove('active');
-            }
-
-            const setScope = (scope) => {
-                const currentScope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-                if (currentScope === scope) return;
-
-                localStorage.setItem('oxiflow_active_scope', scope);
-                if (scope === 'shared') {
-                    scopePersonalBtn.classList.remove('active');
-                    scopeSharedBtn.classList.add('active');
-                } else {
-                    scopePersonalBtn.classList.add('active');
-                    scopeSharedBtn.classList.remove('active');
-                }
-
-                // Re-render current active view instantly with new data key
-                switchView(state.currentView);
-                addActivityLog(`Se cambió al tablero ${scope === 'shared' ? 'Compartido' : 'Personal'}`, 'Tablero', 'low');
-            };
-
-            scopePersonalBtn.addEventListener('click', () => setScope('personal'));
-            scopeSharedBtn.addEventListener('click', () => setScope('shared'));
-        };
 
         // Initialize Application
         const init = () => {
@@ -2277,8 +2684,7 @@
                 initNavigation();
                 initMobileMenu();
                 initSearch();
-                initGoogleLogin();   // Session & authentication flow
-                initScopeSwitcher(); // Personal vs. Shared scopes switching
+                initDirectLogin();   // Session & authentication flow
             } catch (err) {
                 console.error("Fallo en inicialización de Oxiflow Kanban:", err);
                 if (window.showAppError) {
@@ -2294,58 +2700,29 @@
         }
     </script>
 
-    <!-- cosmic Google Login lock overlay screen -->
+    <!-- Direct Login — Profile Selector for Oxi & Javi -->
     <div class="login-overlay" id="login-overlay">
         <div class="login-card">
             <div class="login-logo">
                 <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m12 14-3-3 3-3"></path><path d="m16 11-4 3"></path></svg>
             </div>
             <h2 class="login-title">Oxiflow Kanban</h2>
-            <p class="login-subtitle">Gestión de proyectos premium para equipos y creadores. Inicia sesión para continuar.</p>
-            <button class="google-login-btn" id="google-login-btn">
-                <svg class="google-icon" viewBox="0 0 24 24">
-                    <path fill="#EA4335" d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582l3.51-3.51C17.642 1.09 14.973 0 12 0 7.354 0 3.307 2.67 1.242 6.56l4.024 3.205z"/>
-                    <path fill="#4285F4" d="M23.455 12.273c0-.818-.082-1.609-.227-2.364H12v4.51h6.47c-.29 1.48-.12 2.09-.99 3.01l3.89 3.02c2.27-2.1 3.585-5.18 3.585-8.176z"/>
-                    <path fill="#34A853" d="M21.373 17.45l-3.89-3.02c-1.12.75-2.58 1.21-4.08 1.21-3.11 0-5.75-2.09-6.724-4.91L2.66 13.93c2.065 3.91 6.11 6.57 10.74 6.57 2.97 0 5.67-1.01 7.97-2.75z"/>
-                    <path fill="#FBBC05" d="M1.242 17.44l4.02-3.2A7.014 7.014 0 0 1 4.91 12c0-.85.15-1.67.41-2.43L1.296 6.36A11.954 11.954 0 0 0 0 12c0 2.05.52 3.99 1.242 5.44z"/>
-                </svg>
-                Iniciar sesión con Google
-            </button>
+            <p class="login-subtitle">Gestión de tareas y gastos en el hogar.<br>¿Quién ingresa hoy?</p>
+            
+            <div class="login-profiles-grid">
+                <div class="login-profile-card oxi" data-name="Oxi" data-email="oxi@oxiflow.com">
+                    <div class="login-profile-avatar">O</div>
+                    <span class="login-profile-name">Oxi</span>
+                    <span class="login-profile-email">oxi@oxiflow.com</span>
+                </div>
+                <div class="login-profile-card javi" data-name="Javi" data-email="javi@oxiflow.com">
+                    <div class="login-profile-avatar">J</div>
+                    <span class="login-profile-name">Javi</span>
+                    <span class="login-profile-email">javi@oxiflow.com</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Google simulated account selection popup window dialog -->
-    <div class="g-modal-overlay" id="g-modal-overlay">
-        <div class="g-modal-card">
-            <div class="g-modal-header">
-                <div class="g-modal-logo">
-                    <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
-                </div>
-                <h3 class="g-modal-title">Elige una cuenta</h3>
-                <p class="g-modal-subtitle">para continuar en <strong>Oxiflow Kanban</strong></p>
-            </div>
-            
-            <div class="g-account-list">
-                <div class="g-account-item" data-name="Carlos Pino" data-email="carlos.pino@oxiflow.com" data-picture="icon.svg">
-                    <div class="g-avatar">CP</div>
-                    <div class="g-info">
-                        <span class="g-name">Carlos Pino</span>
-                        <span class="g-email">carlos.pino@oxiflow.com</span>
-                    </div>
-                </div>
-                <div class="g-account-item" data-name="Usuario Demo" data-email="demo@oxiflow.com" data-picture="icon.svg">
-                    <div class="g-avatar">UD</div>
-                    <div class="g-info">
-                        <span class="g-name">Usuario Demo</span>
-                        <span class="g-email">demo@oxiflow.com</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="g-modal-footer">
-                <button class="g-cancel-btn" id="g-cancel-btn">Cancelar</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

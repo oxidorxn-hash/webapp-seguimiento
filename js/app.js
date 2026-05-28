@@ -31,7 +31,6 @@ const init = () => {
         initMobileMenu();
         initSearch();
         initGoogleLogin();   // Session & authentication flow
-        initScopeSwitcher(); // Personal vs. Shared scopes switching
     } catch (err) {
         console.error("Fallo en inicialización de Oxiflow Kanban:", err);
         if (window.showAppError) {
@@ -254,41 +253,3 @@ const initGoogleLogin = () => {
     }
 };
 
-// Scope switcher controls (Personal vs. Shared)
-const initScopeSwitcher = () => {
-    const scopePersonalBtn = document.getElementById('scope-personal-btn');
-    const scopeSharedBtn = document.getElementById('scope-shared-btn');
-
-    if (!scopePersonalBtn || !scopeSharedBtn) return;
-
-    const savedScope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-    
-    if (savedScope === 'shared') {
-        scopePersonalBtn.classList.remove('active');
-        scopeSharedBtn.classList.add('active');
-    } else {
-        scopePersonalBtn.classList.add('active');
-        scopeSharedBtn.classList.remove('active');
-    }
-
-    const setScope = (scope) => {
-        const currentScope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-        if (currentScope === scope) return;
-
-        localStorage.setItem('oxiflow_active_scope', scope);
-        if (scope === 'shared') {
-            scopePersonalBtn.classList.remove('active');
-            scopeSharedBtn.classList.add('active');
-        } else {
-            scopePersonalBtn.classList.add('active');
-            scopeSharedBtn.classList.remove('active');
-        }
-
-        // Re-render current active view instantly with new data key
-        switchView(state.currentView);
-        addActivityLog(`Se cambió al tablero ${scope === 'shared' ? 'Compartido' : 'Personal'}`, 'Tablero', 'low');
-    };
-
-    scopePersonalBtn.addEventListener('click', () => setScope('personal'));
-    scopeSharedBtn.addEventListener('click', () => setScope('shared'));
-};

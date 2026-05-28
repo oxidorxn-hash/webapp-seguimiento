@@ -15,27 +15,11 @@ var getActiveUserSession = () => {
 };
 
 var getActiveStorageKey = () => {
-    const scope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-    if (scope === 'shared') {
-        return 'oxiflow_kanban_data_shared';
-    }
-    const session = getActiveUserSession();
-    if (session && session.email) {
-        return `oxiflow_kanban_data_${session.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-    }
-    return 'oxiflow_kanban_data_default';
+    return 'oxiflow_kanban_data_shared';
 };
 
 var getActiveLogsKey = () => {
-    const scope = localStorage.getItem('oxiflow_active_scope') || 'personal';
-    if (scope === 'shared') {
-        return 'oxiflow_kanban_logs_shared';
-    }
-    const session = getActiveUserSession();
-    if (session && session.email) {
-        return `oxiflow_kanban_logs_${session.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-    }
-    return 'oxiflow_kanban_logs_default';
+    return 'oxiflow_kanban_logs_shared';
 };
 
 // Helper to generate IDs
@@ -55,22 +39,26 @@ const getSeedData = () => {
         columns: [
             {
                 id: 'col-backlog',
-                title: 'Backlog',
+                title: 'Backlog Chores',
                 color: '#64748b', // Slate
                 tasks: [
                     {
                         id: 'task-1',
-                        title: 'Investigar APIs de integración',
-                        desc: 'Evaluar alternativas para conectar el servicio de notificaciones con la plataforma externa.',
+                        title: 'Limpieza a fondo del horno',
+                        desc: 'Desengrasar y limpiar a fondo la cocina y el horno con productos biodegradables.',
                         priority: 'low',
-                        date: formatDate(6)
+                        date: formatDate(6),
+                        category: 'Casa',
+                        creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
                     },
                     {
                         id: 'task-2',
-                        title: 'Reunión de kickoff con cliente',
-                        desc: 'Definir el alcance final del proyecto y alinear expectativas técnicas.',
+                        title: 'Comprar alimento para los perros',
+                        desc: 'Comprar saco de comida premium en la tienda de mascotas cercana.',
                         priority: 'medium',
-                        date: formatDate(4)
+                        date: formatDate(4),
+                        category: 'Mascotas',
+                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                     }
                 ]
             },
@@ -81,17 +69,21 @@ const getSeedData = () => {
                 tasks: [
                     {
                         id: 'task-3',
-                        title: 'Diseñar interfaz del Dashboard',
-                        desc: 'Crear propuestas visuales premium en alta fidelidad utilizando el sistema de colores de la marca.',
+                        title: 'Hacer las compras del supermercado',
+                        desc: 'Comprar frutas, verduras, lácteos y artículos de despensa semanal.',
                         priority: 'high',
-                        date: formatDate(2)
+                        date: formatDate(2),
+                        category: 'Supermercado',
+                        creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
                     },
                     {
                         id: 'task-4',
-                        title: 'Escribir documentación del onboarding',
-                        desc: 'Redactar los pasos iniciales para el ingreso de nuevos desarrolladores al repositorio.',
+                        title: 'Planificar menú semanal de almuerzos',
+                        desc: 'Escribir las opciones saludables para cocinar durante la semana.',
                         priority: 'low',
-                        date: formatDate(3)
+                        date: formatDate(3),
+                        category: 'Casa',
+                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                     }
                 ]
             },
@@ -102,10 +94,12 @@ const getSeedData = () => {
                 tasks: [
                     {
                         id: 'task-5',
-                        title: 'Implementar Drag & Drop en Kanban',
-                        desc: 'Utilizar el API nativo de HTML5 con efectos visuales fluidos, animaciones y soporte táctil.',
+                        title: 'Lavar y ordenar la ropa blanca',
+                        desc: 'Sábanas, toallas y fundas de almohada de la habitación principal.',
                         priority: 'high',
-                        date: formatDate(1)
+                        date: formatDate(1),
+                        category: 'Casa',
+                        creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
                     }
                 ]
             },
@@ -116,19 +110,49 @@ const getSeedData = () => {
                 tasks: [
                     {
                         id: 'task-6',
-                        title: 'Configurar entorno de desarrollo',
-                        desc: 'Instalar servidores locales, definir linters de código y verificar conexiones a base de datos.',
-                        priority: 'medium',
-                        date: formatDate(-1)
+                        title: 'Pagar alquiler y gastos comunes',
+                        desc: 'Transferencia mensual realizada con éxito del presupuesto familiar.',
+                        priority: 'high',
+                        date: formatDate(-1),
+                        category: 'Finanzas',
+                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                     },
                     {
                         id: 'task-7',
-                        title: 'Refactorizar variables de diseño CSS',
-                        desc: 'Migrar estilos duros a variables CSS adaptables para facilitar el soporte de temas.',
-                        priority: 'low',
-                        date: formatDate(-2)
+                        title: 'Pasear a los perros y cepillarlos',
+                        desc: 'Paseo largo de la tarde por el parque y cepillado diario.',
+                        priority: 'medium',
+                        date: formatDate(-2),
+                        category: 'Mascotas',
+                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
                     }
                 ]
+            }
+        ],
+        expenses: [
+            {
+                id: 'exp-1',
+                title: 'Compra semanal Jumbo',
+                amount: 85.00,
+                paidBy: 'oxi@oxiflow.com',
+                date: formatDate(-2),
+                category: 'Supermercado'
+            },
+            {
+                id: 'exp-2',
+                title: 'Vacunas Veterinario (Perro)',
+                amount: 50.00,
+                paidBy: 'javi@oxiflow.com',
+                date: formatDate(-1),
+                category: 'Mascotas'
+            },
+            {
+                id: 'exp-3',
+                title: 'Artículos de limpieza Hogar',
+                amount: 15.00,
+                paidBy: 'oxi@oxiflow.com',
+                date: formatDate(0),
+                category: 'Casa'
             }
         ]
     };
@@ -138,23 +162,23 @@ const getSeedLogs = () => {
     return [
         {
             id: 'log-1',
-            text: 'Entorno de desarrollo configurado correctamente',
+            text: 'Alquiler y gastos comunes pagados',
             colName: 'Completado',
-            priority: 'medium',
+            priority: 'high',
             date: new Date(Date.now() - 3600000 * 24).toLocaleString()
         },
         {
             id: 'log-2',
-            text: 'Comenzó el desarrollo del Drag & Drop para el Kanban',
-            colName: 'En Progreso',
-            priority: 'high',
-            date: new Date(Date.now() - 3600000 * 4).toLocaleString()
+            text: 'Paseo de perros y cepillado realizado',
+            colName: 'Completado',
+            priority: 'medium',
+            date: new Date(Date.now() - 3600000 * 12).toLocaleString()
         },
         {
             id: 'log-3',
-            text: 'Se movió la tarea "Refactorizar variables de diseño" a completado',
-            colName: 'Completado',
-            priority: 'low',
+            text: 'Comenzó el lavado de la ropa blanca',
+            colName: 'En Progreso',
+            priority: 'high',
             date: new Date(Date.now() - 3600000 * 2).toLocaleString()
         }
     ];
