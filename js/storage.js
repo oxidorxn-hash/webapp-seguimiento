@@ -3,8 +3,40 @@
    Handles LocalStorage, seed data generation, and activity logging.
    ========================================================================== */
 
-const STORAGE_KEY = 'veloce_tracker_data';
-const LOG_KEY = 'veloce_tracker_logs';
+// Dynamic storage keys helpers
+var getActiveUserSession = () => {
+    const raw = localStorage.getItem('oxiflow_user_session');
+    if (!raw) return null;
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        return null;
+    }
+};
+
+var getActiveStorageKey = () => {
+    const scope = localStorage.getItem('oxiflow_active_scope') || 'personal';
+    if (scope === 'shared') {
+        return 'oxiflow_kanban_data_shared';
+    }
+    const session = getActiveUserSession();
+    if (session && session.email) {
+        return `oxiflow_kanban_data_${session.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    }
+    return 'oxiflow_kanban_data_default';
+};
+
+var getActiveLogsKey = () => {
+    const scope = localStorage.getItem('oxiflow_active_scope') || 'personal';
+    if (scope === 'shared') {
+        return 'oxiflow_kanban_logs_shared';
+    }
+    const session = getActiveUserSession();
+    if (session && session.email) {
+        return `oxiflow_kanban_logs_${session.email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    }
+    return 'oxiflow_kanban_logs_default';
+};
 
 // Helper to generate IDs
 var generateId = () => 'id-' + Math.random().toString(36).substr(2, 9);
@@ -24,6 +56,7 @@ const getSeedData = () => {
             {
                 id: 'col-backlog',
                 title: 'Backlog',
+                color: '#64748b', // Slate
                 tasks: [
                     {
                         id: 'task-1',
@@ -44,6 +77,7 @@ const getSeedData = () => {
             {
                 id: 'col-todo',
                 title: 'Por Hacer',
+                color: '#6366f1', // Indigo
                 tasks: [
                     {
                         id: 'task-3',
@@ -64,6 +98,7 @@ const getSeedData = () => {
             {
                 id: 'col-inprogress',
                 title: 'En Progreso',
+                color: '#f59e0b', // Amber
                 tasks: [
                     {
                         id: 'task-5',
@@ -77,6 +112,7 @@ const getSeedData = () => {
             {
                 id: 'col-completed',
                 title: 'Completado',
+                color: '#10b981', // Emerald
                 tasks: [
                     {
                         id: 'task-6',
@@ -129,13 +165,14 @@ const getSeedLogs = () => {
  * @returns {Object} Application data object containing columns and tasks.
  */
 var getBoardData = () => {
-    const rawData = localStorage.getItem(STORAGE_KEY);
+    const key = getActiveStorageKey();
+    const rawData = localStorage.getItem(key);
     const seedData = getSeedData();
     
     if (!rawData) {
         saveBoardData(seedData);
         // Inject initial seed logs
-        localStorage.setItem(LOG_KEY, JSON.stringify(getSeedLogs()));
+        localStorage.setItem(getActiveLogsKey(), JSON.stringify(getSeedLogs()));
         return seedData;
     }
     try {
@@ -154,7 +191,7 @@ var getBoardData = () => {
     } catch (e) {
         console.warn('Datos corruptos detectados en localStorage. Restableciendo a valores iniciales seguros.', e);
         saveBoardData(seedData);
-        localStorage.setItem(LOG_KEY, JSON.stringify(getSeedLogs()));
+        localStorage.setItem(getActiveLogsKey(), JSON.stringify(getSeedLogs()));
         return seedData;
     }
 };
@@ -164,7 +201,8 @@ var getBoardData = () => {
  * @param {Object} data - Application data object.
  */
 var saveBoardData = (data) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const key = getActiveStorageKey();
+    localStorage.setItem(key, JSON.stringify(data));
 };
 
 /**
@@ -172,7 +210,8 @@ var saveBoardData = (data) => {
  * @returns {Array} List of activity logs.
  */
 var getActivityLogs = () => {
-    const rawLogs = localStorage.getItem(LOG_KEY);
+    const key = getActiveLogsKey();
+    const rawLogs = localStorage.getItem(key);
     if (!rawLogs) return [];
     try {
         return JSON.parse(rawLogs);
@@ -201,5 +240,6 @@ var addActivityLog = (text, colName = 'Tablero', priority = 'low') => {
     logs.unshift(newLog);
     if (logs.length > 10) logs.pop();
     
-    localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+    const key = getActiveLogsKey();
+    localStorage.setItem(key, JSON.stringify(logs));
 };

@@ -145,13 +145,19 @@ const renderWorkspace = () => {
             return matchesSearch && matchesPriority;
         });
 
+        const colColor = column.color || '#6366f1';
+        const colBorderColor = colColor + '35'; // ~20% opacity
+        const colCountBg = colColor + '15'; // ~8% opacity
+        const colCountBorder = colColor + '30'; // ~18% opacity
+        const colGlowStyle = `border-top: 5px solid ${colColor}; border-color: ${colBorderColor}; box-shadow: 0 4px 20px -5px ${colColor}50;`;
+
         html += `
-            <div class="kanban-column" data-col-id="${column.id}">
+            <div class="kanban-column" data-col-id="${column.id}" style="${colGlowStyle}">
                 <div class="column-header">
                     <div class="column-title-container">
                         <!-- Double click to edit title -->
                         <span class="column-title" title="Doble clic para renombrar" data-col-id="${column.id}">${escapeHTML(column.title)}</span>
-                        <span class="column-count">${filteredTasks.length}</span>
+                        <span class="column-count" style="background-color: ${colCountBg}; color: ${colColor}; border-color: ${colCountBorder};">${filteredTasks.length}</span>
                     </div>
                     
                     <div class="column-actions-dropdown">
@@ -167,6 +173,15 @@ const renderWorkspace = () => {
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                                 Eliminar
                             </button>
+                            <div class="dropdown-menu-divider"></div>
+                            <div class="column-color-picker-section">
+                                <span class="color-picker-title">Color de columna</span>
+                                <div class="color-options-grid">
+                                    ${['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b']
+                                        .map(color => `<span class="color-dot ${column.color === color ? 'active' : ''}" style="background-color: ${color};" data-color="${color}" data-col-id="${column.id}"></span>`)
+                                        .join('')}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,8 +238,11 @@ const renderTaskCard = (task, columnId) => {
         dateText = `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
+    const col = boardState.data.columns.find(c => c.id === columnId);
+    const colColor = col ? col.color || '#6366f1' : '#6366f1';
+
     return `
-        <div class="kanban-card" draggable="true" data-task-id="${task.id}" data-col-id="${columnId}">
+        <div class="kanban-card" draggable="true" data-task-id="${task.id}" data-col-id="${columnId}" style="border-left: 4px solid ${colColor};" onmouseenter="this.style.borderColor = '${colColor}'; this.style.boxShadow = '0 8px 20px -4px ${colColor}40'; this.style.transform = 'translateY(-2px)'" onmouseleave="this.style.borderColor = ''; this.style.boxShadow = ''; this.style.transform = ''">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div class="card-priority-indicator ${task.priority}" title="Prioridad ${priorityLabels[task.priority]}"></div>
                 <div class="card-actions">
@@ -327,6 +345,22 @@ const bindColumnInteractions = () => {
     // Close menus clicking anywhere
     document.addEventListener('click', () => {
         document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+    });
+
+    // 1.5. Column Color Picker Dot click handler
+    document.querySelectorAll('.color-dot').forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const colId = dot.getAttribute('data-col-id');
+            const color = dot.getAttribute('data-color');
+            const col = boardState.data.columns.find(c => c.id === colId);
+            if (col) {
+                col.color = color;
+                saveBoardData(boardState.data);
+                addActivityLog(`Se cambió el color de la columna "${col.title}"`, col.title, 'low');
+                renderWorkspace();
+            }
+        });
     });
 
     // 2. Rename Column from dropdown or double click
@@ -570,7 +604,7 @@ const initDragAndDrop = () => {
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
             // Remove helper indicators
-            document.querySelectorAll('.column-cards-list').forEach(l => l.classList.remove('drag-over'));
+            document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-over'));
         });
     });
     
@@ -594,16 +628,16 @@ const initDragAndDrop = () => {
         
         list.addEventListener('dragenter', (e) => {
             e.preventDefault();
-            list.classList.add('drag-over');
+            list.closest('.kanban-column').classList.add('drag-over');
         });
         
         list.addEventListener('dragleave', () => {
-            list.classList.remove('drag-over');
+            list.closest('.kanban-column').classList.remove('drag-over');
         });
         
         list.addEventListener('drop', (e) => {
             e.preventDefault();
-            list.classList.remove('drag-over');
+            list.closest('.kanban-column').classList.remove('drag-over');
             
             try {
                 const dragData = JSON.parse(e.dataTransfer.getData('text/plain'));

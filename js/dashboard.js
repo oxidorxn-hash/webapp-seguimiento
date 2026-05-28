@@ -179,23 +179,29 @@ var renderDashboard = (container) => {
                 ${
                     logs.length === 0 
                     ? `<div class="no-data-msg">No se han registrado actividades aún. Comienza a gestionar tareas en tu tablero kanban.</div>`
-                    : logs.slice(0, 5).map(log => `
-                        <div class="recent-task-item">
-                            <div class="task-item-meta">
-                                <span class="priority-dot ${log.priority || 'low'}"></span>
-                                <div>
-                                    <span class="task-item-title">${escapeHTML(log.text)}</span>
+                    : logs.slice(0, 5).map(log => {
+                        const relatedCol = data.columns.find(c => c.title === log.colName);
+                        const badgeStyle = relatedCol && relatedCol.color 
+                            ? `background-color: ${relatedCol.color}15; color: ${relatedCol.color}; border-color: ${relatedCol.color}25;`
+                            : '';
+                        return `
+                            <div class="recent-task-item">
+                                <div class="task-item-meta">
+                                    <span class="priority-dot ${log.priority || 'low'}"></span>
+                                    <div>
+                                        <span class="task-item-title">${escapeHTML(log.text)}</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <span class="task-item-column" style="${badgeStyle}">${escapeHTML(log.colName)}</span>
+                                    <span class="task-item-date">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        ${log.date.split(' ')[1] || log.date}
+                                    </span>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 16px;">
-                                <span class="task-item-column">${escapeHTML(log.colName)}</span>
-                                <span class="task-item-date">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                    ${log.date.split(' ')[1] || log.date}
-                                </span>
-                            </div>
-                        </div>
-                    `).join('')
+                        `;
+                    }).join('')
                 }
             </div>
         </div>
@@ -250,9 +256,11 @@ const drawBarChart = (columns) => {
         // Prevent division by zero if all columns are empty
         const heightPct = maxTasks > 0 ? (taskCount / maxTasks) * 80 : 0; // max height is 80% to leave room for labels
         
+        const colColor = col.color || 'var(--accent-gradient)';
+        
         barChartHtml += `
             <div class="chart-bar-wrapper">
-                <div class="chart-bar" style="height: ${Math.max(heightPct, 3)}%;">
+                <div class="chart-bar" style="height: ${Math.max(heightPct, 3)}%; background: ${colColor};">
                     <div class="chart-bar-value">${taskCount} ${taskCount === 1 ? 'tarea' : 'tareas'}</div>
                 </div>
                 <div class="chart-bar-label" title="${escapeHTML(col.title)}">${escapeHTML(col.title)}</div>

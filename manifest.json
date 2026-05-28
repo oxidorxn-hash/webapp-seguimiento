@@ -1,6 +1,6 @@
 {
-  "name": "Veloce Task Tracker",
-  "short_name": "Veloce",
+  "name": "Oxiflow Kanban",
+  "short_name": "Oxiflow",
   "description": "Rastreador de tareas Kanban premium, offline y con cronograma Gantt mensual.",
   "start_url": "index.html",
   "display": "standalone",

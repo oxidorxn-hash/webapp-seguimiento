@@ -1,4 +1,4 @@
-const CACHE_NAME = 'veloce-tracker-v1';
+const CACHE_NAME = 'oxiflow-kanban-v1';
 const ASSETS = [
     'index.html',
     'css/styles.css',
