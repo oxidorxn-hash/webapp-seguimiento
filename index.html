@@ -2112,10 +2112,11 @@
             return map[cat] || '#94a3b8';
         };
 
+        const expensesState = { selectedMonth: null }; // 'YYYY-MM' or null = all
+
         var renderExpenses = (container) => {
             const data = getBoardData();
-            // Remove legacy "Liquidación de deuda" entries created by the old settlement mechanism
-            // (those are synthetic compensation entries, not real expenses)
+            // Remove legacy synthetic settlement entries from old mechanism
             if (data.expenses) {
                 const cleaned = data.expenses.filter(e =>
                     !(e.concept === 'Liquidación de deuda' && !e.settled && e.category === 'Finanzas')
@@ -2184,7 +2185,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                             <span><strong>${debtor}</strong> le debe <strong>${formatCLP(debtAmount)}</strong> a <strong>${creditor}</strong></span>
                         </div>
-                        <button class="btn-saldado" id="btn-saldar-deuda" data-debtor="${debtorEmail}" data-amount="${debtAmount}">
+                        <button class="btn-saldado" id="btn-saldar-deuda" data-debtor="${debtorEmail}" data-debtor-name="${debtor}" data-creditor-name="${creditor}" data-amount="${debtAmount}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             Marcar como saldado
                         </button>
@@ -2219,6 +2220,82 @@
                     </tr>`;
             }).join('');
 
+
+            // Build month filter options from all expenses
+            const monthSet = [...new Set(expenses.map(e => (e.date || '').slice(0,7)).filter(Boolean))].sort().reverse();
+            const mnLabels = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            const fmtMonth = (ym) => { const [y,m] = ym.split('-'); return `${mnLabels[parseInt(m)-1]} ${y}`; };
+
+            // Default: current month if available, else 'all'
+            if (expensesState.selectedMonth === null) {
+                const curMo = new Date().toISOString().slice(0,7);
+                expensesState.selectedMonth = monthSet.includes(curMo) ? curMo : (monthSet[0] || 'all');
+            }
+
+            const monthOptions = `<option value="all" ${expensesState.selectedMonth==='all'?'selected':''}>Todos los meses</option>`
+                + monthSet.map(ym => `<option value="${ym}" ${expensesState.selectedMonth===ym?'selected':''}>${fmtMonth(ym)}</option>`).join('');
+
+            // Filter for table
+            const filtered = expensesState.selectedMonth === 'all'
+                ? expenses
+                : expenses.filter(e => (e.date || '').startsWith(expensesState.selectedMonth));
+
+            // Filtered stats for cartola header
+            const filtTotal = filtered.reduce((s,e)=>s+Math.round(parseFloat(e.amount)||0),0);
+            const filtOxi   = filtered.filter(e=>e.paidBy==='oxi@oxiflow.com').reduce((s,e)=>s+Math.round(parseFloat(e.amount)||0),0);
+            const filtJavi  = filtered.filter(e=>e.paidBy==='javi@oxiflow.com').reduce((s,e)=>s+Math.round(parseFloat(e.amount)||0),0);
+
+            // Filtered expense rows
+            const filtExpenseRows = filtered.map((exp, idx) => {
+                const realIdx = expenses.indexOf(exp);
+                const isOxi = exp.paidBy === 'oxi@oxiflow.com';
+                const paidByName = isOxi ? 'Oxi' : 'Javi';
+                const avatarClass = isOxi ? 'avatar-oxi' : 'avatar-javi';
+                const initial = isOxi ? 'O' : 'J';
+                const catColor = getCategoryColor(exp.category);
+                const dateStr = safeFmtDate(exp.date);
+                return `
+                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both; ${exp.settled ? 'opacity:0.4;' : ''}">
+                        <td class="expense-concept">${escapeHTML(exp.concept || 'Sin concepto')}${exp.settled ? ' <span style="font-size:0.65rem;background:rgba(16,185,129,0.12);color:#10b981;border-radius:4px;padding:1px 5px;vertical-align:middle;">Saldado</span>' : ''}</td>
+                        <td class="expense-amount">${formatCLP(exp.amount)}</td>
+                        <td><div class="expense-paid-by"><div class="expense-avatar ${avatarClass}">${initial}</div><span>${paidByName}</span></div></td>
+                        <td>${dateStr}</td>
+                        <td><span class="expense-cat-tag" style="--cat-color:${catColor};">${escapeHTML(exp.category || 'Otro')}</span></td>
+                        <td>
+                            <div class="expense-row-actions">
+                                ${!exp.settled ? `
+                                <button class="expense-edit-btn" data-idx="${realIdx}" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>` : ''}
+                                <button class="expense-delete-btn" data-idx="${realIdx}" title="Eliminar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            // Settlements history
+            const settlements = data.settlements || [];
+            const settlementsHTML = settlements.length === 0 ? '' : `
+                <div class="glass-panel" style="margin-top:20px;padding:20px 24px;border-radius:var(--border-radius-lg);box-shadow:var(--shadow-card);">
+                    <h3 style="font-size:0.9rem;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text-secondary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Historial de Liquidaciones
+                    </h3>
+                    ${settlements.slice().reverse().map(s => {
+                        const d = parseInt((s.date||'').split('-')[2]||'0',10);
+                        const [sy,sm] = (s.date||'').split('-');
+                        const mo = mnLabels[parseInt(sm)-1]||'';
+                        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-color);font-size:0.83rem;">
+                            <span style="font-weight:700;color:#10b981;white-space:nowrap;">${d} ${mo} ${sy}</span>
+                            <span style="flex:1;">${escapeHTML(s.debtor)} pagó <strong>${formatCLP(s.amount)}</strong> a ${escapeHTML(s.creditor)}</span>
+                            <span style="font-size:0.72rem;color:var(--text-secondary);">${s.expenseCount} gasto${s.expenseCount!==1?'s':''} liquidado${s.expenseCount!==1?'s':''}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+            `;
+
             container.innerHTML = `
                 <div class="expenses-container">
                     <div class="indicators-mini-panel" id="economic-indicators-panel">
@@ -2238,12 +2315,12 @@
                         <div class="balance-card balance-oxi">
                             <div class="balance-avatar avatar-oxi">O</div>
                             <div class="balance-info"><span class="balance-name">Oxi</span><span class="balance-amount">${formatCLP(oxiTotal)}</span></div>
-                            <div class="balance-label">Aportado</div>
+                            <div class="balance-label">Aportado total</div>
                         </div>
                         <div class="balance-card balance-javi">
                             <div class="balance-avatar avatar-javi">J</div>
                             <div class="balance-info"><span class="balance-name">Javi</span><span class="balance-amount">${formatCLP(javiTotal)}</span></div>
-                            <div class="balance-label">Aportado</div>
+                            <div class="balance-label">Aportado total</div>
                         </div>
                         <div class="balance-card balance-total">
                             <div class="balance-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div>
@@ -2252,12 +2329,28 @@
                         </div>
                     </div>
                     ${settlementHTML}
+
+                    <!-- Cartola mensual -->
+                    <div style="display:flex;align-items:center;gap:12px;margin:20px 0 12px;flex-wrap:wrap;">
+                        <label style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);">Ver:</label>
+                        <select id="expense-month-filter" class="filter-select" style="min-width:160px;">
+                            ${monthOptions}
+                        </select>
+                        ${expensesState.selectedMonth !== 'all' ? `
+                        <div style="display:flex;gap:16px;margin-left:auto;font-size:0.82rem;flex-wrap:wrap;">
+                            <span style="color:var(--text-secondary);">Oxi <strong style="color:var(--text-primary);">${formatCLP(filtOxi)}</strong></span>
+                            <span style="color:var(--text-secondary);">Javi <strong style="color:var(--text-primary);">${formatCLP(filtJavi)}</strong></span>
+                            <span style="font-weight:800;">Total: <strong style="color:var(--accent-primary);">${formatCLP(filtTotal)}</strong></span>
+                        </div>` : ''}
+                    </div>
+
                     <div class="expenses-table-wrapper">
                         <table class="expenses-table">
                             <thead><tr><th>Concepto</th><th>Monto</th><th>Pagado por</th><th>Fecha</th><th>Categoría</th><th></th></tr></thead>
-                            <tbody>${expenseRows || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No hay gastos aún. ¡Añade el primero!</td></tr>'}</tbody>
+                            <tbody>${filtExpenseRows || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No hay gastos en este período.</td></tr>'}</tbody>
                         </table>
                     </div>
+                    ${settlementsHTML}
                 </div>
             `;
 
@@ -2265,15 +2358,34 @@
 
             document.getElementById('add-expense-btn')?.addEventListener('click', () => openExpenseModal(null, -1, container));
 
-            document.getElementById('btn-saldar-deuda')?.addEventListener('click', () => {
-                if (confirm('¿Confirmar que las cuentas están saldadas? Todos los gastos pendientes quedarán marcados como liquidados.')) {
+            document.getElementById('btn-saldar-deuda')?.addEventListener('click', (e) => {
+                const btn = e.currentTarget;
+                const debtorName   = btn.getAttribute('data-debtor-name');
+                const creditorName = btn.getAttribute('data-creditor-name');
+                const amount       = parseInt(btn.getAttribute('data-amount'), 10);
+                if (confirm(`¿Confirmar liquidación? Se registrará el pago de ${formatCLP(amount)} de ${debtorName} a ${creditorName}.`)) {
                     const d = getBoardData();
-                    // Mark every expense as settled
-                    (d.expenses || []).forEach(exp => { exp.settled = true; });
+                    const unsettled = (d.expenses || []).filter(exp => !exp.settled);
+                    if (!d.settlements) d.settlements = [];
+                    d.settlements.push({
+                        id: generateId(),
+                        date: new Date().toISOString().split('T')[0],
+                        debtor: debtorName,
+                        creditor: creditorName,
+                        amount,
+                        expenseCount: unsettled.length
+                    });
+                    unsettled.forEach(exp => { exp.settled = true; });
                     saveBoardData(d);
-                    addActivityLog('Cuentas saldadas ✓', 'Gastos', 'low');
+                    addActivityLog(`${debtorName} pagó ${formatCLP(amount)} a ${creditorName}`, 'Gastos', 'low');
                     renderExpenses(container);
                 }
+            });
+
+            // Month filter
+            document.getElementById('expense-month-filter')?.addEventListener('change', (e) => {
+                expensesState.selectedMonth = e.target.value;
+                renderExpenses(container);
             });
 
             container.querySelectorAll('.expense-edit-btn').forEach(btn => {
