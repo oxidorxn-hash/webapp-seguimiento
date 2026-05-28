@@ -1792,8 +1792,8 @@
                                 <input type="date" id="evt-date" value="${existing?.date || preDate || todayStr}" required>
                             </div>
                             <div class="form-group">
-                                <label for="evt-time">Hora <span style="font-weight:400;opacity:0.6;">(24h, ej: 19:30)</span></label>
-                                <input type="time" id="evt-time" value="${existing?.time || ''}" style="font-size:1rem;letter-spacing:0.05em;" step="900">
+                                <label for="evt-time">Hora <span style="font-weight:400;opacity:0.6;">(opcional, ej: 19:30)</span></label>
+                                <input type="text" id="evt-time" placeholder="HH:MM" maxlength="5" inputmode="numeric" value="${existing?.time || ''}" autocomplete="off" style="letter-spacing:0.08em;font-size:1rem;">
                             </div>
                         </div>
                         <div class="form-group">
@@ -1829,6 +1829,22 @@
             const closeOverlay = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 300); };
             overlay.querySelector('#event-modal-close').addEventListener('click', closeOverlay);
             overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+
+            // Auto-format time HH:MM as the user types
+            const timeInput = overlay.querySelector('#evt-time');
+            timeInput.addEventListener('input', () => {
+                let v = timeInput.value.replace(/[^\d]/g, '').slice(0, 4);
+                if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+                timeInput.value = v;
+            });
+            timeInput.addEventListener('blur', () => {
+                const v = timeInput.value;
+                const m = v.match(/^(\d{1,2}):?(\d{0,2})$/);
+                if (!m) { timeInput.value = ''; return; }
+                const h = parseInt(m[1], 10), mn = parseInt(m[2] || '0', 10);
+                if (h > 23 || mn > 59) { timeInput.value = ''; return; }
+                timeInput.value = `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
+            });
 
             if (isEdit) {
                 overlay.querySelector('#evt-ical')?.addEventListener('click', () => downloadIcs(existing));
@@ -2111,6 +2127,10 @@
                 } catch { return dateStr; }
             };
 
+            // Only unsettled expenses count toward balance
+            const activeExpenses  = expenses.filter(e => !e.settled);
+            const settledExpenses = expenses.filter(e =>  e.settled);
+
             const totals = { 'oxi@oxiflow.com': 0, 'javi@oxiflow.com': 0 };
             let grandTotal = 0;
             expenses.forEach(exp => {
@@ -2119,17 +2139,29 @@
                 grandTotal += amt;
             });
 
+            const activeTotals = { 'oxi@oxiflow.com': 0, 'javi@oxiflow.com': 0 };
+            activeExpenses.forEach(exp => {
+                const amt = Math.round(parseFloat(exp.amount) || 0);
+                if (activeTotals[exp.paidBy] !== undefined) activeTotals[exp.paidBy] += amt;
+            });
+
             const oxiTotal   = totals['oxi@oxiflow.com'];
             const javiTotal  = totals['javi@oxiflow.com'];
-            // Net balance: positive → Javi owes Oxi, negative → Oxi owes Javi
-            const oxiBalance = oxiTotal - javiTotal;   // > 0 means Oxi paid more
-            const debtAmount = Math.round(Math.abs(oxiBalance) / 2); // each owes half the difference
+            // Balance only from active (unsettled) expenses
+            const activeOxi  = activeTotals['oxi@oxiflow.com'];
+            const activeJavi = activeTotals['javi@oxiflow.com'];
+            const oxiBalance = activeOxi - activeJavi;   // > 0 = Oxi paid more (Javi owes)
+            const debtAmount = Math.round(Math.abs(oxiBalance) / 2);
 
+            const hasSettled = settledExpenses.length > 0;
             let settlementHTML = '';
             if (debtAmount < 1) {
+                const settledNote = hasSettled
+                    ? `<span style="font-size:0.75rem;opacity:0.7;margin-left:8px;">${settledExpenses.length} gasto${settledExpenses.length>1?'s':''} liquidado${settledExpenses.length>1?'s':''}</span>`
+                    : '';
                 settlementHTML = `<div class="settlement-card settled">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    <span>¡Cuentas perfectamente saldadas!</span>
+                    <span>¡No hay deuda pendiente!${settledNote}</span>
                 </div>`;
             } else {
                 const debtor  = oxiBalance > 0 ? 'Javi' : 'Oxi';
@@ -2157,7 +2189,7 @@
                 const catColor = getCategoryColor(exp.category);
                 const dateStr = safeFmtDate(exp.date);
                 return `
-                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both;">
+                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both; ${exp.settled ? 'opacity:0.45;' : ''}">
                         <td class="expense-concept">${escapeHTML(exp.concept || 'Sin concepto')}</td>
                         <td class="expense-amount">${formatCLP(exp.amount)}</td>
                         <td><div class="expense-paid-by"><div class="expense-avatar ${avatarClass}">${initial}</div><span>${paidByName}</span></div></td>
@@ -2222,16 +2254,13 @@
 
             document.getElementById('add-expense-btn')?.addEventListener('click', () => openExpenseModal(null, -1, container));
 
-            document.getElementById('btn-saldar-deuda')?.addEventListener('click', (e) => {
-                const btn = e.currentTarget;
-                const debtorEmail = btn.getAttribute('data-debtor');
-                const amount = parseInt(btn.getAttribute('data-amount'), 10);
-                if (confirm(`¿Registrar el pago de ${formatCLP(amount)} para saldar la deuda?`)) {
+            document.getElementById('btn-saldar-deuda')?.addEventListener('click', () => {
+                if (confirm('¿Confirmar que las cuentas están saldadas? Todos los gastos pendientes quedarán marcados como liquidados.')) {
                     const d = getBoardData();
-                    if (!d.expenses) d.expenses = [];
-                    d.expenses.push({ concept: 'Liquidación de deuda', amount, paidBy: debtorEmail, date: new Date().toISOString().split('T')[0], category: 'Finanzas', id: Date.now().toString(36) });
+                    // Mark every expense as settled
+                    (d.expenses || []).forEach(exp => { exp.settled = true; });
                     saveBoardData(d);
-                    addActivityLog('Deuda saldada', 'Gastos', 'low');
+                    addActivityLog('Cuentas saldadas ✓', 'Gastos', 'low');
                     renderExpenses(container);
                 }
             });
@@ -2550,21 +2579,47 @@
                 if (avatarEl && nameEl && roleEl) {
                     if (user) {
                         const isOxi = user.email === 'oxi@oxiflow.com';
-                        avatarEl.textContent = isOxi ? 'O' : 'J';
-                        avatarEl.style.background = isOxi
-                            ? 'linear-gradient(135deg, #6366f1, #3b82f6)'
-                            : 'linear-gradient(135deg, #ec4899, #a855f7)';
-                        avatarEl.style.color = 'white';
-                        avatarEl.style.fontWeight = '800';
+                        // Show mini mouse SVG matching login screen
+                        avatarEl.style.background = 'transparent';
+                        avatarEl.style.color = '';
+                        avatarEl.style.fontWeight = '';
                         avatarEl.style.display = 'flex';
                         avatarEl.style.alignItems = 'center';
                         avatarEl.style.justifyContent = 'center';
+                        if (isOxi) {
+                            avatarEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+                                <circle cx="10" cy="10" r="6" fill="#6366f1" opacity="0.85"/>
+                                <circle cx="10" cy="10" r="3.5" fill="#a5b4fc"/>
+                                <circle cx="26" cy="10" r="6" fill="#6366f1" opacity="0.85"/>
+                                <circle cx="26" cy="10" r="3.5" fill="#a5b4fc"/>
+                                <ellipse cx="18" cy="24" rx="11" ry="9" fill="#6366f1"/>
+                                <circle cx="14" cy="22" r="2" fill="white"/>
+                                <circle cx="22" cy="22" r="2" fill="white"/>
+                                <circle cx="14.5" cy="22" r="1" fill="#1e1b4b"/>
+                                <circle cx="22.5" cy="22" r="1" fill="#1e1b4b"/>
+                                <ellipse cx="18" cy="26" rx="2" ry="1.5" fill="#fda4af"/>
+                            </svg>`;
+                        } else {
+                            avatarEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+                                <circle cx="10" cy="10" r="6" fill="#ec4899" opacity="0.85"/>
+                                <circle cx="10" cy="10" r="3.5" fill="#f9a8d4"/>
+                                <circle cx="26" cy="10" r="6" fill="#ec4899" opacity="0.85"/>
+                                <circle cx="26" cy="10" r="3.5" fill="#f9a8d4"/>
+                                <ellipse cx="18" cy="24" rx="11" ry="9" fill="#ec4899"/>
+                                <circle cx="14" cy="22" r="2" fill="white"/>
+                                <circle cx="22" cy="22" r="2" fill="white"/>
+                                <circle cx="14.5" cy="22" r="1" fill="#4a044e"/>
+                                <circle cx="22.5" cy="22" r="1" fill="#4a044e"/>
+                                <ellipse cx="18" cy="26" rx="2" ry="1.5" fill="#fda4af"/>
+                            </svg>`;
+                        }
                         nameEl.textContent = user.name;
                         roleEl.textContent = user.email;
                     } else {
-                        avatarEl.textContent = 'U';
-                        avatarEl.style.background = '';
-                        avatarEl.style.color = '';
+                        avatarEl.innerHTML = '';
+                        avatarEl.textContent = '?';
+                        avatarEl.style.background = 'var(--glass-bg)';
+                        avatarEl.style.color = 'var(--text-secondary)';
                         nameEl.textContent = 'Sin sesión';
                         roleEl.textContent = 'Selecciona tu perfil';
                     }
