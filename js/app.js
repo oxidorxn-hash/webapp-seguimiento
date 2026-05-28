@@ -1,9 +1,7 @@
 /* ==========================================================================
-   VELOCE TRACKER MAIN APPLICATION ORCHESTRATOR
-   Handles views, routing, theme switching, search, and global events.
+   OXIFLOW KANBAN MAIN APPLICATION ORCHESTRATOR
+   Handles views, routing, theme switching, search, session, and global events.
    ========================================================================== */
-
-
 
 // Application State
 const state = {
@@ -32,11 +30,9 @@ const init = () => {
         initNavigation();
         initMobileMenu();
         initSearch();
-        
-        // Load initial view
-        switchView(state.currentView);
+        initGoogleLogin();   // Session & authentication flow
     } catch (err) {
-        console.error("Fallo en inicialización de Veloce Tracker:", err);
+        console.error("Fallo en inicialización de Oxiflow Kanban:", err);
         if (window.showAppError) {
             window.showAppError(err.message, err.stack || err.toString());
         }
@@ -51,8 +47,7 @@ if (document.readyState === 'loading') {
 
 // Theme Management
 const initTheme = () => {
-    // Check saved preference or system preference
-    const savedTheme = localStorage.getItem('veloce_theme');
+    const savedTheme = localStorage.getItem('oxiflow_theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     state.theme = savedTheme || (prefersDark ? 'dark' : 'light');
@@ -71,12 +66,12 @@ const applyTheme = () => {
         document.body.classList.remove('light-theme');
         document.body.classList.add('dark-theme');
         textSpan.textContent = 'Modo Claro';
-        localStorage.setItem('veloce_theme', 'dark');
+        localStorage.setItem('oxiflow_theme', 'dark');
     } else {
         document.body.classList.remove('dark-theme');
         document.body.classList.add('light-theme');
         textSpan.textContent = 'Modo Oscuro';
-        localStorage.setItem('veloce_theme', 'light');
+        localStorage.setItem('oxiflow_theme', 'light');
     }
 };
 
@@ -84,7 +79,6 @@ const applyTheme = () => {
 const initDateTime = () => {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const today = new Date();
-    // Capitalize first letter
     let dateStr = today.toLocaleDateString('es-ES', options);
     dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
     DOM.currentDate.textContent = dateStr;
@@ -101,14 +95,11 @@ const initNavigation = () => {
             
             if (targetView === state.currentView) return;
             
-            // Update active state in nav sidebar
             buttons.forEach(b => b.classList.remove('active'));
             button.classList.add('active');
             
-            // Switch current view
             switchView(targetView);
             
-            // Close mobile menu if open
             DOM.sidebar.classList.remove('mobile-open');
         });
     });
@@ -117,22 +108,16 @@ const initNavigation = () => {
 var switchView = (viewName) => {
     try {
         state.currentView = viewName;
-        
-        // Clear search value when changing views
         DOM.searchInput.value = '';
         
-        // Transition out, load content, transition in
         DOM.appContent.style.animation = 'none';
-        // Trigger reflow to restart animation
         void DOM.appContent.offsetWidth; 
         DOM.appContent.style.animation = 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
         
         if (viewName === 'dashboard') {
-            // Hide global search container for dashboard
             DOM.searchContainer.classList.add('hidden');
             renderDashboard(DOM.appContent);
         } else if (viewName === 'kanban') {
-            // Show global search container for Kanban
             DOM.searchContainer.classList.remove('hidden');
             renderKanban(DOM.appContent);
         }
@@ -151,7 +136,6 @@ const initMobileMenu = () => {
         DOM.sidebar.classList.toggle('mobile-open');
     });
     
-    // Close sidebar if user clicks outside of it on mobile
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768 && 
             DOM.sidebar.classList.contains('mobile-open') && 
@@ -171,3 +155,101 @@ const initSearch = () => {
         }
     });
 };
+
+// Google GSI authentication logic and lock overlay control
+const initGoogleLogin = () => {
+    const loginOverlay = document.getElementById('login-overlay');
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const gModal = document.getElementById('g-modal-overlay');
+    const gCancelBtn = document.getElementById('g-cancel-btn');
+    const gAccountItems = document.querySelectorAll('.g-account-item');
+
+    const updateUserProfileUI = (user) => {
+        const avatarEl = document.querySelector('.sidebar .user-profile .avatar');
+        const nameEl = document.querySelector('.sidebar .user-profile .user-name');
+        const roleEl = document.querySelector('.sidebar .user-profile .user-role');
+        
+        if (avatarEl && nameEl && roleEl) {
+            if (user) {
+                avatarEl.innerHTML = `<img src="${user.picture}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                nameEl.textContent = user.name;
+                roleEl.textContent = user.email;
+            } else {
+                avatarEl.innerHTML = 'U';
+                nameEl.textContent = 'Usuario Demo';
+                roleEl.textContent = 'Administrador';
+            }
+        }
+    };
+
+    const session = getActiveUserSession();
+    if (session) {
+        loginOverlay.classList.add('hidden');
+        updateUserProfileUI(session);
+        switchView(state.currentView);
+    } else {
+        loginOverlay.classList.remove('hidden');
+    }
+
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', () => {
+            gModal.classList.add('show');
+        });
+    }
+
+    if (gCancelBtn) {
+        gCancelBtn.addEventListener('click', () => {
+            gModal.classList.remove('show');
+        });
+    }
+
+    gAccountItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const name = item.getAttribute('data-name');
+            const email = item.getAttribute('data-email');
+            const picture = item.getAttribute('data-picture');
+            
+            gModal.classList.remove('show');
+            
+            const originalContent = googleLoginBtn.innerHTML;
+            googleLoginBtn.disabled = true;
+            googleLoginBtn.innerHTML = `
+                <svg class="animate-spin" style="width: 18px; height: 18px; margin-right: 8px; animation: rotateLogo 1s linear infinite;" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity: 0.25;"></circle>
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity: 0.75;"></path>
+                </svg>
+                Verificando cuenta Google...
+            `;
+            
+            setTimeout(() => {
+                const user = { name, email, picture };
+                localStorage.setItem('oxiflow_user_session', JSON.stringify(user));
+                
+                googleLoginBtn.disabled = false;
+                googleLoginBtn.innerHTML = originalContent;
+                
+                loginOverlay.classList.add('hidden');
+                updateUserProfileUI(user);
+                
+                state.currentView = 'dashboard';
+                switchView(state.currentView);
+                addActivityLog(`Sesión iniciada con Google`, 'Tablero', 'low');
+            }, 1200);
+        });
+    });
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('¿Estás seguro de que deseas cerrar tu sesión en Oxiflow Kanban?')) {
+                addActivityLog(`Sesión cerrada`, 'Tablero', 'low');
+                localStorage.removeItem('oxiflow_user_session');
+                updateUserProfileUI(null);
+                loginOverlay.classList.remove('hidden');
+                DOM.sidebar.classList.remove('mobile-open');
+            }
+        });
+    }
+};
+

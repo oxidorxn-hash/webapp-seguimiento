@@ -44,7 +44,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veloce Tracker - Dashboard & Kanban</title>
+    <title>Ratoncitos — Hogar Oxi & Javi</title>
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,8 +65,8 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
-                    .catch(err => console.error('Error al registrar Service Worker:', err));
+                     .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
+                     .catch(err => console.error('Error al registrar Service Worker:', err));
             });
         }
     </script>
@@ -78,7 +78,7 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="m12 14-3-3 3-3"></path><path d="m16 11-4 3"></path></svg>
-                    <span class="logo-text">Veloce</span>
+                    <span class="logo-text">Ratoncitos</span>
                 </div>
                 <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Menu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
@@ -92,11 +92,19 @@
                 </button>
                 <button class="nav-btn" data-view="kanban" id="nav-kanban">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M11 3v18"></path><path d="M16 3v18"></path><path d="M8 3v18"></path></svg>
-                    <span>Tablero Kanban</span>
+                    <span>Tareas</span>
                 </button>
-                <button class="nav-btn" data-view="timeline" id="nav-timeline">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span>Línea de Tiempo</span>
+                <button class="nav-btn" data-view="calendar" id="nav-calendar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                    <span>Calendario</span>
+                </button>
+                <button class="nav-btn" data-view="gantt" id="nav-gantt">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 3v18h18"></path><path d="M7 14h6"></path><path d="M11 9h8"></path><path d="M7 5h4"></path></svg>
+                    <span>Cronograma</span>
+                </button>
+                <button class="nav-btn" data-view="expenses" id="nav-expenses">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Gastos</span>
                 </button>
             </nav>
 
@@ -116,6 +124,9 @@
                         <span class="user-name">Usuario Demo</span>
                         <span class="user-role">Administrador</span>
                     </div>
+                    <button class="logout-btn" id="logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+                    </button>
                 </div>
             </div>
         </aside>
@@ -168,6 +179,17 @@
                             <option value="low">Baja</option>
                             <option value="medium" selected>Media</option>
                             <option value="high">Alta</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-category-input">Categoría</label>
+                        <select id="task-category-input" required>
+                            <option value="Casa" selected>Casa</option>
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Supermercado">Supermercado</option>
+                            <option value="Mascotas">Mascotas</option>
+                            <option value="Finanzas">Finanzas</option>
+                            <option value="Ocio">Ocio</option>
                         </select>
                     </div>
                 </div>
@@ -225,109 +247,279 @@
     <!-- App Combined Engine -->
     <script>
         /* ==========================================================================
-           VELOCE TRACKER COMBINED FRONTEND ENGINE
-           All-in-one script to bypass file:// browser sandboxing and CORS restrictions.
+           STORAGE SERVICE
+           Handles LocalStorage, seed data generation, and activity logging.
            ========================================================================== */
 
-        // --- 1. STORAGE SERVICE (js/storage.js) ---
-        const STORAGE_KEY = 'veloce_tracker_data';
-        const LOG_KEY = 'veloce_tracker_logs';
+        // Dynamic storage keys helpers
+        var getActiveUserSession = () => {
+            const raw = localStorage.getItem('oxiflow_user_session');
+            if (!raw) return null;
+            try {
+                return JSON.parse(raw);
+            } catch (e) {
+                return null;
+            }
+        };
 
+        var getActiveStorageKey = () => {
+            return 'oxiflow_kanban_data_shared';
+        };
+
+        var getActiveLogsKey = () => {
+            return 'oxiflow_kanban_logs_shared';
+        };
+
+        // Helper to generate IDs
         var generateId = () => 'id-' + Math.random().toString(36).substr(2, 9);
+
+        // Seed Data
+        const FIXED_COLUMNS = [
+            { id: 'col-pending',    title: 'Pendientes',  color: '#6366f1' },
+            { id: 'col-inprogress', title: 'En Curso',    color: '#f59e0b' },
+            { id: 'col-completed',  title: 'Completados', color: '#10b981' }
+        ];
 
         const getSeedData = () => {
             const today = new Date();
+
             const formatDate = (daysOffset) => {
                 const d = new Date(today);
                 d.setDate(today.getDate() + daysOffset);
                 return d.toISOString().split('T')[0];
             };
+
             return {
                 columns: [
                     {
-                        id: 'col-backlog',
-                        title: 'Backlog',
+                        id: 'col-pending',
+                        title: 'Pendientes',
+                        color: '#6366f1',
                         tasks: [
-                            { id: 'task-1', title: 'Investigar APIs de integración', desc: 'Evaluar alternativas para conectar el servicio de notificaciones con la plataforma externa.', priority: 'low', date: formatDate(6) },
-                            { id: 'task-2', title: 'Reunión de kickoff con cliente', desc: 'Definir el alcance final del proyecto y alinear expectativas técnicas.', priority: 'medium', date: formatDate(4) }
-                        ]
-                    },
-                    {
-                        id: 'col-todo',
-                        title: 'Por Hacer',
-                        tasks: [
-                            { id: 'task-3', title: 'Diseñar interfaz del Dashboard', desc: 'Crear propuestas visuales premium en alta fidelidad utilizando el sistema de colores de la marca.', priority: 'high', date: formatDate(2) },
-                            { id: 'task-4', title: 'Escribir documentación del onboarding', desc: 'Redactar los pasos iniciales para el ingreso de nuevos desarrolladores al repositorio.', priority: 'low', date: formatDate(3) }
+                            {
+                                id: 'task-1',
+                                title: 'Limpieza a fondo del horno',
+                                desc: 'Desengrasar y limpiar a fondo la cocina y el horno con productos biodegradables.',
+                                priority: 'low',
+                                date: formatDate(6),
+                                category: 'Casa',
+                                creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
+                            },
+                            {
+                                id: 'task-2',
+                                title: 'Comprar alimento para los perros',
+                                desc: 'Comprar saco de comida premium en la tienda de mascotas cercana.',
+                                priority: 'medium',
+                                date: formatDate(4),
+                                category: 'Mascotas',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
+                            },
+                            {
+                                id: 'task-3',
+                                title: 'Hacer las compras del supermercado',
+                                desc: 'Comprar frutas, verduras, lácteos y artículos de despensa semanal.',
+                                priority: 'high',
+                                date: formatDate(2),
+                                category: 'Supermercado',
+                                creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
+                            },
+                            {
+                                id: 'task-4',
+                                title: 'Planificar menú semanal de almuerzos',
+                                desc: 'Escribir las opciones saludables para cocinar durante la semana.',
+                                priority: 'low',
+                                date: formatDate(3),
+                                category: 'Casa',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
+                            }
                         ]
                     },
                     {
                         id: 'col-inprogress',
-                        title: 'En Progreso',
+                        title: 'En Curso',
+                        color: '#f59e0b',
                         tasks: [
-                            { id: 'task-5', title: 'Implementar Drag & Drop en Kanban', desc: 'Utilizar el API nativo de HTML5 con efectos visuales fluidos, animaciones y soporte táctil.', priority: 'high', date: formatDate(1) }
+                            {
+                                id: 'task-5',
+                                title: 'Lavar y ordenar la ropa blanca',
+                                desc: 'Sábanas, toallas y fundas de almohada de la habitación principal.',
+                                priority: 'high',
+                                date: formatDate(1),
+                                category: 'Casa',
+                                creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
+                            }
                         ]
                     },
                     {
                         id: 'col-completed',
-                        title: 'Completado',
+                        title: 'Completados',
+                        color: '#10b981',
                         tasks: [
-                            { id: 'task-6', title: 'Configurar entorno de desarrollo', desc: 'Instalar servidores locales, definir linters de código y verificar conexiones a base de datos.', priority: 'medium', date: formatDate(-1) },
-                            { id: 'task-7', title: 'Refactorizar variables de diseño CSS', desc: 'Migrar estilos duros a variables CSS adaptables para facilitar el soporte de temas.', priority: 'low', date: formatDate(-2) }
+                            {
+                                id: 'task-6',
+                                title: 'Pagar alquiler y gastos comunes',
+                                desc: 'Transferencia mensual realizada con éxito del presupuesto familiar.',
+                                priority: 'high',
+                                date: formatDate(-1),
+                                category: 'Finanzas',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
+                            },
+                            {
+                                id: 'task-7',
+                                title: 'Pasear a los perros y cepillarlos',
+                                desc: 'Paseo largo de la tarde por el parque y cepillado diario.',
+                                priority: 'medium',
+                                date: formatDate(-2),
+                                category: 'Mascotas',
+                                creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
+                            }
                         ]
+                    }
+                ],
+                expenses: [
+                    {
+                        id: 'exp-1',
+                        concept: 'Compra semanal Jumbo',
+                        amount: 85000,
+                        paidBy: 'oxi@oxiflow.com',
+                        date: formatDate(-2),
+                        category: 'Supermercado'
+                    },
+                    {
+                        id: 'exp-2',
+                        concept: 'Vacunas Veterinario (Perro)',
+                        amount: 50000,
+                        paidBy: 'javi@oxiflow.com',
+                        date: formatDate(-1),
+                        category: 'Mascotas'
+                    },
+                    {
+                        id: 'exp-3',
+                        concept: 'Artículos de limpieza Hogar',
+                        amount: 15000,
+                        paidBy: 'oxi@oxiflow.com',
+                        date: formatDate(0),
+                        category: 'Casa'
                     }
                 ]
             };
         };
 
-        const getSeedLogs = () => [
-            { id: 'log-1', text: 'Entorno de desarrollo configurado correctamente', colName: 'Completado', priority: 'medium', date: new Date(Date.now() - 3600000 * 24).toLocaleString() },
-            { id: 'log-2', text: 'Comenzó el desarrollo del Drag & Drop para el Kanban', colName: 'En Progreso', priority: 'high', date: new Date(Date.now() - 3600000 * 4).toLocaleString() },
-            { id: 'log-3', text: 'Se movió la tarea "Refactorizar variables de diseño" a completado', colName: 'Completado', priority: 'low', date: new Date(Date.now() - 3600000 * 2).toLocaleString() }
-        ];
+        const getSeedLogs = () => {
+            return [
+                {
+                    id: 'log-1',
+                    text: 'Alquiler y gastos comunes pagados',
+                    colName: 'Completado',
+                    priority: 'high',
+                    date: new Date(Date.now() - 3600000 * 24).toLocaleString()
+                },
+                {
+                    id: 'log-2',
+                    text: 'Paseo de perros y cepillado realizado',
+                    colName: 'Completado',
+                    priority: 'medium',
+                    date: new Date(Date.now() - 3600000 * 12).toLocaleString()
+                },
+                {
+                    id: 'log-3',
+                    text: 'Comenzó el lavado de la ropa blanca',
+                    colName: 'En Progreso',
+                    priority: 'high',
+                    date: new Date(Date.now() - 3600000 * 2).toLocaleString()
+                }
+            ];
+        };
 
+        /**
+         * Loads current project state from LocalStorage or injects seeds.
+         * @returns {Object} Application data object containing columns and tasks.
+         */
         var getBoardData = () => {
-            const rawData = localStorage.getItem(STORAGE_KEY);
+            const key = getActiveStorageKey();
+            const rawData = localStorage.getItem(key);
             const seedData = getSeedData();
+
             if (!rawData) {
                 saveBoardData(seedData);
-                localStorage.setItem(LOG_KEY, JSON.stringify(getSeedLogs()));
+                localStorage.setItem(getActiveLogsKey(), JSON.stringify(getSeedLogs()));
                 return seedData;
             }
             try {
                 const parsed = JSON.parse(rawData);
                 if (!parsed || !Array.isArray(parsed.columns) || parsed.columns.length === 0) {
-                    throw new Error("Estructura de columnas inválida");
+                    throw new Error("Estructura inválida");
                 }
-                parsed.columns.forEach(col => {
-                    if (!col.id || !col.title || !Array.isArray(col.tasks)) {
-                        throw new Error("Columna o tareas mal formadas");
+                // Migrate: ensure the 3 fixed columns always exist
+                const expectedIds = ['col-pending', 'col-inprogress', 'col-completed'];
+                const hasFixed = expectedIds.every(id => parsed.columns.some(c => c.id === id));
+                if (!hasFixed) {
+                    // Gather all tasks from old structure
+                    const allTasks = parsed.columns.flatMap(c => c.tasks || []);
+                    const completedIds = ['col-completed', 'col-done'];
+                    const inProgressIds = ['col-inprogress', 'col-progress'];
+                    const newData = {
+                        columns: [
+                            { ...FIXED_COLUMNS[0], tasks: allTasks.filter(t => !completedIds.some(id => parsed.columns.find(c => c.id === id)?.tasks?.includes(t)) && !inProgressIds.some(id => parsed.columns.find(c => c.id === id)?.tasks?.includes(t))) },
+                            { ...FIXED_COLUMNS[1], tasks: parsed.columns.filter(c => inProgressIds.includes(c.id)).flatMap(c => c.tasks || []) },
+                            { ...FIXED_COLUMNS[2], tasks: parsed.columns.filter(c => completedIds.includes(c.id)).flatMap(c => c.tasks || []) }
+                        ],
+                        expenses: parsed.expenses || []
+                    };
+                    // Simpler fallback: if migration is complex, use tasks by position
+                    const pending = newData.columns[0];
+                    if (pending.tasks.length === 0) {
+                        const inProg = newData.columns[1].tasks.map(t => t.id);
+                        const compl = newData.columns[2].tasks.map(t => t.id);
+                        pending.tasks = allTasks.filter(t => !inProg.includes(t.id) && !compl.includes(t.id));
                     }
+                    saveBoardData(newData);
+                    return newData;
+                }
+                // Enforce fixed column metadata (color, title)
+                FIXED_COLUMNS.forEach(fc => {
+                    const col = parsed.columns.find(c => c.id === fc.id);
+                    if (col) { col.color = fc.color; col.title = fc.title; }
                 });
                 return parsed;
             } catch (e) {
-                console.warn('Datos corruptos detectados en localStorage. Restableciendo a valores iniciales seguros.', e);
+                console.warn('Datos corruptos en localStorage. Reseteando.', e);
                 saveBoardData(seedData);
-                localStorage.setItem(LOG_KEY, JSON.stringify(getSeedLogs()));
+                localStorage.setItem(getActiveLogsKey(), JSON.stringify(getSeedLogs()));
                 return seedData;
             }
         };
 
+        /**
+         * Saves current project state to LocalStorage.
+         * @param {Object} data - Application data object.
+         */
         var saveBoardData = (data) => {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            const key = getActiveStorageKey();
+            localStorage.setItem(key, JSON.stringify(data));
         };
 
+        /**
+         * Retrieves the activity logs list.
+         * @returns {Array} List of activity logs.
+         */
         var getActivityLogs = () => {
-            const rawLogs = localStorage.getItem(LOG_KEY);
+            const key = getActiveLogsKey();
+            const rawLogs = localStorage.getItem(key);
             if (!rawLogs) return [];
             try {
-                const parsed = JSON.parse(rawLogs);
-                if (!Array.isArray(parsed)) return [];
-                return parsed;
+                return JSON.parse(rawLogs);
             } catch (e) {
                 return [];
             }
         };
 
+        /**
+         * Logs a new activity.
+         * @param {string} text - Description of the action.
+         * @param {string} colName - Name of the related column.
+         * @param {string} priority - Priority value ('low', 'medium', 'high').
+         */
         var addActivityLog = (text, colName = 'Tablero', priority = 'low') => {
             const logs = getActivityLogs();
             const newLog = {
@@ -337,9 +529,12 @@
                 priority,
                 date: new Date().toLocaleString()
             };
+            
             logs.unshift(newLog);
             if (logs.length > 10) logs.pop();
-            localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+            
+            const key = getActiveLogsKey();
+            localStorage.setItem(key, JSON.stringify(logs));
         };
 
         // --- 2. DASHBOARD VIEW CONTROLLER (js/dashboard.js) ---
@@ -404,10 +599,14 @@
                 });
             });
 
+            // Read active user session for personalized greeting
+            const session = getActiveUserSession();
+            const userName = session ? session.name : 'Usuario';
+
             let html = `
                 <div class="dashboard-header-intro" style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 250px;">
-                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">${greeting}, Usuario</h1>
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">${greeting}, ${userName}</h1>
                         <p style="color: var(--text-secondary); font-size: 0.95rem;">Aquí tienes el resumen y estado general de tus temas pendientes.</p>
                     </div>
                     
@@ -467,8 +666,8 @@
                 <div class="charts-row">
                     <div class="glass-panel chart-panel">
                         <div class="chart-header">
-                            <h3>Carga de Trabajo por Columna</h3>
-                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Tareas por estado</span>
+                            <h3>Resumen de tareas por categorías</h3>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Click en una barra para filtrar</span>
                         </div>
                         <div class="chart-container" id="bar-chart-container"></div>
                     </div>
@@ -505,23 +704,29 @@
                         ${
                             logs.length === 0 
                             ? `<div class="no-data-msg">No se han registrado actividades aún. Comienza a gestionar tareas en tu tablero kanban.</div>`
-                            : logs.slice(0, 5).map(log => `
-                                <div class="recent-task-item">
-                                    <div class="task-item-meta">
-                                        <span class="priority-dot ${log.priority || 'low'}"></span>
-                                        <div>
-                                            <span class="task-item-title">${escapeHTML(log.text)}</span>
+                            : logs.slice(0, 5).map(log => {
+                                const relatedCol = data.columns.find(c => c.title === log.colName);
+                                const badgeStyle = relatedCol && relatedCol.color 
+                                    ? `background-color: ${relatedCol.color}15; color: ${relatedCol.color}; border-color: ${relatedCol.color}25;`
+                                    : '';
+                                return `
+                                    <div class="recent-task-item">
+                                        <div class="task-item-meta">
+                                            <span class="priority-dot ${log.priority || 'low'}"></span>
+                                            <div>
+                                                <span class="task-item-title">${escapeHTML(log.text)}</span>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 16px;">
+                                            <span class="task-item-column" style="${badgeStyle}">${escapeHTML(log.colName)}</span>
+                                            <span class="task-item-date">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                                ${log.date.split(' ')[1] || log.date}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 16px;">
-                                        <span class="task-item-column">${escapeHTML(log.colName)}</span>
-                                        <span class="task-item-date">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                            ${log.date.split(' ')[1] || log.date}
-                                        </span>
-                                    </div>
-                                </div>
-                            `).join('')
+                                `;
+                            }).join('')
                         }
                     </div>
                 </div>
@@ -597,30 +802,59 @@
         const drawBarChart = (columns) => {
             const chartContainer = document.getElementById('bar-chart-container');
             if (!chartContainer) return;
-            if (columns.length === 0) {
-                chartContainer.innerHTML = `<div class="no-data-msg">No hay columnas creadas.</div>`;
+
+            // Build category counts from all tasks
+            const catCounts = {};
+            const catColors = {
+                'Casa': '#a855f7', 'Supermercado': '#22c55e', 'Mascotas': '#f59e0b',
+                'Finanzas': '#3b82f6', 'Trabajo': '#6366f1', 'Ocio': '#ec4899',
+                'Transporte': '#14b8a6', 'Salud': '#ef4444', 'Otro': '#94a3b8', 'Sin categoría': '#64748b'
+            };
+            columns.forEach(col => {
+                col.tasks.forEach(task => {
+                    const cat = task.category || 'Sin categoría';
+                    catCounts[cat] = (catCounts[cat] || 0) + 1;
+                });
+            });
+
+            const cats = Object.keys(catCounts);
+            if (cats.length === 0) {
+                chartContainer.innerHTML = `<div class="no-data-msg">No hay tareas creadas aún.</div>`;
                 return;
             }
-            const maxTasks = Math.max(...columns.map(col => col.tasks.length), 0);
+
+            const maxCount = Math.max(...Object.values(catCounts), 0);
             let barChartHtml = `<div class="bar-chart">`;
-            columns.forEach(col => {
-                const taskCount = col.tasks.length;
-                const heightPct = maxTasks > 0 ? (taskCount / maxTasks) * 80 : 0;
+
+            cats.forEach(cat => {
+                const count = catCounts[cat];
+                const heightPct = maxCount > 0 ? (count / maxCount) * 80 : 0;
+                const color = catColors[cat] || '#94a3b8';
                 barChartHtml += `
-                    <div class="chart-bar-wrapper">
-                        <div class="chart-bar" style="height: ${Math.max(heightPct, 3)}%;">
-                            <div class="chart-bar-value">${taskCount} ${taskCount === 1 ? 'tarea' : 'tareas'}</div>
+                    <div class="chart-bar-wrapper" data-category="${escapeHTML(cat)}" style="cursor:pointer;" title="Filtrar por ${escapeHTML(cat)}">
+                        <div class="chart-bar" style="height: ${Math.max(heightPct, 3)}%; background: ${color};">
+                            <div class="chart-bar-value">${count}</div>
                         </div>
-                        <div class="chart-bar-label" title="${escapeHTML(col.title)}">${escapeHTML(col.title)}</div>
+                        <div class="chart-bar-label">${escapeHTML(cat)}</div>
                     </div>
                 `;
             });
             barChartHtml += `</div>`;
             chartContainer.innerHTML = barChartHtml;
+
+            // Click on bar → navigate to kanban with category filter
+            chartContainer.querySelectorAll('.chart-bar-wrapper[data-category]').forEach(bar => {
+                bar.addEventListener('click', () => {
+                    const cat = bar.getAttribute('data-category');
+                    boardState.categoryFilter = cat === 'Sin categoría' ? 'all' : cat;
+                    document.getElementById('nav-kanban').click();
+                });
+            });
         };
 
         const escapeHTML = (str) => {
-            return str
+            if (str === null || str === undefined) return '';
+            return String(str)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
@@ -628,13 +862,22 @@
                 .replace(/'/g, '&#039;');
         };
 
+        const formatCLP = (amount) => {
+            const n = Math.round(parseFloat(amount) || 0);
+            return '$' + n.toLocaleString('es-CL');
+        };
+
         // --- 3. KANBAN BOARD VIEW CONTROLLER (js/kanban.js) ---
+        // Local Kanban State
         const boardState = {
             data: null,
             searchQuery: '',
-            priorityFilter: 'all'
+            priorityFilter: 'all',
+            creatorFilter: 'all',
+            categoryFilter: 'all'
         };
 
+        // Modal Elements Cache
         let modalOverlay;
         let taskForm;
         let modalTitle;
@@ -645,43 +888,68 @@
         let taskPriorityInput;
         let taskDateInput;
         let taskStartDateInput;
-        let currentSubtasks = [];
+        let taskCategoryInput;
         let boardContainerRef;
 
+        /**
+         * Initializes and renders the Kanban board in the designated container.
+         * @param {HTMLElement} container - Container element.
+         */
         var renderKanban = (container) => {
             boardContainerRef = container;
-            if (!boardState.data) {
-                boardState.data = getBoardData();
-            }
+            boardState.data = getBoardData();
+
             container.innerHTML = `
                 <div class="kanban-view-header">
                     <div>
-                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Tablero Kanban</h1>
-                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Gestiona tus tareas arrastrándolas entre columnas.</p>
+                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Tareas</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Arrastra las tarjetas entre columnas para actualizar su estado.</p>
                     </div>
-                    <div class="kanban-actions">
-                        <div class="filter-wrapper">
-                            <label for="board-priority-filter">Prioridad:</label>
+
+                    <div class="kanban-actions" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <label for="board-priority-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Prioridad:</label>
                             <select id="board-priority-filter" class="filter-select">
-                                <option value="all" ${boardState.priorityFilter === 'all' ? 'selected' : ''}>Todos</option>
-                                <option value="low" ${boardState.priorityFilter === 'low' ? 'selected' : ''}>Baja</option>
+                                <option value="all" ${boardState.priorityFilter === 'all' ? 'selected' : ''}>Todas</option>
+                                <option value="low"  ${boardState.priorityFilter === 'low'  ? 'selected' : ''}>Baja</option>
                                 <option value="medium" ${boardState.priorityFilter === 'medium' ? 'selected' : ''}>Media</option>
                                 <option value="high" ${boardState.priorityFilter === 'high' ? 'selected' : ''}>Alta</option>
-                                <option value="overdue" ${boardState.priorityFilter === 'overdue' ? 'selected' : ''}>Atrasadas</option>
                             </select>
                         </div>
-                        <button class="btn btn-primary" id="add-column-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
-                            Añadir Columna
-                        </button>
+                        <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <label for="board-creator-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Dueño:</label>
+                            <select id="board-creator-filter" class="filter-select">
+                                <option value="all" ${boardState.creatorFilter === 'all' ? 'selected' : ''}>Todos</option>
+                                <option value="oxi@oxiflow.com"  ${boardState.creatorFilter === 'oxi@oxiflow.com'  ? 'selected' : ''}>Oxi</option>
+                                <option value="javi@oxiflow.com" ${boardState.creatorFilter === 'javi@oxiflow.com' ? 'selected' : ''}>Javi</option>
+                            </select>
+                        </div>
+                        <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
+                            <label for="board-category-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Categoría:</label>
+                            <select id="board-category-filter" class="filter-select">
+                                <option value="all"          ${boardState.categoryFilter === 'all'          ? 'selected' : ''}>Todas</option>
+                                <option value="Casa"         ${boardState.categoryFilter === 'Casa'         ? 'selected' : ''}>Casa</option>
+                                <option value="Trabajo"      ${boardState.categoryFilter === 'Trabajo'      ? 'selected' : ''}>Trabajo</option>
+                                <option value="Supermercado" ${boardState.categoryFilter === 'Supermercado' ? 'selected' : ''}>Supermercado</option>
+                                <option value="Mascotas"     ${boardState.categoryFilter === 'Mascotas'     ? 'selected' : ''}>Mascotas</option>
+                                <option value="Finanzas"     ${boardState.categoryFilter === 'Finanzas'     ? 'selected' : ''}>Finanzas</option>
+                                <option value="Ocio"         ${boardState.categoryFilter === 'Ocio'         ? 'selected' : ''}>Ocio</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+
                 <div class="kanban-board" id="kanban-board-workspace"></div>
             `;
+
+            initModalCache();
             renderWorkspace();
             bindBoardEvents();
         };
 
+        /**
+         * Caches DOM nodes of the modal for faster lookups and bindings.
+         */
         const initModalCache = () => {
             modalOverlay = document.getElementById('modal-overlay');
             taskForm = document.getElementById('task-form');
@@ -693,11 +961,14 @@
             taskPriorityInput = document.getElementById('task-priority-input');
             taskDateInput = document.getElementById('task-date-input');
             taskStartDateInput = document.getElementById('task-start-date-input');
+            taskCategoryInput = document.getElementById('task-category-input');
 
+            // Remove any previous submit listener to prevent multiple submissions
             const newForm = taskForm.cloneNode(true);
             taskForm.parentNode.replaceChild(newForm, taskForm);
             taskForm = newForm;
 
+            // Cache updated modal elements
             taskIdInput = document.getElementById('task-id');
             taskColIdInput = document.getElementById('task-column-id');
             taskTitleInput = document.getElementById('task-title-input');
@@ -705,131 +976,140 @@
             taskPriorityInput = document.getElementById('task-priority-input');
             taskDateInput = document.getElementById('task-date-input');
             taskStartDateInput = document.getElementById('task-start-date-input');
+            taskCategoryInput = document.getElementById('task-category-input');
 
             taskForm.addEventListener('submit', handleTaskSubmit);
 
-            const closeBtn = document.getElementById('modal-close');
-            const cancelBtn = document.getElementById('modal-cancel-btn');
-            const closeModal = () => { modalOverlay.classList.remove('show'); };
-
-            closeBtn.onclick = closeModal;
-            cancelBtn.onclick = closeModal;
-            modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
-
+            // Subtask add button
             const addSubtaskBtn = document.getElementById('add-subtask-btn');
             const newSubtaskInput = document.getElementById('new-subtask-input');
             if (addSubtaskBtn && newSubtaskInput) {
                 addSubtaskBtn.onclick = () => {
-                    const title = newSubtaskInput.value.trim();
-                    if (!title) return;
-                    currentSubtasks.push({
-                        id: generateId(),
-                        title: title,
-                        completed: false
-                    });
-                    newSubtaskInput.value = '';
-                    renderSubtasksList();
-                };
-                newSubtaskInput.onkeydown = (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addSubtaskBtn.click();
+                    const val = newSubtaskInput.value.trim();
+                    if (val) {
+                        currentSubtasks.push({ title: val, completed: false });
+                        newSubtaskInput.value = '';
+                        renderSubtasksList();
                     }
                 };
+                newSubtaskInput.onkeydown = (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); addSubtaskBtn.click(); }
+                };
             }
+
+            // Modal close events
+            const closeBtn = document.getElementById('modal-close');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+            
+            const closeModal = () => {
+                modalOverlay.classList.remove('show');
+            };
+
+            closeBtn.onclick = closeModal;
+            cancelBtn.onclick = closeModal;
+            modalOverlay.onclick = (e) => {
+                if (e.target === modalOverlay) closeModal();
+            };
         };
 
+        /**
+         * Draws the active columns and filters/searches cards.
+         */
         const renderWorkspace = () => {
             const workspace = document.getElementById('kanban-board-workspace');
             if (!workspace) return;
+
             let html = '';
-            const todayStr = new Date().toISOString().split('T')[0];
+
             boardState.data.columns.forEach(column => {
                 const filteredTasks = column.tasks.filter(task => {
-                    const matchesSearch = boardState.searchQuery === '' || 
-                        task.title.toLowerCase().includes(boardState.searchQuery) || 
-                        task.desc.toLowerCase().includes(boardState.searchQuery);
-                    
-                    let matchesFilter = false;
-                    if (boardState.priorityFilter === 'all') {
-                        matchesFilter = true;
-                    } else if (boardState.priorityFilter === 'overdue') {
-                        matchesFilter = task.date && task.date < todayStr && column.id !== 'col-completed';
-                    } else {
-                        matchesFilter = task.priority === boardState.priorityFilter;
-                    }
-                    return matchesSearch && matchesFilter;
+                    const q = boardState.searchQuery;
+                    const matchesSearch = !q || task.title.toLowerCase().includes(q) || (task.desc || '').toLowerCase().includes(q);
+                    const matchesPriority = boardState.priorityFilter === 'all' || task.priority === boardState.priorityFilter;
+                    const creatorEmail = task.creator ? task.creator.email : 'oxi@oxiflow.com';
+                    const matchesCreator = boardState.creatorFilter === 'all' || creatorEmail === boardState.creatorFilter;
+                    const cat = task.category || 'Casa';
+                    const matchesCategory = boardState.categoryFilter === 'all' || cat === boardState.categoryFilter;
+                    return matchesSearch && matchesPriority && matchesCreator && matchesCategory;
                 });
 
+                const colColor = column.color || '#6366f1';
+                const colGlowStyle = `border-top: 4px solid ${colColor}; border-color: ${colColor}30; box-shadow: 0 4px 20px -5px ${colColor}40;`;
+                const colCountStyle = `background-color: ${colColor}18; color: ${colColor}; border-color: ${colColor}30;`;
+
                 html += `
-                    <div class="kanban-column" data-col-id="${column.id}" draggable="true">
+                    <div class="kanban-column" data-col-id="${column.id}" style="${colGlowStyle}">
                         <div class="column-header">
                             <div class="column-title-container">
-                                <span class="column-title" title="Doble clic para renombrar" data-col-id="${column.id}">${escapeHTML(column.title)}</span>
-                                <span class="column-count">${filteredTasks.length}</span>
-                            </div>
-                            <div class="column-actions-dropdown">
-                                <button class="column-actions-btn" aria-label="Acciones de columna">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                                </button>
-                                <div class="dropdown-menu">
-                                    <button class="dropdown-item rename-col-btn" data-col-id="${column.id}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-                                        Renombrar
-                                    </button>
-                                    <button class="dropdown-item danger delete-col-btn" data-col-id="${column.id}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                                        Eliminar
-                                    </button>
-                                </div>
+                                <span class="column-title">${escapeHTML(column.title)}</span>
+                                <span class="column-count" style="${colCountStyle}">${filteredTasks.length}</span>
                             </div>
                         </div>
                         <div class="column-cards-list" data-col-id="${column.id}">
-                            ${
-                                filteredTasks.length === 0 
-                                ? `<div style="text-align: center; color: var(--text-secondary); font-size: 0.75rem; padding: 20px 0; border: 1.5px dashed var(--border-color); border-radius: var(--border-radius-md);" class="empty-col-msg">Suelta tareas aquí</div>`
-                                : filteredTasks.map(task => renderTaskCard(task, column.id)).join('')
-                            }
+                            ${filteredTasks.length === 0
+                                ? `<div class="empty-col-msg" style="text-align:center;color:var(--text-secondary);font-size:0.75rem;padding:20px 0;border:1.5px dashed var(--border-color);border-radius:var(--border-radius-md);">Suelta tareas aquí</div>`
+                                : filteredTasks.map(task => renderTaskCard(task, column.id)).join('')}
                         </div>
-                        <button class="btn btn-secondary add-task-btn" style="margin-top: 14px; justify-content: center; padding: 8px 12px; font-size: 0.8rem;" data-col-id="${column.id}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"></line><line x1="5" x2="19" y1="12" y2="12"></line></svg>
+                        <button class="btn btn-secondary add-task-btn" style="margin-top:14px;justify-content:center;padding:8px 12px;font-size:0.8rem;" data-col-id="${column.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
                             Añadir Tarea
                         </button>
                     </div>
                 `;
             });
 
-            html += `
-                <div class="add-column-card" id="add-column-card-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="16"></line><line x1="8" x2="16" y1="12" y2="12"></line></svg>
-                    <span>Crear Columna</span>
-                </div>
-            `;
             workspace.innerHTML = html;
             initDragAndDrop();
-            bindColumnInteractions();
+            bindTaskInteractions();
         };
 
+        /**
+         * Builds HTML code for an individual task card.
+         * @param {Object} task - Task details.
+         * @param {string} columnId - Parent column ID.
+         */
         const renderTaskCard = (task, columnId) => {
             const todayStr = new Date().toISOString().split('T')[0];
             const isOverdue = task.date && task.date < todayStr && columnId !== 'col-completed';
+            
+            // Priority labels in Spanish
             const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
+            
+            // Format date beautifully
             let dateText = 'Sin fecha';
             if (task.date) {
                 const parts = task.date.split('-');
-                const formattedEnd = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                if (task.startDate) {
-                    const startParts = task.startDate.split('-');
-                    const formattedStart = `${startParts[2]}/${startParts[1]}/${startParts[0]}`;
-                    dateText = `${formattedStart} - ${formattedEnd}`;
-                } else {
-                    dateText = formattedEnd;
-                }
+                dateText = `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
+
+            const col = boardState.data.columns.find(c => c.id === columnId);
+            const colColor = col ? col.color || '#6366f1' : '#6366f1';
+
+            const categoryColors = {
+                'Casa': { bg: 'rgba(168, 85, 247, 0.15)', text: '#a855f7', border: 'rgba(168, 85, 247, 0.3)' },
+                'Trabajo': { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' },
+                'Supermercado': { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', border: 'rgba(16, 185, 129, 0.3)' },
+                'Mascotas': { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
+                'Finanzas': { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', border: 'rgba(239, 68, 68, 0.3)' },
+                'Ocio': { bg: 'rgba(20, 184, 166, 0.15)', text: '#20b8a6', border: 'rgba(20, 184, 166, 0.3)' }
+            };
+
+            const cat = task.category || 'Casa';
+            const styling = categoryColors[cat] || { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', border: 'rgba(100, 116, 139, 0.3)' };
+
+            const creator = task.creator || { name: 'Oxi', email: 'oxi@oxiflow.com' };
+            const initials = creator.name ? creator.name.charAt(0).toUpperCase() : 'U';
+            const isJavi = creator.name && creator.name.toLowerCase().includes('javi');
+            const avatarBg = isJavi 
+                ? 'linear-gradient(135deg, #ec4899, #d946ef)' // Rose/Fuchsia for Javi
+                : 'linear-gradient(135deg, #3b82f6, #6366f1)'; // Blue/Indigo for Oxi
+
             return `
-                <div class="kanban-card" draggable="true" data-task-id="${task.id}" data-col-id="${columnId}">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div class="card-priority-indicator ${task.priority}" title="Prioridad ${priorityLabels[task.priority]}"></div>
+                <div class="kanban-card" draggable="true" data-task-id="${task.id}" data-col-id="${columnId}" style="border-left: 4px solid ${colColor};" onmouseenter="this.style.borderColor = '${colColor}'; this.style.boxShadow = '0 8px 20px -4px ${colColor}40'; this.style.transform = 'translateY(-2px)'" onmouseleave="this.style.borderColor = ''; this.style.boxShadow = ''; this.style.transform = ''">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; background: ${styling.bg}; color: ${styling.text}; border: 1px solid ${styling.border}; text-transform: uppercase;">
+                            ${escapeHTML(cat)}
+                        </span>
                         <div class="card-actions">
                             <button class="card-action-btn edit-task-btn" data-task-id="${task.id}" data-col-id="${columnId}" title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
@@ -841,190 +1121,79 @@
                     </div>
                     <h4 class="card-title">${escapeHTML(task.title)}</h4>
                     ${task.desc ? `<p class="card-desc">${escapeHTML(task.desc)}</p>` : ''}
-                    ${
-                        (() => {
-                            if (task.subtasks && task.subtasks.length > 0) {
-                                const totalSubs = task.subtasks.length;
-                                const completedSubs = task.subtasks.filter(s => s.completed).length;
-                                const progressPct = Math.round((completedSubs / totalSubs) * 100);
-                                return `
-                                    <div class="card-subtask-badge" style="display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 0.72rem; color: var(--text-secondary); font-weight: 500;" title="Subtareas completadas">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-                                        <span>Subtareas: ${completedSubs}/${totalSubs}</span>
-                                        <div style="flex: 1; height: 4px; background: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-full); overflow: hidden;">
-                                            <div style="width: ${progressPct}%; height: 100%; background: var(--accent-gradient); border-radius: var(--border-radius-full);"></div>
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                            return '';
-                        })()
-                    }
-                    <div class="card-footer">
-                        <span class="card-date ${isOverdue ? 'overdue' : ''}" title="${isOverdue ? '¡Tarea atrasada!' : 'Fecha de entrega'}" style="font-weight: 500;">
+                    <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; gap: 8px;">
+                        <span class="card-date ${isOverdue ? 'overdue' : ''}" title="${isOverdue ? '¡Tarea atrasada!' : 'Fecha de entrega'}" style="font-weight: 500; display: flex; align-items: center; gap: 4px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
                             ${dateText}
                         </span>
-                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--priority-${task.priority}); text-transform: uppercase;">
-                            ${priorityLabels[task.priority]}
-                        </span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: var(--priority-${task.priority}); text-transform: uppercase;">
+                                ${priorityLabels[task.priority]}
+                            </span>
+                            <div class="creator-avatar-bubble" title="Creado por ${escapeHTML(creator.name)}" style="width: 24px; height: 24px; border-radius: 50%; background: ${avatarBg}; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                ${initials}
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
         };
 
+        /**
+         * Handles typing from the global search.
+         * Called dynamically from app.js.
+         * @param {string} query - Clean query.
+         */
         var handleKanbanSearch = (query) => {
             boardState.searchQuery = query;
             renderWorkspace();
         };
 
+        /**
+         * Event bindings for top bar and workspace creation.
+         */
         const bindBoardEvents = () => {
-            const filterSelect = document.getElementById('board-priority-filter');
-            const addColBtn = document.getElementById('add-column-btn');
-            if (filterSelect) {
-                filterSelect.addEventListener('change', (e) => {
-                    boardState.priorityFilter = e.target.value;
-                    renderWorkspace();
-                });
-            }
-            const createNewColumn = () => {
-                const newColId = generateId();
-                const newCol = { id: newColId, title: 'Nueva Columna', tasks: [] };
-                boardState.data.columns.push(newCol);
-                saveBoardData(boardState.data);
-                addActivityLog('Se añadió la columna "Nueva Columna"', 'Tablero', 'low');
-                renderWorkspace();
-                setTimeout(() => {
-                    const titleEl = document.querySelector(`.column-title[data-col-id="${newColId}"]`);
-                    if (titleEl) triggerRenameInline(titleEl, newColId);
-                }, 100);
-            };
-            if (addColBtn) addColBtn.onclick = createNewColumn;
-            
-            // Remote handler cleanup
-            const oldAddColumnBtn = document.getElementById('add-column-card-btn');
-            if (oldAddColumnBtn) {
-                const newColBtn = oldAddColumnBtn.cloneNode(true);
-                oldAddColumnBtn.parentNode.replaceChild(newColBtn, oldAddColumnBtn);
-            }
+            document.getElementById('board-priority-filter')?.addEventListener('change', e => {
+                boardState.priorityFilter = e.target.value; renderWorkspace();
+            });
+            document.getElementById('board-creator-filter')?.addEventListener('change', e => {
+                boardState.creatorFilter = e.target.value; renderWorkspace();
+            });
+            document.getElementById('board-category-filter')?.addEventListener('change', e => {
+                boardState.categoryFilter = e.target.value; renderWorkspace();
+            });
         };
 
-        const bindColumnInteractions = () => {
-            const dropdownBtns = document.querySelectorAll('.column-actions-btn');
-            dropdownBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                        if (menu !== btn.nextElementSibling) menu.classList.remove('show');
-                    });
-                    btn.nextElementSibling.classList.toggle('show');
-                });
-            });
-            document.addEventListener('click', () => {
-                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
-            });
-            document.querySelectorAll('.column-title').forEach(titleEl => {
-                titleEl.addEventListener('dblclick', () => {
-                    const colId = titleEl.getAttribute('data-col-id');
-                    triggerRenameInline(titleEl, colId);
-                });
-            });
-            document.querySelectorAll('.rename-col-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const colId = btn.getAttribute('data-col-id');
-                    const titleEl = document.querySelector(`.column-title[data-col-id="${colId}"]`);
-                    btn.closest('.dropdown-menu').classList.remove('show');
-                    triggerRenameInline(titleEl, colId);
-                });
-            });
-            document.querySelectorAll('.delete-col-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const colId = btn.getAttribute('data-col-id');
-                    const col = boardState.data.columns.find(c => c.id === colId);
-                    if (!col) return;
-                    if (col.tasks.length > 0) {
-                        const confirmDelete = confirm(`La columna "${col.title}" contiene ${col.tasks.length} tareas. ¿Estás seguro de eliminarla? Desaparecerán todas sus tareas.`);
-                        if (!confirmDelete) return;
-                    }
-                    boardState.data.columns = boardState.data.columns.filter(c => c.id !== colId);
-                    saveBoardData(boardState.data);
-                    addActivityLog(`Se eliminó la columna "${col.title}"`, 'Tablero', 'high');
-                    renderWorkspace();
-                });
-            });
+        const bindTaskInteractions = () => {
             document.querySelectorAll('.add-task-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const colId = btn.getAttribute('data-col-id');
-                    openTaskModal(null, colId);
-                };
+                btn.onclick = () => openTaskModal(null, btn.getAttribute('data-col-id'));
             });
             document.querySelectorAll('.edit-task-btn').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation();
-                    const taskId = btn.getAttribute('data-task-id');
-                    const colId = btn.getAttribute('data-col-id');
-                    openTaskModal(taskId, colId);
+                    openTaskModal(btn.getAttribute('data-task-id'), btn.getAttribute('data-col-id'));
                 };
             });
             document.querySelectorAll('.delete-task-btn').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation();
                     const taskId = btn.getAttribute('data-task-id');
-                    const colId = btn.getAttribute('data-col-id');
+                    const colId  = btn.getAttribute('data-col-id');
                     const col = boardState.data.columns.find(c => c.id === colId);
                     if (!col) return;
-                    const taskIndex = col.tasks.findIndex(t => t.id === taskId);
-                    if (taskIndex === -1) return;
-                    const task = col.tasks[taskIndex];
-                    if (confirm(`¿Estás seguro de eliminar la tarea "${task.title}"?`)) {
-                        col.tasks.splice(taskIndex, 1);
+                    const idx = col.tasks.findIndex(t => t.id === taskId);
+                    if (idx === -1) return;
+                    const task = col.tasks[idx];
+                    if (confirm(`¿Eliminar "${task.title}"?`)) {
+                        col.tasks.splice(idx, 1);
                         saveBoardData(boardState.data);
-                        addActivityLog(`Se eliminó la tarea "${task.title}"`, col.title, task.priority);
+                        addActivityLog(`Tarea eliminada: "${task.title}"`, col.title, task.priority);
                         renderWorkspace();
                     }
                 };
             });
-            
-            const workspaceColumnBtn = document.getElementById('add-column-card-btn');
-            if (workspaceColumnBtn) {
-                workspaceColumnBtn.onclick = () => {
-                    const addColBtn = document.getElementById('add-column-btn');
-                    if (addColBtn) addColBtn.click();
-                };
-            }
         };
 
-        const triggerRenameInline = (titleEl, colId) => {
-            const originalText = titleEl.textContent;
-            const parent = titleEl.parentNode;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = originalText;
-            input.className = 'column-title-input';
-            input.maxLength = 24;
-            parent.replaceChild(input, titleEl);
-            input.focus();
-            input.select();
-            const saveRename = () => {
-                const newTitle = input.value.trim();
-                if (newTitle && newTitle !== originalText) {
-                    const col = boardState.data.columns.find(c => c.id === colId);
-                    if (col) {
-                        col.title = newTitle;
-                        saveBoardData(boardState.data);
-                        addActivityLog(`Columna renombrada a "${newTitle}"`, newTitle, 'low');
-                    }
-                }
-                renderWorkspace();
-            };
-            input.onblur = saveRename;
-            input.onkeydown = (e) => {
-                if (e.key === 'Enter') saveRename();
-                if (e.key === 'Escape') renderWorkspace();
-            };
-        };
 
         const getGoogleCalendarUrl = (task) => {
             const title = encodeURIComponent(task.title);
@@ -1051,9 +1220,9 @@
             const icsContent = [
                 'BEGIN:VCALENDAR',
                 'VERSION:2.0',
-                'PRODID:-//Veloce Tracker//Task Calendar//ES',
+                'PRODID:-//Ratoncitos//Task Calendar//ES',
                 'BEGIN:VEVENT',
-                `UID:${task.id}@veloce.tracker`,
+                `UID:${task.id}@oxiflow.kanban`,
                 `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
                 `DTSTART;VALUE=DATE:${start}`,
                 `DTEND;VALUE=DATE:${end}`,
@@ -1071,6 +1240,8 @@
             link.click();
             document.body.removeChild(link);
         };
+
+        let currentSubtasks = [];
 
         const renderSubtasksList = () => {
             const container = document.getElementById('subtasks-list-container');
@@ -1148,6 +1319,7 @@
                     taskPriorityInput.value = task.priority;
                     taskStartDateInput.value = task.startDate || '';
                     taskDateInput.value = task.date || '';
+                    taskCategoryInput.value = task.category || 'Casa';
                     
                     currentSubtasks = task.subtasks ? JSON.parse(JSON.stringify(task.subtasks)) : [];
                     
@@ -1161,6 +1333,7 @@
                 }
             } else {
                 modalTitle.textContent = `Añadir Tarea en "${colTitle}"`;
+                taskCategoryInput.value = 'Casa';
                 currentSubtasks = [];
                 if (calendarGroup) calendarGroup.style.display = 'none';
             }
@@ -1179,6 +1352,7 @@
                 const priority = taskPriorityInput.value;
                 const startDate = taskStartDateInput.value;
                 const date = taskDateInput.value;
+                const category = taskCategoryInput.value || 'Casa';
                 const col = boardState.data.columns.find(c => c.id === colId);
                 if (!col) return;
                 if (taskId) {
@@ -1189,11 +1363,26 @@
                         task.priority = priority;
                         task.startDate = startDate;
                         task.date = date;
+                        task.category = category;
                         task.subtasks = currentSubtasks;
+                        if (!task.creator) {
+                            task.creator = getActiveUserSession() || { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' };
+                        }
                         addActivityLog(`Tarea actualizada: "${title}"`, col.title, priority);
                     }
                 } else {
-                    const newTask = { id: generateId(), title, desc, priority, startDate, date, subtasks: currentSubtasks };
+                    const activeSession = getActiveUserSession() || { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' };
+                    const newTask = { 
+                        id: generateId(), 
+                        title, 
+                        desc, 
+                        priority, 
+                        startDate, 
+                        date, 
+                        subtasks: currentSubtasks,
+                        category: category,
+                        creator: activeSession
+                    };
                     col.tasks.push(newTask);
                     addActivityLog(`Tarea creada: "${title}"`, col.title, priority);
                 }
@@ -1281,70 +1470,6 @@
                 });
             });
 
-            // --- Column Drag and Drop ---
-            const columns = document.querySelectorAll('.kanban-column');
-            const boardWorkspace = document.getElementById('kanban-board-workspace');
-            
-            columns.forEach(col => {
-                col.addEventListener('dragstart', (e) => {
-                    if (e.target.classList.contains('kanban-column')) {
-                        const colId = col.getAttribute('data-col-id');
-                        e.dataTransfer.setData('text/column', colId);
-                        e.dataTransfer.effectAllowed = 'move';
-                        setTimeout(() => col.classList.add('dragging-column'), 0);
-                    }
-                });
-                col.addEventListener('dragend', () => {
-                    col.classList.remove('dragging-column');
-                    document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('column-drag-over'));
-                });
-            });
-
-            if (boardWorkspace) {
-                boardWorkspace.addEventListener('dragover', (e) => {
-                    const draggingCol = document.querySelector('.dragging-column');
-                    if (!draggingCol) return;
-                    e.preventDefault();
-                    
-                    const afterCol = getDragAfterColumn(boardWorkspace, e.clientX);
-                    if (afterCol == null) {
-                        const addColBtn = document.getElementById('add-column-card-btn');
-                        if (addColBtn) {
-                            boardWorkspace.insertBefore(draggingCol, addColBtn);
-                        } else {
-                            boardWorkspace.appendChild(draggingCol);
-                        }
-                    } else {
-                        boardWorkspace.insertBefore(draggingCol, afterCol);
-                    }
-                });
-                
-                boardWorkspace.addEventListener('drop', (e) => {
-                    const draggingCol = document.querySelector('.dragging-column');
-                    if (!draggingCol) return;
-                    e.preventDefault();
-                    
-                    try {
-                        const sourceColId = draggingCol.getAttribute('data-col-id');
-                        const currentColumnsInDOM = Array.from(boardWorkspace.querySelectorAll('.kanban-column'));
-                        const finalIdx = currentColumnsInDOM.indexOf(draggingCol);
-                        
-                        const colArray = boardState.data.columns;
-                        const sourceIdx = colArray.findIndex(c => c.id === sourceColId);
-                        
-                        if (sourceIdx !== -1 && finalIdx !== -1 && sourceIdx !== finalIdx) {
-                            const [removedCol] = colArray.splice(sourceIdx, 1);
-                            colArray.splice(finalIdx, 0, removedCol);
-                            
-                            saveBoardData(boardState.data);
-                            addActivityLog(`Se reordenó la columna "${removedCol.title}"`, removedCol.title, 'low');
-                            renderWorkspace();
-                        }
-                    } catch (err) {
-                        console.error('Error al reordenar columnas', err);
-                    }
-                });
-            }
         };
 
         const getDragAfterElement = (container, y) => {
@@ -1360,30 +1485,22 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         };
 
-        const getDragAfterColumn = (container, x) => {
-            const draggableElements = Array.from(container.querySelectorAll('.kanban-column:not(.dragging-column)'));
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = x - box.left - box.width / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        };
 
         // --- 3.5. TIMELINE & CALENDAR VIEW CONTROLLER ---
-        const timelineState = {
+        const calendarState = {
             currentYear: new Date().getFullYear(),
-            currentMonth: new Date().getMonth(),
-            subView: localStorage.getItem('veloce_timeline_subview') || 'calendar' // 'calendar' o 'gantt'
+            currentMonth: new Date().getMonth()
         };
 
-        var renderTimeline = (container) => {
+        const ganttState = {
+            currentYear: new Date().getFullYear(),
+            currentMonth: new Date().getMonth()
+        };
+
+        var renderCalendar = (container) => {
             const data = getBoardData();
-            const year = timelineState.currentYear;
-            const month = timelineState.currentMonth;
+            const year = calendarState.currentYear;
+            const month = calendarState.currentMonth;
             
             const monthNames = [
                 "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -1396,97 +1513,150 @@
                 <div class="timeline-container">
                     <div class="timeline-header">
                         <div>
-                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Línea de Tiempo</h1>
-                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica y visualiza tus entregas mensuales.</p>
+                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Calendario Familiar</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica tus actividades y visualiza eventos y gastos mensuales.</p>
                         </div>
                         
                         <div class="timeline-nav-controls">
-                            <div class="view-toggle-segmented" style="margin-right: 12px;">
-                                <button class="toggle-segment ${timelineState.subView === 'calendar' ? 'active' : ''}" id="toggle-calendar-btn">Calendario</button>
-                                <button class="toggle-segment ${timelineState.subView === 'gantt' ? 'active' : ''}" id="toggle-gantt-btn">Cronograma</button>
-                            </div>
                             <span class="timeline-month-title">${monthTitleStr}</span>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" id="timeline-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
+                                <button class="btn btn-secondary" id="calendar-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                 </button>
-                                <button class="btn btn-secondary" id="timeline-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
-                                <button class="btn btn-secondary" id="timeline-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
+                                <button class="btn btn-secondary" id="calendar-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="calendar-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                 </button>
                             </div>
                         </div>
                     </div>
                     
-                    ${timelineState.subView === 'calendar' ? `
-                        <div class="calendar-wrapper">
-                            <div class="calendar-weekdays-grid">
-                                <div class="weekday-label">Lun</div>
-                                <div class="weekday-label">Mar</div>
-                                <div class="weekday-label">Mié</div>
-                                <div class="weekday-label">Jue</div>
-                                <div class="weekday-label">Vie</div>
-                                <div class="weekday-label">Sáb</div>
-                                <div class="weekday-label">Dom</div>
-                            </div>
-                            
-                            <div class="calendar-days-grid" id="calendar-days-grid"></div>
+                    <div class="calendar-wrapper">
+                        <div class="calendar-weekdays-grid">
+                            <div class="weekday-label">Lun</div>
+                            <div class="weekday-label">Mar</div>
+                            <div class="weekday-label">Mié</div>
+                            <div class="weekday-label">Jue</div>
+                            <div class="weekday-label">Vie</div>
+                            <div class="weekday-label">Sáb</div>
+                            <div class="weekday-label">Dom</div>
                         </div>
-                    ` : `
-                        <div class="gantt-container">
-                            <div class="gantt-scroll-canvas">
-                                <div class="gantt-grid-table">
-                                    <div class="gantt-header-row" id="gantt-header-row"></div>
-                                    <div id="gantt-rows-container"></div>
-                                </div>
-                            </div>
-                        </div>
-                    `}
+                        
+                        <div class="calendar-days-grid" id="calendar-days-grid"></div>
+                    </div>
                 </div>
             `;
             
-            if (timelineState.subView === 'calendar') {
-                renderCalendarDays(year, month, data);
-                bindCalendarInteractions();
-            } else {
-                renderGanttView(year, month, data);
-                bindGanttInteractions();
+            renderCalendarDays(year, month, data);
+            bindCalendarInteractions();
+            
+            document.getElementById('calendar-prev-btn').onclick = () => {
+                calendarState.currentMonth--;
+                if (calendarState.currentMonth < 0) {
+                    calendarState.currentMonth = 11;
+                    calendarState.currentYear--;
+                }
+                renderCalendar(container);
+            };
+            
+            document.getElementById('calendar-next-btn').onclick = () => {
+                calendarState.currentMonth++;
+                if (calendarState.currentMonth > 11) {
+                    calendarState.currentMonth = 0;
+                    calendarState.currentYear++;
+                }
+                renderCalendar(container);
+            };
+            
+            document.getElementById('calendar-today-btn').onclick = () => {
+                calendarState.currentYear = new Date().getFullYear();
+                calendarState.currentMonth = new Date().getMonth();
+                renderCalendar(container);
+            };
+        };
+
+        var renderGantt = (container) => {
+            const data = getBoardData();
+            const year = ganttState.currentYear;
+            const month = ganttState.currentMonth;
+            
+            const monthNames = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+            
+            const monthTitleStr = `${monthNames[month]} ${year}`;
+            
+            container.innerHTML = `
+                <div class="timeline-container">
+                    <div class="timeline-header">
+                        <div>
+                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Cronograma Gantt</h1>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica las tareas semanales y mensuales en el hogar.</p>
+                        </div>
+                        
+                        <div class="timeline-nav-controls">
+                            <span class="timeline-month-title">${monthTitleStr}</span>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" id="gantt-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                                <button class="btn btn-secondary" id="gantt-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="gantt-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gantt-mini-summary" id="gantt-mini-summary"></div>
+
+                    <div class="gantt-container">
+                        <div class="gantt-scroll-canvas">
+                            <div class="gantt-grid-table">
+                                <div class="gantt-header-row" id="gantt-header-row"></div>
+                                <div id="gantt-rows-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const summaryEl = document.getElementById('gantt-mini-summary');
+            if (summaryEl) {
+                const chips = data.columns.map(col => {
+                    const color = col.color || '#6366f1';
+                    return `<div class="gantt-summary-chip"><span class="gantt-summary-dot" style="background:${color};"></span><span>${escapeHTML(col.title)}</span><span class="gantt-summary-count">${col.tasks.length}</span></div>`;
+                }).join('');
+                const total = data.columns.reduce((s, c) => s + c.tasks.length, 0);
+                summaryEl.innerHTML = chips + `<div class="gantt-summary-chip" style="margin-left:auto;"><span>Total</span><span class="gantt-summary-count">${total}</span></div>`;
             }
+
+            renderGanttView(year, month, data);
+            bindGanttInteractions();
             
-            document.getElementById('toggle-calendar-btn').onclick = () => {
-                timelineState.subView = 'calendar';
-                localStorage.setItem('veloce_timeline_subview', 'calendar');
-                renderTimeline(container);
-            };
-            
-            document.getElementById('toggle-gantt-btn').onclick = () => {
-                timelineState.subView = 'gantt';
-                localStorage.setItem('veloce_timeline_subview', 'gantt');
-                renderTimeline(container);
-            };
-            
-            document.getElementById('timeline-prev-btn').onclick = () => {
-                timelineState.currentMonth--;
-                if (timelineState.currentMonth < 0) {
-                    timelineState.currentMonth = 11;
-                    timelineState.currentYear--;
+            document.getElementById('gantt-prev-btn').onclick = () => {
+                ganttState.currentMonth--;
+                if (ganttState.currentMonth < 0) {
+                    ganttState.currentMonth = 11;
+                    ganttState.currentYear--;
                 }
-                renderTimeline(container);
+                renderGantt(container);
             };
             
-            document.getElementById('timeline-next-btn').onclick = () => {
-                timelineState.currentMonth++;
-                if (timelineState.currentMonth > 11) {
-                    timelineState.currentMonth = 0;
-                    timelineState.currentYear++;
+            document.getElementById('gantt-next-btn').onclick = () => {
+                ganttState.currentMonth++;
+                if (ganttState.currentMonth > 11) {
+                    ganttState.currentMonth = 0;
+                    ganttState.currentYear++;
                 }
-                renderTimeline(container);
+                renderGantt(container);
             };
             
-            document.getElementById('timeline-today-btn').onclick = () => {
-                timelineState.currentYear = new Date().getFullYear();
-                timelineState.currentMonth = new Date().getMonth();
-                renderTimeline(container);
+            document.getElementById('gantt-today-btn').onclick = () => {
+                ganttState.currentYear = new Date().getFullYear();
+                ganttState.currentMonth = new Date().getMonth();
+                renderGantt(container);
             };
         };
 
@@ -1549,6 +1719,15 @@
                 });
             });
             
+            const dayExpenses = [];
+            if (data.expenses && Array.isArray(data.expenses)) {
+                data.expenses.forEach(exp => {
+                    if (exp.date === dateStr) {
+                        dayExpenses.push(exp);
+                    }
+                });
+            }
+            
             const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
             
             let tasksHtml = '';
@@ -1564,6 +1743,19 @@
                     </div>
                 `;
             });
+
+            let expensesHtml = '';
+            dayExpenses.forEach(exp => {
+                expensesHtml += `
+                    <div class="calendar-expense-pill" 
+                         style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 4px; padding: 2px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 3px; display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
+                         title="Gasto: ${escapeHTML(exp.concept)} (${formatCLP(exp.amount)})"
+                         onclick="switchView('expenses')">
+                        <span>${formatCLP(exp.amount)}</span>
+                        <span style="font-weight: 500; font-size: 0.62rem; opacity: 0.85;">${escapeHTML(exp.concept)}</span>
+                    </div>
+                `;
+            });
             
             return `
                 <div class="calendar-day-box ${otherMonthClass} ${todayClass}" data-date="${dateStr}">
@@ -1573,6 +1765,7 @@
                     </div>
                     <div class="calendar-tasks-container">
                         ${tasksHtml}
+                        ${expensesHtml}
                     </div>
                 </div>
             `;
@@ -1596,8 +1789,8 @@
                         
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'calendar') {
+                                    renderCalendar(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1627,8 +1820,8 @@
                         const form = document.getElementById('task-form');
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'calendar') {
+                                    renderCalendar(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1732,8 +1925,8 @@
                         const form = document.getElementById('task-form');
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'gantt') {
+                                    renderGantt(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1762,8 +1955,8 @@
                         const form = document.getElementById('task-form');
                         const refreshTimeline = () => {
                             setTimeout(() => {
-                                if (state.currentView === 'timeline') {
-                                    renderTimeline(DOM.appContent);
+                                if (state.currentView === 'gantt') {
+                                    renderGantt(DOM.appContent);
                                 }
                                 form.removeEventListener('submit', refreshTimeline);
                             }, 50);
@@ -1774,17 +1967,293 @@
             });
         };
 
-        // --- 4. MAIN ORCHESTRATOR ENTRYPOINT (js/app.js) ---
-        const state = {
-            currentView: 'dashboard',
-            theme: 'dark'
+        // --- 3.5 EXPENSES MODULE ---
+        const EXPENSE_CATEGORIES = ['Supermercado', 'Casa', 'Mascotas', 'Finanzas', 'Ocio', 'Transporte', 'Salud', 'Otro'];
+        
+        const getCategoryColor = (cat) => {
+            const map = {
+                'Casa': '#a855f7', 'Supermercado': '#22c55e', 'Mascotas': '#f59e0b',
+                'Finanzas': '#3b82f6', 'Trabajo': '#6366f1', 'Ocio': '#ec4899',
+                'Transporte': '#14b8a6', 'Salud': '#ef4444', 'Otro': '#94a3b8'
+            };
+            return map[cat] || '#94a3b8';
         };
 
+        var renderExpenses = (container) => {
+            const data = getBoardData();
+            const expenses = data.expenses || [];
+
+            const totals = { 'oxi@oxiflow.com': 0, 'javi@oxiflow.com': 0 };
+            let grandTotal = 0;
+            expenses.forEach(exp => {
+                const amt = Math.round(parseFloat(exp.amount) || 0);
+                if (totals[exp.paidBy] !== undefined) totals[exp.paidBy] += amt;
+                grandTotal += amt;
+            });
+
+            const oxiTotal  = totals['oxi@oxiflow.com'];
+            const javiTotal = totals['javi@oxiflow.com'];
+            const fairShare = grandTotal / 2;
+            const oxiBalance  = oxiTotal  - fairShare;
+            const debtAmount  = Math.round(Math.abs(oxiBalance));
+
+            let settlementHTML = '';
+            if (debtAmount < 1) {
+                settlementHTML = `<div class="settlement-card settled">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <span>¡Cuentas perfectamente saldadas!</span>
+                </div>`;
+            } else {
+                const debtor  = oxiBalance > 0 ? 'Javi' : 'Oxi';
+                const debtorEmail = oxiBalance > 0 ? 'javi@oxiflow.com' : 'oxi@oxiflow.com';
+                const creditor = oxiBalance > 0 ? 'Oxi'  : 'Javi';
+                settlementHTML = `<div class="settlement-card owes">
+                    <div class="settlement-actions">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            <span><strong>${debtor}</strong> le debe <strong>${formatCLP(debtAmount)}</strong> a <strong>${creditor}</strong></span>
+                        </div>
+                        <button class="btn-saldado" id="btn-saldar-deuda" data-debtor="${debtorEmail}" data-amount="${debtAmount}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            Marcar como saldado
+                        </button>
+                    </div>
+                </div>`;
+            }
+
+            const expenseRows = expenses.map((exp, idx) => {
+                const isOxi = exp.paidBy === 'oxi@oxiflow.com';
+                const paidByName = isOxi ? 'Oxi' : 'Javi';
+                const avatarClass = isOxi ? 'avatar-oxi' : 'avatar-javi';
+                const initial = isOxi ? 'O' : 'J';
+                const catColor = getCategoryColor(exp.category);
+                const dateStr = exp.date
+                    ? new Date(exp.date + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
+                    : '—';
+                return `
+                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both;">
+                        <td class="expense-concept">${escapeHTML(exp.concept || 'Sin concepto')}</td>
+                        <td class="expense-amount">${formatCLP(exp.amount)}</td>
+                        <td><div class="expense-paid-by"><div class="expense-avatar ${avatarClass}">${initial}</div><span>${paidByName}</span></div></td>
+                        <td>${dateStr}</td>
+                        <td><span class="expense-cat-tag" style="--cat-color:${catColor};">${escapeHTML(exp.category || 'Otro')}</span></td>
+                        <td>
+                            <div class="expense-row-actions">
+                                <button class="expense-edit-btn" data-idx="${idx}" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>
+                                <button class="expense-delete-btn" data-idx="${idx}" title="Eliminar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="expenses-container">
+                    <div class="indicators-mini-panel" id="economic-indicators-panel">
+                        <span class="indicators-loading">Cargando indicadores económicos…</span>
+                    </div>
+                    <div class="expenses-header">
+                        <div>
+                            <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">Control de Gastos</h1>
+                            <p style="color:var(--text-secondary);font-size:0.95rem;">Gestión y liquidación de gastos compartidos en el hogar.</p>
+                        </div>
+                        <button class="btn btn-primary" id="add-expense-btn" style="padding:10px 20px;border-radius:var(--border-radius-md);font-weight:600;display:flex;align-items:center;gap:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                            Añadir Gasto
+                        </button>
+                    </div>
+                    <div class="expenses-balance-grid">
+                        <div class="balance-card balance-oxi">
+                            <div class="balance-avatar avatar-oxi">O</div>
+                            <div class="balance-info"><span class="balance-name">Oxi</span><span class="balance-amount">${formatCLP(oxiTotal)}</span></div>
+                            <div class="balance-label">Aportado</div>
+                        </div>
+                        <div class="balance-card balance-javi">
+                            <div class="balance-avatar avatar-javi">J</div>
+                            <div class="balance-info"><span class="balance-name">Javi</span><span class="balance-amount">${formatCLP(javiTotal)}</span></div>
+                            <div class="balance-label">Aportado</div>
+                        </div>
+                        <div class="balance-card balance-total">
+                            <div class="balance-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div>
+                            <div class="balance-info"><span class="balance-name">Total Gastos</span><span class="balance-amount">${formatCLP(grandTotal)}</span></div>
+                            <div class="balance-label">Compartido</div>
+                        </div>
+                    </div>
+                    ${settlementHTML}
+                    <div class="expenses-table-wrapper">
+                        <table class="expenses-table">
+                            <thead><tr><th>Concepto</th><th>Monto</th><th>Pagado por</th><th>Fecha</th><th>Categoría</th><th></th></tr></thead>
+                            <tbody>${expenseRows || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No hay gastos aún. ¡Añade el primero!</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            loadEconomicIndicators();
+
+            document.getElementById('add-expense-btn')?.addEventListener('click', () => openExpenseModal(null, -1, container));
+
+            document.getElementById('btn-saldar-deuda')?.addEventListener('click', (e) => {
+                const btn = e.currentTarget;
+                const debtorEmail = btn.getAttribute('data-debtor');
+                const amount = parseInt(btn.getAttribute('data-amount'), 10);
+                if (confirm(`¿Registrar el pago de ${formatCLP(amount)} para saldar la deuda?`)) {
+                    const d = getBoardData();
+                    if (!d.expenses) d.expenses = [];
+                    d.expenses.push({ concept: 'Liquidación de deuda', amount, paidBy: debtorEmail, date: new Date().toISOString().split('T')[0], category: 'Finanzas', id: Date.now().toString(36) });
+                    saveBoardData(d);
+                    addActivityLog('Deuda saldada', 'Gastos', 'low');
+                    renderExpenses(container);
+                }
+            });
+
+            container.querySelectorAll('.expense-edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => openExpenseModal(expenses[parseInt(btn.getAttribute('data-idx'))], parseInt(btn.getAttribute('data-idx')), container));
+            });
+
+            container.querySelectorAll('.expense-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.getAttribute('data-idx'));
+                    if (confirm('¿Eliminar este gasto?')) {
+                        const d = getBoardData();
+                        d.expenses.splice(idx, 1);
+                        saveBoardData(d);
+                        addActivityLog('Gasto eliminado', 'Gastos', 'low');
+                        renderExpenses(container);
+                    }
+                });
+            });
+        };
+
+        const loadEconomicIndicators = async () => {
+            const CACHE_KEY = 'ratoncitos_indicators';
+            const CACHE_TTL = 3600000;
+            const panel = document.getElementById('economic-indicators-panel');
+            if (!panel) return;
+            const renderInds = (d) => {
+                const fmt = v => formatCLP(Math.round(v || 0));
+                const fecha = d.uf?.fecha ? new Date(d.uf.fecha + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                panel.innerHTML = `
+                    <div class="indicator-chip"><span class="ind-label">UF</span><span class="ind-value">${fmt(d.uf?.valor)}</span></div>
+                    <div class="indicator-chip"><span class="ind-label">USD</span><span class="ind-value">${fmt(d.dolar?.valor)}</span></div>
+                    <div class="indicator-chip"><span class="ind-label">EUR</span><span class="ind-value">${fmt(d.euro?.valor)}</span></div>
+                    <div class="indicator-chip"><span class="ind-label">UTM</span><span class="ind-value">${fmt(d.utm?.valor)}</span></div>
+                    ${fecha ? `<span style="font-size:0.68rem;color:var(--text-secondary);margin-left:auto;">Al ${fecha}</span>` : ''}
+                `;
+            };
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data, ts } = JSON.parse(cached);
+                    if (Date.now() - ts < CACHE_TTL) { renderInds(data); return; }
+                }
+                const res = await fetch('https://mindicador.cl/api');
+                if (!res.ok) throw new Error('fetch error');
+                const data = await res.json();
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+                renderInds(data);
+            } catch {
+                const panel2 = document.getElementById('economic-indicators-panel');
+                if (panel2) panel2.innerHTML = '<span class="indicators-loading">Indicadores no disponibles (sin conexión)</span>';
+            }
+        };
+
+        const openExpenseModal = (existing = null, editIdx = -1, expContainer = null) => {
+            document.getElementById('expense-modal-overlay')?.remove();
+            const catOptions = EXPENSE_CATEGORIES.map(c => `<option value="${escapeHTML(c)}" ${existing?.category === c ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('');
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isEdit = existing !== null && editIdx >= 0;
+            const overlay = document.createElement('div');
+            overlay.className = 'expense-modal-overlay show';
+            overlay.id = 'expense-modal-overlay';
+            overlay.innerHTML = `
+                <div class="expense-modal-card">
+                    <div class="expense-modal-header">
+                        <h3>${isEdit ? 'Editar Gasto' : 'Nuevo Gasto Compartido'}</h3>
+                        <button class="expense-modal-close" id="expense-modal-close" aria-label="Cerrar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <form id="expense-form" class="expense-form">
+                        <div class="form-group">
+                            <label for="exp-concept">Concepto</label>
+                            <input type="text" id="exp-concept" placeholder="Ej: Compra semanal Jumbo" value="${escapeHTML(existing?.concept || '')}" required>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="exp-amount">Monto (CLP $)</label>
+                                <input type="number" id="exp-amount" placeholder="0" step="1" min="1" value="${existing ? Math.round(existing.amount) : ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="exp-date">Fecha</label>
+                                <input type="date" id="exp-date" value="${existing?.date || todayStr}" required>
+                            </div>
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="exp-paid-by">Pagado por</label>
+                                <select id="exp-paid-by" required>
+                                    <option value="oxi@oxiflow.com" ${existing?.paidBy === 'oxi@oxiflow.com' ? 'selected' : ''}>Oxi</option>
+                                    <option value="javi@oxiflow.com" ${existing?.paidBy === 'javi@oxiflow.com' ? 'selected' : ''}>Javi</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="exp-category">Categoría</label>
+                                <select id="exp-category" required>${catOptions}</select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;font-weight:700;font-size:1rem;margin-top:8px;">${isEdit ? 'Guardar Cambios' : 'Guardar Gasto'}</button>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            if (!isEdit) {
+                const session = getActiveUserSession();
+                if (session?.email) overlay.querySelector('#exp-paid-by').value = session.email;
+            }
+            const closeOverlay = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 300); };
+            overlay.querySelector('#expense-modal-close').addEventListener('click', closeOverlay);
+            overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+            overlay.querySelector('#expense-form').addEventListener('submit', e => {
+                e.preventDefault();
+                const concept  = overlay.querySelector('#exp-concept').value.trim();
+                const amount   = Math.round(parseFloat(overlay.querySelector('#exp-amount').value) || 0);
+                const date     = overlay.querySelector('#exp-date').value;
+                const paidBy   = overlay.querySelector('#exp-paid-by').value;
+                const category = overlay.querySelector('#exp-category').value;
+                if (!concept || amount <= 0) return;
+                const d = getBoardData();
+                if (!d.expenses) d.expenses = [];
+                if (isEdit) {
+                    d.expenses[editIdx] = { ...d.expenses[editIdx], concept, amount, date, paidBy, category };
+                    addActivityLog(`Gasto editado: ${concept}`, 'Gastos', 'low');
+                } else {
+                    d.expenses.push({ concept, amount, date, paidBy, category, id: Date.now().toString(36) });
+                    addActivityLog(`Gasto añadido: ${concept} (${formatCLP(amount)})`, 'Gastos', 'medium');
+                }
+                saveBoardData(d);
+                closeOverlay();
+                renderExpenses(expContainer || DOM.appContent);
+            });
+        };
+
+        // --- 4. MAIN ORCHESTRATOR ENTRYPOINT (js/app.js) ---
+        const state = {
+            currentView: 'dashboard', // default view
+            theme: 'dark'            // 'dark' or 'light'
+        };
+
+        // DOM Elements Cache
         const DOM = {
             appContent: document.getElementById('app-content'),
             navDashboard: document.getElementById('nav-dashboard'),
             navKanban: document.getElementById('nav-kanban'),
-            navTimeline: document.getElementById('nav-timeline'),
+            navCalendar: document.getElementById('nav-calendar'),
+            navGantt: document.getElementById('nav-gantt'),
+            navExpenses: document.getElementById('nav-expenses'),
             themeToggle: document.getElementById('theme-toggle'),
             mobileToggle: document.getElementById('mobile-toggle'),
             sidebar: document.getElementById('sidebar'),
@@ -1793,11 +2262,14 @@
             searchContainer: document.getElementById('global-search-container')
         };
 
+        // Theme Management
         const initTheme = () => {
-            const savedTheme = localStorage.getItem('veloce_theme');
+            const savedTheme = localStorage.getItem('oxiflow_theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
             state.theme = savedTheme || (prefersDark ? 'dark' : 'light');
             applyTheme();
+
             DOM.themeToggle.addEventListener('click', () => {
                 state.theme = state.theme === 'dark' ? 'light' : 'dark';
                 applyTheme();
@@ -1806,19 +2278,21 @@
 
         const applyTheme = () => {
             const textSpan = DOM.themeToggle.querySelector('.theme-toggle-text');
+            
             if (state.theme === 'dark') {
                 document.body.classList.remove('light-theme');
                 document.body.classList.add('dark-theme');
                 textSpan.textContent = 'Modo Claro';
-                localStorage.setItem('veloce_theme', 'dark');
+                localStorage.setItem('oxiflow_theme', 'dark');
             } else {
                 document.body.classList.remove('dark-theme');
                 document.body.classList.add('light-theme');
                 textSpan.textContent = 'Modo Oscuro';
-                localStorage.setItem('veloce_theme', 'light');
+                localStorage.setItem('oxiflow_theme', 'light');
             }
         };
 
+        // Date Header Badge Helper
         const initDateTime = () => {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const today = new Date();
@@ -1827,16 +2301,23 @@
             DOM.currentDate.textContent = dateStr;
         };
 
+        // Single Page App Router
         const initNavigation = () => {
-            const buttons = [DOM.navDashboard, DOM.navKanban, DOM.navTimeline];
+            const buttons = [DOM.navDashboard, DOM.navKanban, DOM.navCalendar, DOM.navGantt, DOM.navExpenses];
+            
             buttons.forEach(btn => {
+                if (!btn) return;
                 btn.addEventListener('click', (e) => {
                     const button = e.currentTarget;
                     const targetView = button.getAttribute('data-view');
+                    
                     if (targetView === state.currentView) return;
-                    buttons.forEach(b => b.classList.remove('active'));
+                    
+                    buttons.forEach(b => b && b.classList.remove('active'));
                     button.classList.add('active');
+                    
                     switchView(targetView);
+                    
                     DOM.sidebar.classList.remove('mobile-open');
                 });
             });
@@ -1846,6 +2327,7 @@
             try {
                 state.currentView = viewName;
                 DOM.searchInput.value = '';
+                
                 DOM.appContent.style.animation = 'none';
                 void DOM.appContent.offsetWidth; 
                 DOM.appContent.style.animation = 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards';
@@ -1856,9 +2338,15 @@
                 } else if (viewName === 'kanban') {
                     DOM.searchContainer.classList.remove('hidden');
                     renderKanban(DOM.appContent);
-                } else if (viewName === 'timeline') {
+                } else if (viewName === 'calendar') {
                     DOM.searchContainer.classList.add('hidden');
-                    renderTimeline(DOM.appContent);
+                    renderCalendar(DOM.appContent);
+                } else if (viewName === 'gantt') {
+                    DOM.searchContainer.classList.add('hidden');
+                    renderGantt(DOM.appContent);
+                } else if (viewName === 'expenses') {
+                    DOM.searchContainer.classList.add('hidden');
+                    renderExpenses(DOM.appContent);
                 }
             } catch (err) {
                 console.error("Fallo en switchView:", err);
@@ -1868,11 +2356,13 @@
             }
         };
 
+        // Mobile responsive drawer toggle
         const initMobileMenu = () => {
             DOM.mobileToggle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 DOM.sidebar.classList.toggle('mobile-open');
             });
+            
             document.addEventListener('click', (e) => {
                 if (window.innerWidth <= 768 && 
                     DOM.sidebar.classList.contains('mobile-open') && 
@@ -1883,6 +2373,7 @@
             });
         };
 
+        // Global search handling
         const initSearch = () => {
             DOM.searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase().trim();
@@ -1892,6 +2383,97 @@
             });
         };
 
+        // Direct Login — Oxi & Javi profile card selector
+        const initDirectLogin = () => {
+            const loginOverlay = document.getElementById('login-overlay');
+            const logoutBtn    = document.getElementById('logout-btn');
+            const loginThemeToggle = document.getElementById('login-theme-toggle');
+            const profileCards = document.querySelectorAll('.login-profile-card');
+
+            // Login screen theme toggle — mirrors the sidebar toggle
+            if (loginThemeToggle) {
+                const syncLoginToggleIcon = () => {
+                    const lightIcon = loginThemeToggle.querySelector('.icon-light');
+                    const darkIcon  = loginThemeToggle.querySelector('.icon-dark');
+                    if (lightIcon) lightIcon.style.display = state.theme === 'dark'  ? 'flex' : 'none';
+                    if (darkIcon)  darkIcon.style.display  = state.theme === 'light' ? 'flex' : 'none';
+                };
+                syncLoginToggleIcon();
+                loginThemeToggle.addEventListener('click', () => {
+                    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+                    applyTheme();
+                    syncLoginToggleIcon();
+                });
+            }
+
+            const updateUserProfileUI = (user) => {
+                const avatarEl = document.querySelector('.sidebar .user-profile .avatar');
+                const nameEl   = document.querySelector('.sidebar .user-profile .user-name');
+                const roleEl   = document.querySelector('.sidebar .user-profile .user-role');
+                if (avatarEl && nameEl && roleEl) {
+                    if (user) {
+                        const isOxi = user.email === 'oxi@oxiflow.com';
+                        avatarEl.textContent = isOxi ? 'O' : 'J';
+                        avatarEl.style.background = isOxi
+                            ? 'linear-gradient(135deg, #6366f1, #3b82f6)'
+                            : 'linear-gradient(135deg, #ec4899, #a855f7)';
+                        avatarEl.style.color = 'white';
+                        avatarEl.style.fontWeight = '800';
+                        avatarEl.style.display = 'flex';
+                        avatarEl.style.alignItems = 'center';
+                        avatarEl.style.justifyContent = 'center';
+                        nameEl.textContent = user.name;
+                        roleEl.textContent = user.email;
+                    } else {
+                        avatarEl.textContent = 'U';
+                        avatarEl.style.background = '';
+                        avatarEl.style.color = '';
+                        nameEl.textContent = 'Sin sesión';
+                        roleEl.textContent = 'Selecciona tu perfil';
+                    }
+                }
+            };
+
+            const session = getActiveUserSession();
+            if (session) {
+                loginOverlay.classList.add('hidden');
+                updateUserProfileUI(session);
+                switchView(state.currentView);
+            } else {
+                loginOverlay.classList.remove('hidden');
+            }
+
+            profileCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const name  = card.getAttribute('data-name');
+                    const email = card.getAttribute('data-email');
+                    const user  = { name, email, picture: 'icon.svg' };
+                    localStorage.setItem('oxiflow_user_session', JSON.stringify(user));
+                    loginOverlay.classList.add('hidden');
+                    updateUserProfileUI(user);
+                    state.currentView = 'dashboard';
+                    switchView(state.currentView);
+                    addActivityLog(`${name} ha iniciado sesión`, 'Tablero', 'low');
+                });
+            });
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm('¿Cerrar sesión en Ratoncitos?')) {
+                        const s = getActiveUserSession();
+                        addActivityLog(`${s ? s.name : 'Usuario'} cerró sesión`, 'Tablero', 'low');
+                        localStorage.removeItem('oxiflow_user_session');
+                        updateUserProfileUI(null);
+                        loginOverlay.classList.remove('hidden');
+                        DOM.sidebar.classList.remove('mobile-open');
+                    }
+                });
+            }
+        };
+
+
+        // Initialize Application
         const init = () => {
             try {
                 initModalCache();
@@ -1900,9 +2482,9 @@
                 initNavigation();
                 initMobileMenu();
                 initSearch();
-                switchView(state.currentView);
+                initDirectLogin();   // Session & authentication flow
             } catch (err) {
-                console.error("Fallo en inicialización de Veloce Tracker:", err);
+                console.error("Fallo en inicialización de Ratoncitos:", err);
                 if (window.showAppError) {
                     window.showAppError(err.message, err.stack || err.toString());
                 }
@@ -1915,5 +2497,70 @@
             init();
         }
     </script>
+
+    <!-- Direct Login — Profile Selector for Oxi & Javi -->
+    <div class="login-overlay" id="login-overlay">
+        <!-- Theme toggle inside login -->
+        <button class="login-theme-toggle" id="login-theme-toggle" aria-label="Cambiar tema">
+            <span class="icon-light">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </span>
+            <span class="icon-dark">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </span>
+        </button>
+
+        <div class="login-card">
+            <div class="login-logo">
+                <!-- Two mice SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="96" height="60" viewBox="0 0 96 60" fill="none">
+                    <!-- Mouse Oxi (left, blue) -->
+                    <g>
+                        <circle cx="11" cy="14" r="7" fill="#6366f1" opacity="0.85"/>
+                        <circle cx="11" cy="14" r="4" fill="#a5b4fc"/>
+                        <circle cx="27" cy="14" r="7" fill="#6366f1" opacity="0.85"/>
+                        <circle cx="27" cy="14" r="4" fill="#a5b4fc"/>
+                        <ellipse cx="19" cy="32" rx="13" ry="11" fill="#6366f1"/>
+                        <circle cx="14" cy="29" r="2.5" fill="white"/>
+                        <circle cx="24" cy="29" r="2.5" fill="white"/>
+                        <circle cx="15" cy="29" r="1.2" fill="#1e1b4b"/>
+                        <circle cx="25" cy="29" r="1.2" fill="#1e1b4b"/>
+                        <ellipse cx="19" cy="34" rx="2.5" ry="1.8" fill="#fda4af"/>
+                        <path d="M32 38 Q40 34 40 27" stroke="#4f46e5" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    </g>
+                    <!-- Mouse Javi (right, pink) -->
+                    <g>
+                        <circle cx="69" cy="14" r="7" fill="#ec4899" opacity="0.85"/>
+                        <circle cx="69" cy="14" r="4" fill="#f9a8d4"/>
+                        <circle cx="85" cy="14" r="7" fill="#ec4899" opacity="0.85"/>
+                        <circle cx="85" cy="14" r="4" fill="#f9a8d4"/>
+                        <ellipse cx="77" cy="32" rx="13" ry="11" fill="#ec4899"/>
+                        <circle cx="72" cy="29" r="2.5" fill="white"/>
+                        <circle cx="82" cy="29" r="2.5" fill="white"/>
+                        <circle cx="73" cy="29" r="1.2" fill="#4a044e"/>
+                        <circle cx="83" cy="29" r="1.2" fill="#4a044e"/>
+                        <ellipse cx="77" cy="34" rx="2.5" ry="1.8" fill="#fda4af"/>
+                        <path d="M64 38 Q56 34 56 27" stroke="#be185d" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    </g>
+                    <!-- Heart between them -->
+                    <path d="M48 22 C48 20 46.5 18 44.5 20 C42.5 18 41 20 41 22 C41 24 44.5 27 44.5 27 C44.5 27 48 24 48 22Z" fill="#f43f5e" transform="translate(3.5, 0)"/>
+                </svg>
+            </div>
+            <h2 class="login-title">Ratoncitos</h2>
+            <p class="login-subtitle">Gestión de tareas y gastos en el hogar.<br>¿Quién ingresa hoy?</p>
+
+            <div class="login-profiles-grid">
+                <div class="login-profile-card oxi" data-name="Oxi" data-email="oxi@oxiflow.com">
+                    <div class="login-profile-avatar">O</div>
+                    <span class="login-profile-name">Oxi</span>
+                </div>
+                <div class="login-profile-card javi" data-name="Javi" data-email="javi@oxiflow.com">
+                    <div class="login-profile-avatar">J</div>
+                    <span class="login-profile-name">Javi</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
