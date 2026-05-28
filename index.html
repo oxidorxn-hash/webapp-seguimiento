@@ -1851,6 +1851,77 @@
             });
         };
 
+        var renderGantt = (container) => {
+            const data = getBoardData();
+            const year  = ganttState.currentYear;
+            const month = ganttState.currentMonth;
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+            container.innerHTML = `
+                <div class="timeline-container">
+                    <div class="timeline-header">
+                        <div>
+                            <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">Timeline de Tareas</h1>
+                            <p style="color:var(--text-secondary);font-size:0.95rem;">Visualiza el progreso de las tareas a lo largo del mes.</p>
+                        </div>
+                        <div class="timeline-nav-controls">
+                            <span class="timeline-month-title">${monthNames[month]} ${year}</span>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-secondary" id="gantt-prev-btn" style="padding:8px 12px;border-radius:var(--border-radius-md);" aria-label="Mes anterior">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                                <button class="btn btn-secondary" id="gantt-today-btn" style="padding:8px 16px;border-radius:var(--border-radius-md);font-size:0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="gantt-next-btn" style="padding:8px 12px;border-radius:var(--border-radius-md);" aria-label="Mes siguiente">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gantt-mini-summary" id="gantt-mini-summary"></div>
+
+                    <div class="gantt-container">
+                        <div class="gantt-scroll-canvas">
+                            <div class="gantt-grid-table">
+                                <div class="gantt-header-row" id="gantt-header-row"></div>
+                                <div id="gantt-rows-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const summaryEl = document.getElementById('gantt-mini-summary');
+            if (summaryEl) {
+                const chips = data.columns.map(col => {
+                    const color = col.color || '#6366f1';
+                    return `<div class="gantt-summary-chip"><span class="gantt-summary-dot" style="background:${color};"></span><span>${escapeHTML(col.title)}</span><span class="gantt-summary-count">${col.tasks.length}</span></div>`;
+                }).join('');
+                const total = data.columns.reduce((s, c) => s + c.tasks.length, 0);
+                summaryEl.innerHTML = chips + `<div class="gantt-summary-chip" style="margin-left:auto;"><span>Total</span><span class="gantt-summary-count">${total}</span></div>`;
+            }
+
+            renderGanttView(year, month, data);
+            bindGanttInteractions();
+
+            document.getElementById('gantt-prev-btn').onclick = () => {
+                ganttState.currentMonth--;
+                if (ganttState.currentMonth < 0) { ganttState.currentMonth = 11; ganttState.currentYear--; }
+                renderGantt(container);
+            };
+            document.getElementById('gantt-next-btn').onclick = () => {
+                ganttState.currentMonth++;
+                if (ganttState.currentMonth > 11) { ganttState.currentMonth = 0; ganttState.currentYear++; }
+                renderGantt(container);
+            };
+            document.getElementById('gantt-today-btn').onclick = () => {
+                ganttState.currentYear = new Date().getFullYear();
+                ganttState.currentMonth = new Date().getMonth();
+                renderGantt(container);
+            };
+        };
+
         const renderGanttView = (year, month, data) => {
             const headerRow = document.getElementById('gantt-header-row');
             const rowsContainer = document.getElementById('gantt-rows-container');
