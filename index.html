@@ -100,7 +100,7 @@
                 </button>
                 <button class="nav-btn" data-view="gantt" id="nav-gantt">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 3v18h18"></path><path d="M7 14h6"></path><path d="M11 9h8"></path><path d="M7 5h4"></path></svg>
-                    <span>Cronograma</span>
+                    <span>Timeline</span>
                 </button>
                 <button class="nav-btn" data-view="expenses" id="nav-expenses">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -196,7 +196,7 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="task-start-date-input">Fecha de inicio</label>
+                        <label for="task-start-date-input">Fecha de inicio <span style="font-weight:400;opacity:0.6;">(opcional)</span></label>
                         <input type="date" id="task-start-date-input">
                     </div>
                     
@@ -376,6 +376,7 @@
                         ]
                     }
                 ],
+                events: [],
                 expenses: [
                     {
                         id: 'exp-1',
@@ -603,26 +604,54 @@
             const session = getActiveUserSession();
             const userName = session ? session.name : 'Usuario';
 
+            // Pre-compute events for month
+            const dashNow = new Date();
+            const dashYear = dashNow.getFullYear(), dashMonth = dashNow.getMonth();
+            const dashMonthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            const allEvents = (data.events || []);
+            const monthEventsForHeader = allEvents
+                .filter(ev => { if (!ev.date) return false; const [y,m] = ev.date.split('-').map(Number); return y===dashYear && (m-1)===dashMonth; })
+                .sort((a,b) => a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
+
+            const todayEventsHtml = monthEventsForHeader.length === 0
+                ? `<p style="font-size:0.82rem;color:var(--text-secondary);padding:4px 0;">Sin eventos este mes.</p>`
+                : monthEventsForHeader.slice(0,4).map(ev => {
+                    const d = parseInt((ev.date||'').split('-')[2]||'0',10);
+                    const timeStr = ev.time ? ` · ${ev.time}` : '';
+                    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                        <span style="font-size:0.7rem;font-weight:800;min-width:32px;color:var(--accent-primary);">${d} ${dashMonthNames[dashMonth].slice(0,3)}</span>
+                        <span style="font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHTML(ev.title)}${timeStr}</span>
+                    </div>`;
+                }).join('') + (monthEventsForHeader.length > 4 ? `<p style="font-size:0.75rem;color:var(--text-secondary);margin-top:4px;">+${monthEventsForHeader.length-4} más este mes</p>` : '');
+
             let html = `
-                <div class="dashboard-header-intro" style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
-                    <div style="flex: 1; min-width: 250px;">
-                        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">${greeting}, ${userName}</h1>
-                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Aquí tienes el resumen y estado general de tus temas pendientes.</p>
-                    </div>
-                    
-                    <!-- Resumen Sysdate Inteligente -->
-                    <div class="glass-panel" style="padding: 16px 20px; border-radius: var(--border-radius-lg); flex: 1.2; min-width: 300px; max-width: 600px; border-left: 4px solid var(--accent-primary); box-shadow: var(--shadow-card);">
-                        <h3 style="font-size: 0.95rem; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            Resumen para Hoy
+                <div style="margin-bottom:20px;">
+                    <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">${greeting}, ${userName}</h1>
+                    <p style="color:var(--text-secondary);font-size:0.9rem;">Resumen del hogar para hoy.</p>
+                </div>
+                <div class="dashboard-header-intro" style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <!-- Resumen de Tareas Hoy -->
+                    <div class="glass-panel" style="padding:18px 20px;border-radius:var(--border-radius-lg);border-left:4px solid var(--accent-primary);box-shadow:var(--shadow-card);">
+                        <h3 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Tareas para Hoy
                         </h3>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">
-                            ${
-                                todayTasks.length === 0 
-                                ? 'No tienes tareas programadas para el día de hoy. ¡Es un buen momento para planificar o tomar un descanso!' 
-                                : `Hoy tienes <strong>${todayTasks.length}</strong> ${todayTasks.length === 1 ? 'tarea activa' : 'tareas activas'}: <span style="color: var(--text-primary); font-weight: 600;">${todayTasks.map(t => escapeHTML(t.title)).join(', ')}</span>.`
-                            }
+                        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;">
+                            ${todayTasks.length===0
+                                ? 'Sin tareas para hoy. ¡Buen momento para planificar!'
+                                : `<strong style="color:var(--text-primary);">${todayTasks.length}</strong> ${todayTasks.length===1?'tarea activa':'tareas activas'}: ${todayTasks.map(t=>escapeHTML(t.title)).join(', ')}.`}
                         </p>
+                    </div>
+                    <!-- Eventos del Mes -->
+                    <div class="glass-panel" style="padding:18px 20px;border-radius:var(--border-radius-lg);border-left:4px solid #10b981;box-shadow:var(--shadow-card);cursor:pointer;" id="dash-events-panel">
+                        <h3 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+                            <span style="display:flex;align-items:center;gap:8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                Eventos · ${dashMonthNames[dashMonth]}
+                            </span>
+                            <span style="font-size:0.72rem;font-weight:600;color:#10b981;">${monthEventsForHeader.length} eventos</span>
+                        </h3>
+                        ${todayEventsHtml}
                     </div>
                 </div>
                 <div class="dashboard-grid">
@@ -692,6 +721,9 @@
                         </div>
                     </div>
                 </div>
+                <!-- GASTOS DEL MES (se inyecta dinámicamente) -->
+                <div id="dash-monthly-expenses" style="margin-bottom:20px;"></div>
+
                 <div class="glass-panel recent-tasks-panel">
                     <div class="chart-header" style="margin-bottom: 8px;">
                         <h3>Actividad Reciente</h3>
@@ -745,6 +777,49 @@
 
             drawBarChart(data.columns);
 
+            // Wire events panel click
+            document.getElementById('dash-events-panel')?.addEventListener('click', () => {
+                document.getElementById('nav-calendar')?.click();
+            });
+
+            // Monthly expenses summary
+            const expPanel = document.getElementById('dash-monthly-expenses');
+            if (expPanel) {
+                const nowD = new Date();
+                const thisYr = nowD.getFullYear(), thisMo = nowD.getMonth();
+                const mnLabel = dashMonthNames[thisMo];
+                const allExp = (data.expenses || []).filter(ex => {
+                    if (!ex.date) return false;
+                    const pts = ex.date.split('-');
+                    return parseInt(pts[0])===thisYr && parseInt(pts[1])-1===thisMo;
+                });
+                const expTotal = allExp.reduce((s,e) => s + Math.round(parseFloat(e.amount)||0), 0);
+                const catColors2 = { 'Casa':'#a855f7','Supermercado':'#22c55e','Mascotas':'#f59e0b','Finanzas':'#3b82f6','Trabajo':'#6366f1','Ocio':'#ec4899','Transporte':'#14b8a6','Salud':'#ef4444','Otro':'#94a3b8' };
+                const catTotals = {};
+                allExp.forEach(e => { const c = e.category||'Otro'; catTotals[c] = (catTotals[c]||0) + Math.round(parseFloat(e.amount)||0); });
+                const catChips = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([cat,amt]) => {
+                    const col = catColors2[cat]||'#94a3b8';
+                    return `<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:${col}18;border:1px solid ${col}30;border-radius:20px;font-size:0.75rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;"></span>
+                        <span style="font-weight:600;">${escapeHTML(cat)}</span>
+                        <span style="font-weight:800;color:${col};">${formatCLP(amt)}</span>
+                    </div>`;
+                }).join('');
+
+                expPanel.innerHTML = expTotal === 0
+                    ? ''
+                    : `<div class="glass-panel" style="padding:18px 20px;border-radius:var(--border-radius-lg);box-shadow:var(--shadow-card);">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                            <h3 style="font-size:0.95rem;font-weight:800;display:flex;align-items:center;gap:8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                Gastos · ${mnLabel}
+                            </h3>
+                            <span style="font-size:1.1rem;font-weight:800;color:var(--accent-primary);">${formatCLP(expTotal)}</span>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;">${catChips}</div>
+                       </div>`;
+            }
+
             const goToBoardBtn = document.getElementById('go-to-board-btn');
             if (goToBoardBtn) {
                 goToBoardBtn.addEventListener('click', () => {
@@ -753,7 +828,6 @@
                     document.getElementById('nav-kanban').click();
                 });
             }
-
             const totalCard = document.getElementById('metric-total-card');
             const completedCard = document.getElementById('metric-completed-card');
             const inProgressCard = document.getElementById('metric-inprogress-card');
@@ -1306,7 +1380,7 @@
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             
-            taskStartDateInput.value = today.toISOString().split('T')[0];
+            taskStartDateInput.value = '';  // optional — leave empty by default
             taskDateInput.value = tomorrow.toISOString().split('T')[0];
             
             const calendarGroup = document.getElementById('calendar-export-group');
@@ -1486,7 +1560,48 @@
         };
 
 
-        // --- 3.5. TIMELINE & CALENDAR VIEW CONTROLLER ---
+        // --- CHILEAN HOLIDAYS ---
+        const getEasterDate = (year) => {
+            const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+            const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4), k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const month = Math.floor((h + l - 7 * m + 114) / 31);
+            const day = ((h + l - 7 * m + 114) % 31) + 1;
+            return new Date(year, month - 1, day);
+        };
+
+        const fmtDs = (y, m, d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+
+        const getChileanHolidays = (year) => {
+            const pad = n => String(n).padStart(2, '0');
+            const fmt = (m, d) => `${year}-${pad(m)}-${pad(d)}`;
+            const H = {
+                [fmt(1,1)]:  'Año Nuevo',
+                [fmt(5,1)]:  'Día del Trabajo',
+                [fmt(5,21)]: 'Glorias Navales',
+                [fmt(6,29)]: 'San Pedro y San Pablo',
+                [fmt(7,16)]: 'Virgen del Carmen',
+                [fmt(8,15)]: 'Asunción de la Virgen',
+                [fmt(9,18)]: 'Independencia Nacional',
+                [fmt(9,19)]: 'Glorias del Ejército',
+                [fmt(10,12)]:'Encuentro de Dos Mundos',
+                [fmt(10,31)]:'Iglesias Evangélicas',
+                [fmt(11,1)]: 'Todos los Santos',
+                [fmt(12,8)]: 'Inmaculada Concepción',
+                [fmt(12,25)]:'Navidad',
+            };
+            const easter = getEasterDate(year);
+            const gf = new Date(easter);
+            gf.setDate(easter.getDate() - 2);
+            H[gf.toISOString().split('T')[0]] = 'Viernes Santo';
+            return H;
+        };
+
+        // --- 3.5. CALENDAR (EVENTS) VIEW CONTROLLER ---
         const calendarState = {
             currentYear: new Date().getFullYear(),
             currentMonth: new Date().getMonth()
@@ -1499,116 +1614,305 @@
 
         var renderCalendar = (container) => {
             const data = getBoardData();
-            const year = calendarState.currentYear;
+            if (!data.events) data.events = [];
+            const year  = calendarState.currentYear;
             const month = calendarState.currentMonth;
-            
-            const monthNames = [
-                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-            ];
-            
-            const monthTitleStr = `${monthNames[month]} ${year}`;
-            
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            const holidays = getChileanHolidays(year);
+
             container.innerHTML = `
                 <div class="timeline-container">
                     <div class="timeline-header">
                         <div>
-                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Calendario Familiar</h1>
-                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica tus actividades y visualiza eventos y gastos mensuales.</p>
+                            <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">Calendario de Eventos</h1>
+                            <p style="color:var(--text-secondary);font-size:0.95rem;">Gestiona eventos del hogar. Las tareas están en el Timeline.</p>
                         </div>
-                        
                         <div class="timeline-nav-controls">
-                            <span class="timeline-month-title">${monthTitleStr}</span>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" id="calendar-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            <span class="timeline-month-title">${monthNames[month]} ${year}</span>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-secondary" id="cal-prev" style="padding:8px 12px;border-radius:var(--border-radius-md);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                                 </button>
-                                <button class="btn btn-secondary" id="calendar-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
-                                <button class="btn btn-secondary" id="calendar-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                <button class="btn btn-secondary" id="cal-today" style="padding:8px 16px;border-radius:var(--border-radius-md);font-size:0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="cal-next" style="padding:8px 12px;border-radius:var(--border-radius-md);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                                </button>
+                                <button class="btn btn-primary" id="cal-add-event" style="padding:8px 16px;border-radius:var(--border-radius-md);font-size:0.85rem;display:flex;align-items:center;gap:6px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                                    Añadir Evento
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="calendar-wrapper">
                         <div class="calendar-weekdays-grid">
-                            <div class="weekday-label">Lun</div>
-                            <div class="weekday-label">Mar</div>
-                            <div class="weekday-label">Mié</div>
-                            <div class="weekday-label">Jue</div>
-                            <div class="weekday-label">Vie</div>
-                            <div class="weekday-label">Sáb</div>
+                            <div class="weekday-label">Lun</div><div class="weekday-label">Mar</div>
+                            <div class="weekday-label">Mié</div><div class="weekday-label">Jue</div>
+                            <div class="weekday-label">Vie</div><div class="weekday-label">Sáb</div>
                             <div class="weekday-label">Dom</div>
                         </div>
-                        
                         <div class="calendar-days-grid" id="calendar-days-grid"></div>
                     </div>
                 </div>
             `;
-            
-            renderCalendarDays(year, month, data);
-            bindCalendarInteractions();
-            
-            document.getElementById('calendar-prev-btn').onclick = () => {
+
+            renderCalendarDays(year, month, data, holidays);
+
+            document.getElementById('cal-prev').onclick = () => {
                 calendarState.currentMonth--;
-                if (calendarState.currentMonth < 0) {
-                    calendarState.currentMonth = 11;
-                    calendarState.currentYear--;
-                }
+                if (calendarState.currentMonth < 0) { calendarState.currentMonth = 11; calendarState.currentYear--; }
                 renderCalendar(container);
             };
-            
-            document.getElementById('calendar-next-btn').onclick = () => {
+            document.getElementById('cal-next').onclick = () => {
                 calendarState.currentMonth++;
-                if (calendarState.currentMonth > 11) {
-                    calendarState.currentMonth = 0;
-                    calendarState.currentYear++;
-                }
+                if (calendarState.currentMonth > 11) { calendarState.currentMonth = 0; calendarState.currentYear++; }
                 renderCalendar(container);
             };
-            
-            document.getElementById('calendar-today-btn').onclick = () => {
+            document.getElementById('cal-today').onclick = () => {
                 calendarState.currentYear = new Date().getFullYear();
                 calendarState.currentMonth = new Date().getMonth();
                 renderCalendar(container);
             };
+            document.getElementById('cal-add-event').onclick = () => openEventModal(null, null, container);
+
+            document.getElementById('calendar-days-grid').addEventListener('click', (e) => {
+                const pill   = e.target.closest('.cal-event-pill');
+                const addBtn = e.target.closest('.calendar-day-add-btn');
+                if (pill) {
+                    const evtId = pill.getAttribute('data-evt-id');
+                    const d = getBoardData();
+                    const evt = (d.events || []).find(ev => ev.id === evtId);
+                    if (evt) openEventModal(evt, null, container);
+                } else if (addBtn) {
+                    openEventModal(null, addBtn.getAttribute('data-date'), container);
+                }
+            });
+        };
+
+        const renderCalendarDays = (year, month, data, holidays) => {
+            const grid = document.getElementById('calendar-days-grid');
+            if (!grid) return;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const firstDayOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+            const totalDays      = new Date(year, month + 1, 0).getDate();
+            const totalPrevDays  = new Date(year, month, 0).getDate();
+            const events = data.events || [];
+
+            let html = '';
+            for (let i = firstDayOffset - 1; i >= 0; i--) {
+                const d  = totalPrevDays - i;
+                const pm = month - 1 < 0 ? 11 : month - 1;
+                const py = month - 1 < 0 ? year - 1 : year;
+                html += buildDayCell(d, fmtDs(py, pm, d), todayStr, true, events, holidays);
+            }
+            for (let d = 1; d <= totalDays; d++) {
+                html += buildDayCell(d, fmtDs(year, month, d), todayStr, false, events, holidays);
+            }
+            const remaining = 42 - (firstDayOffset + totalDays);
+            for (let d = 1; d <= remaining; d++) {
+                const nm = month + 1 > 11 ? 0 : month + 1;
+                const ny = month + 1 > 11 ? year + 1 : year;
+                html += buildDayCell(d, fmtDs(ny, nm, d), todayStr, true, events, holidays);
+            }
+            grid.innerHTML = html;
+        };
+
+        const buildDayCell = (dayNum, dateStr, todayStr, isOther, events, holidays) => {
+            const isToday   = dateStr === todayStr;
+            const holiday   = holidays[dateStr];
+            const dayEvents = events.filter(ev => ev.date === dateStr);
+
+            let eventsHtml = '';
+            if (holiday) {
+                eventsHtml += `<div class="cal-holiday-pill" title="${escapeHTML(holiday)}">${escapeHTML(holiday)}</div>`;
+            }
+            dayEvents.forEach(ev => {
+                const timeStr = ev.time ? `${ev.time} ` : '';
+                eventsHtml += `<div class="cal-event-pill" data-evt-id="${ev.id}" title="${escapeHTML(ev.title)}">${timeStr}${escapeHTML(ev.title)}</div>`;
+            });
+
+            return `
+                <div class="calendar-day-box ${isOther ? 'other-month' : ''} ${isToday ? 'today' : ''}" data-date="${dateStr}">
+                    <div class="day-header">
+                        <span class="day-number">${dayNum}</span>
+                        <button class="calendar-day-add-btn" data-date="${dateStr}" title="Añadir evento">+</button>
+                    </div>
+                    <div class="calendar-tasks-container">${eventsHtml}</div>
+                </div>
+            `;
+        };
+
+        const openEventModal = (existing = null, preDate = null, calContainer = null) => {
+            document.getElementById('event-modal-overlay')?.remove();
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isEdit   = existing !== null;
+
+            const getGCalUrl = (ev) => {
+                if (!ev || !ev.date) return '#';
+                const dt  = ev.date.replace(/-/g, '');
+                const tm  = ev.time ? ev.time.replace(':', '') + '00' : '';
+                const start = ev.time ? `${dt}T${tm}` : dt;
+                const end   = ev.time ? `${dt}T${tm}` : dt;
+                return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title || '')}&dates=${start}/${end}&details=${encodeURIComponent(ev.notes || '')}&location=${encodeURIComponent(ev.address || '')}`;
+            };
+
+            const downloadIcs = (ev) => {
+                const dt   = ev.date.replace(/-/g, '');
+                const tm   = ev.time ? ev.time.replace(':', '') + '00' : '';
+                const dtStart = ev.time ? `DTSTART:${dt}T${tm}` : `DTSTART;VALUE=DATE:${dt}`;
+                const dtEnd   = ev.time ? `DTEND:${dt}T${tm}`   : `DTEND;VALUE=DATE:${dt}`;
+                const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nUID:${ev.id}@ratoncitos\n${dtStart}\n${dtEnd}\nSUMMARY:${ev.title}\nDESCRIPTION:${(ev.notes||'').replace(/\n/g,'\\n')}\nLOCATION:${ev.address||''}\nEND:VEVENT\nEND:VCALENDAR`;
+                const blob = new Blob([ics], { type: 'text/calendar' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${(ev.title||'evento').replace(/\s+/g,'_')}.ics`;
+                a.click();
+            };
+
+            const overlay = document.createElement('div');
+            overlay.className = 'expense-modal-overlay show';
+            overlay.id = 'event-modal-overlay';
+            overlay.innerHTML = `
+                <div class="expense-modal-card" style="max-width:520px;">
+                    <div class="expense-modal-header">
+                        <h3>${isEdit ? 'Editar Evento' : 'Nuevo Evento'}</h3>
+                        <button class="expense-modal-close" id="event-modal-close" aria-label="Cerrar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <form id="event-form" class="expense-form">
+                        <div class="form-group">
+                            <label for="evt-title">Nombre del evento <span style="color:var(--priority-high)">*</span></label>
+                            <input type="text" id="evt-title" placeholder="Ej: Cena con los amigos" value="${escapeHTML(existing?.title || '')}" required maxlength="80">
+                        </div>
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label for="evt-date">Fecha <span style="color:var(--priority-high)">*</span></label>
+                                <input type="date" id="evt-date" value="${existing?.date || preDate || todayStr}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="evt-time">Hora <span style="font-weight:400;opacity:0.6;">(opcional, ej: 19:30)</span></label>
+                                <input type="text" id="evt-time" placeholder="HH:MM" maxlength="5" inputmode="numeric" value="${existing?.time || ''}" autocomplete="off" style="letter-spacing:0.08em;font-size:1rem;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="evt-address">Dirección / Lugar</label>
+                            <input type="text" id="evt-address" placeholder="Ej: Av. Principal 123, Santiago" value="${escapeHTML(existing?.address || '')}">
+                        </div>
+                        <div class="form-group">
+                            <label for="evt-notes">Notas</label>
+                            <textarea id="evt-notes" rows="2" placeholder="Detalles adicionales..." maxlength="300">${escapeHTML(existing?.notes || '')}</textarea>
+                        </div>
+                        ${isEdit ? `
+                        <div style="display:flex;gap:10px;margin-bottom:10px;">
+                            <a id="evt-gcal" href="${getGCalUrl(existing)}" target="_blank" class="btn btn-secondary" style="flex:1;justify-content:center;font-size:0.8rem;padding:8px;text-decoration:none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                Google Calendar
+                            </a>
+                            <button type="button" id="evt-ical" class="btn btn-secondary" style="flex:1;font-size:0.8rem;padding:8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                Apple / iCal
+                            </button>
+                        </div>
+                        <button type="button" id="evt-delete" class="btn btn-secondary" style="width:100%;margin-bottom:8px;color:var(--priority-high);border-color:var(--priority-high);">Eliminar evento</button>
+                        ` : ''}
+                        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;font-weight:700;font-size:1rem;">
+                            ${isEdit ? 'Guardar Cambios' : 'Crear Evento'}
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            const closeOverlay = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 300); };
+            overlay.querySelector('#event-modal-close').addEventListener('click', closeOverlay);
+            overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+
+            // Auto-format time HH:MM as the user types
+            const timeInput = overlay.querySelector('#evt-time');
+            timeInput.addEventListener('input', () => {
+                let v = timeInput.value.replace(/[^\d]/g, '').slice(0, 4);
+                if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+                timeInput.value = v;
+            });
+            timeInput.addEventListener('blur', () => {
+                const v = timeInput.value;
+                const m = v.match(/^(\d{1,2}):?(\d{0,2})$/);
+                if (!m) { timeInput.value = ''; return; }
+                const h = parseInt(m[1], 10), mn = parseInt(m[2] || '0', 10);
+                if (h > 23 || mn > 59) { timeInput.value = ''; return; }
+                timeInput.value = `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
+            });
+
+            if (isEdit) {
+                overlay.querySelector('#evt-ical')?.addEventListener('click', () => downloadIcs(existing));
+                overlay.querySelector('#evt-delete')?.addEventListener('click', () => {
+                    if (confirm(`¿Eliminar "${existing.title}"?`)) {
+                        const d = getBoardData();
+                        d.events = (d.events || []).filter(ev => ev.id !== existing.id);
+                        saveBoardData(d);
+                        addActivityLog(`Evento eliminado: ${existing.title}`, 'Calendario', 'low');
+                        closeOverlay();
+                        if (calContainer) renderCalendar(calContainer);
+                    }
+                });
+            }
+
+            overlay.querySelector('#event-form').addEventListener('submit', e => {
+                e.preventDefault();
+                const title   = overlay.querySelector('#evt-title').value.trim();
+                const date    = overlay.querySelector('#evt-date').value;
+                const time    = overlay.querySelector('#evt-time').value;
+                const address = overlay.querySelector('#evt-address').value.trim();
+                const notes   = overlay.querySelector('#evt-notes').value.trim();
+                if (!title || !date) return;
+
+                const d = getBoardData();
+                if (!d.events) d.events = [];
+                if (isEdit) {
+                    const idx = d.events.findIndex(ev => ev.id === existing.id);
+                    if (idx >= 0) d.events[idx] = { ...d.events[idx], title, date, time, address, notes };
+                    addActivityLog(`Evento editado: ${title}`, 'Calendario', 'low');
+                } else {
+                    d.events.push({ id: 'evt-' + generateId(), title, date, time, address, notes });
+                    addActivityLog(`Evento creado: ${title}`, 'Calendario', 'low');
+                }
+                saveBoardData(d);
+                closeOverlay();
+                if (calContainer) renderCalendar(calContainer);
+            });
         };
 
         var renderGantt = (container) => {
             const data = getBoardData();
-            const year = ganttState.currentYear;
+            const year  = ganttState.currentYear;
             const month = ganttState.currentMonth;
-            
-            const monthNames = [
-                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-            ];
-            
-            const monthTitleStr = `${monthNames[month]} ${year}`;
-            
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
             container.innerHTML = `
                 <div class="timeline-container">
                     <div class="timeline-header">
                         <div>
-                            <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px;">Cronograma Gantt</h1>
-                            <p style="color: var(--text-secondary); font-size: 0.95rem;">Planifica las tareas semanales y mensuales en el hogar.</p>
+                            <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:4px;">Timeline de Tareas</h1>
+                            <p style="color:var(--text-secondary);font-size:0.95rem;">Visualiza el progreso de las tareas a lo largo del mes.</p>
                         </div>
-                        
                         <div class="timeline-nav-controls">
-                            <span class="timeline-month-title">${monthTitleStr}</span>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" id="gantt-prev-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes anterior">
+                            <span class="timeline-month-title">${monthNames[month]} ${year}</span>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-secondary" id="gantt-prev-btn" style="padding:8px 12px;border-radius:var(--border-radius-md);" aria-label="Mes anterior">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                                 </button>
-                                <button class="btn btn-secondary" id="gantt-today-btn" style="padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 0.85rem;">Hoy</button>
-                                <button class="btn btn-secondary" id="gantt-next-btn" style="padding: 8px 12px; border-radius: var(--border-radius-md);" aria-label="Mes siguiente">
+                                <button class="btn btn-secondary" id="gantt-today-btn" style="padding:8px 16px;border-radius:var(--border-radius-md);font-size:0.85rem;">Hoy</button>
+                                <button class="btn btn-secondary" id="gantt-next-btn" style="padding:8px 12px;border-radius:var(--border-radius-md);" aria-label="Mes siguiente">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="gantt-mini-summary" id="gantt-mini-summary"></div>
 
                     <div class="gantt-container">
@@ -1634,202 +1938,22 @@
 
             renderGanttView(year, month, data);
             bindGanttInteractions();
-            
+
             document.getElementById('gantt-prev-btn').onclick = () => {
                 ganttState.currentMonth--;
-                if (ganttState.currentMonth < 0) {
-                    ganttState.currentMonth = 11;
-                    ganttState.currentYear--;
-                }
+                if (ganttState.currentMonth < 0) { ganttState.currentMonth = 11; ganttState.currentYear--; }
                 renderGantt(container);
             };
-            
             document.getElementById('gantt-next-btn').onclick = () => {
                 ganttState.currentMonth++;
-                if (ganttState.currentMonth > 11) {
-                    ganttState.currentMonth = 0;
-                    ganttState.currentYear++;
-                }
+                if (ganttState.currentMonth > 11) { ganttState.currentMonth = 0; ganttState.currentYear++; }
                 renderGantt(container);
             };
-            
             document.getElementById('gantt-today-btn').onclick = () => {
                 ganttState.currentYear = new Date().getFullYear();
                 ganttState.currentMonth = new Date().getMonth();
                 renderGantt(container);
             };
-        };
-
-        const renderCalendarDays = (year, month, data) => {
-            const grid = document.getElementById('calendar-days-grid');
-            if (!grid) return;
-            
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
-            
-            let firstDayVal = new Date(year, month, 1).getDay();
-            let firstDayOffset = (firstDayVal + 6) % 7;
-            
-            const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
-            const totalDaysInPrevMonth = new Date(year, month, 0).getDate();
-            
-            let html = '';
-            
-            for (let i = firstDayOffset - 1; i >= 0; i--) {
-                const dayNum = totalDaysInPrevMonth - i;
-                const prevMonth = month - 1 < 0 ? 11 : month - 1;
-                const prevYear = month - 1 < 0 ? year - 1 : year;
-                const dateStr = formatDateString(prevYear, prevMonth, dayNum);
-                html += renderDayBoxHtml(dayNum, dateStr, todayStr, true, data);
-            }
-            
-            for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
-                const dateStr = formatDateString(year, month, dayNum);
-                html += renderDayBoxHtml(dayNum, dateStr, todayStr, false, data);
-            }
-            
-            const remainingCells = 42 - (firstDayOffset + totalDaysInMonth);
-            for (let dayNum = 1; dayNum <= remainingCells; dayNum++) {
-                const nextMonth = month + 1 > 11 ? 0 : month + 1;
-                const nextYear = month + 1 > 11 ? year + 1 : year;
-                const dateStr = formatDateString(nextYear, nextMonth, dayNum);
-                html += renderDayBoxHtml(dayNum, dateStr, todayStr, true, data);
-            }
-            
-            grid.innerHTML = html;
-        };
-
-        const formatDateString = (year, month, day) => {
-            const m = String(month + 1).padStart(2, '0');
-            const d = String(day).padStart(2, '0');
-            return `${year}-${m}-${d}`;
-        };
-
-        const renderDayBoxHtml = (dayNum, dateStr, todayStr, isOtherMonth, data) => {
-            const isToday = dateStr === todayStr;
-            const otherMonthClass = isOtherMonth ? 'other-month' : '';
-            const todayClass = isToday ? 'today' : '';
-            
-            const dayTasks = [];
-            data.columns.forEach(col => {
-                col.tasks.forEach(task => {
-                    if (task.date === dateStr) {
-                        dayTasks.push({ ...task, columnId: col.id, columnTitle: col.title });
-                    }
-                });
-            });
-            
-            const dayExpenses = [];
-            if (data.expenses && Array.isArray(data.expenses)) {
-                data.expenses.forEach(exp => {
-                    if (exp.date === dateStr) {
-                        dayExpenses.push(exp);
-                    }
-                });
-            }
-            
-            const priorityLabels = { low: 'Baja', medium: 'Media', high: 'Alta' };
-            
-            let tasksHtml = '';
-            dayTasks.forEach(task => {
-                const isCompleted = task.columnId === 'col-completed';
-                const completedClass = isCompleted ? 'completed' : '';
-                tasksHtml += `
-                    <div class="calendar-task-pill ${task.priority} ${completedClass}" 
-                         data-task-id="${task.id}" 
-                         data-col-id="${task.columnId}" 
-                         title="${escapeHTML(task.title)} (${priorityLabels[task.priority]})">
-                        ${isCompleted ? '✓ ' : ''}${escapeHTML(task.title)}
-                    </div>
-                `;
-            });
-
-            let expensesHtml = '';
-            dayExpenses.forEach(exp => {
-                expensesHtml += `
-                    <div class="calendar-expense-pill" 
-                         style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 4px; padding: 2px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 3px; display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
-                         title="Gasto: ${escapeHTML(exp.concept)} (${formatCLP(exp.amount)})"
-                         onclick="switchView('expenses')">
-                        <span>${formatCLP(exp.amount)}</span>
-                        <span style="font-weight: 500; font-size: 0.62rem; opacity: 0.85;">${escapeHTML(exp.concept)}</span>
-                    </div>
-                `;
-            });
-            
-            return `
-                <div class="calendar-day-box ${otherMonthClass} ${todayClass}" data-date="${dateStr}">
-                    <div class="day-header">
-                        <span class="day-number">${dayNum}</span>
-                        <button class="calendar-day-add-btn" data-date="${dateStr}" title="Añadir tarea para este día">+</button>
-                    </div>
-                    <div class="calendar-tasks-container">
-                        ${tasksHtml}
-                        ${expensesHtml}
-                    </div>
-                </div>
-            `;
-        };
-
-        const bindCalendarInteractions = () => {
-            const pills = document.querySelectorAll('.calendar-task-pill');
-            pills.forEach(pill => {
-                pill.onclick = (e) => {
-                    e.stopPropagation();
-                    const taskId = pill.getAttribute('data-task-id');
-                    const colId = pill.getAttribute('data-col-id');
-                    
-                    if (typeof openTaskModal === 'function') {
-                        if (!boardState.data) {
-                            boardState.data = getBoardData();
-                        }
-                        openTaskModal(taskId, colId);
-                        
-                        const form = document.getElementById('task-form');
-                        
-                        const refreshTimeline = () => {
-                            setTimeout(() => {
-                                if (state.currentView === 'calendar') {
-                                    renderCalendar(DOM.appContent);
-                                }
-                                form.removeEventListener('submit', refreshTimeline);
-                            }, 50);
-                        };
-                        form.addEventListener('submit', refreshTimeline);
-                    }
-                };
-            });
-            
-            const addBtns = document.querySelectorAll('.calendar-day-add-btn');
-            addBtns.forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    const dateStr = btn.getAttribute('data-date');
-                    const data = getBoardData();
-                    const firstColId = data.columns.length > 0 ? data.columns[0].id : 'col-todo';
-                    
-                    if (typeof openTaskModal === 'function') {
-                        if (!boardState.data) {
-                            boardState.data = data;
-                        }
-                        openTaskModal(null, firstColId);
-                        
-                        const dateInput = document.getElementById('task-date-input');
-                        if (dateInput) dateInput.value = dateStr;
-                        
-                        const form = document.getElementById('task-form');
-                        const refreshTimeline = () => {
-                            setTimeout(() => {
-                                if (state.currentView === 'calendar') {
-                                    renderCalendar(DOM.appContent);
-                                }
-                                form.removeEventListener('submit', refreshTimeline);
-                            }, 50);
-                        };
-                        form.addEventListener('submit', refreshTimeline);
-                    }
-                };
-            });
         };
 
         const renderGanttView = (year, month, data) => {
@@ -1845,7 +1969,7 @@
             
             let headerHtml = `<div class="gantt-stage-header-cell">Estado / Flujo</div>`;
             for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
-                const dateStr = formatDateString(year, month, dayNum);
+                const dateStr = fmtDs(year, month, dayNum);
                 const dayOfWeek = new Date(year, month, dayNum).getDay();
                 const dayName = dayNames[dayOfWeek];
                 const isToday = dateStr === todayStr;
@@ -1871,7 +1995,7 @@
                 `;
                 
                 for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
-                    const dateStr = formatDateString(year, month, dayNum);
+                    const dateStr = fmtDs(year, month, dayNum);
                     const isToday = dateStr === todayStr;
                     const todayClass = isToday ? 'today' : '';
                     
@@ -1906,6 +2030,15 @@
             });
             
             rowsContainer.innerHTML = rowsHtml;
+
+            // Auto-scroll to today's column
+            setTimeout(() => {
+                const canvas   = document.querySelector('.gantt-scroll-canvas');
+                const todayCol = document.querySelector('.gantt-day-header-cell.today');
+                if (canvas && todayCol) {
+                    canvas.scrollLeft = todayCol.offsetLeft - canvas.clientWidth / 2 + todayCol.offsetWidth / 2;
+                }
+            }, 80);
         };
 
         const bindGanttInteractions = () => {
@@ -1979,9 +2112,36 @@
             return map[cat] || '#94a3b8';
         };
 
+        const expensesState = { selectedMonth: null }; // 'YYYY-MM' or null = all
+
         var renderExpenses = (container) => {
             const data = getBoardData();
+            // Remove legacy synthetic settlement entries from old mechanism
+            if (data.expenses) {
+                const cleaned = data.expenses.filter(e =>
+                    !(e.concept === 'Liquidación de deuda' && !e.settled && e.category === 'Finanzas')
+                );
+                if (cleaned.length !== data.expenses.length) {
+                    data.expenses = cleaned;
+                    saveBoardData(data);
+                }
+            }
             const expenses = data.expenses || [];
+
+            // Safe date formatter helper (avoids Invalid Date)
+            const safeFmtDate = (dateStr) => {
+                if (!dateStr) return '—';
+                const parts = String(dateStr).split('-');
+                if (parts.length !== 3) return dateStr;
+                try {
+                    return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+                        .toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+                } catch { return dateStr; }
+            };
+
+            // Only unsettled expenses count toward balance
+            const activeExpenses  = expenses.filter(e => !e.settled);
+            const settledExpenses = expenses.filter(e =>  e.settled);
 
             const totals = { 'oxi@oxiflow.com': 0, 'javi@oxiflow.com': 0 };
             let grandTotal = 0;
@@ -1991,17 +2151,29 @@
                 grandTotal += amt;
             });
 
-            const oxiTotal  = totals['oxi@oxiflow.com'];
-            const javiTotal = totals['javi@oxiflow.com'];
-            const fairShare = grandTotal / 2;
-            const oxiBalance  = oxiTotal  - fairShare;
-            const debtAmount  = Math.round(Math.abs(oxiBalance));
+            const activeTotals = { 'oxi@oxiflow.com': 0, 'javi@oxiflow.com': 0 };
+            activeExpenses.forEach(exp => {
+                const amt = Math.round(parseFloat(exp.amount) || 0);
+                if (activeTotals[exp.paidBy] !== undefined) activeTotals[exp.paidBy] += amt;
+            });
 
+            const oxiTotal   = totals['oxi@oxiflow.com'];
+            const javiTotal  = totals['javi@oxiflow.com'];
+            // Balance only from active (unsettled) expenses
+            const activeOxi  = activeTotals['oxi@oxiflow.com'];
+            const activeJavi = activeTotals['javi@oxiflow.com'];
+            const oxiBalance = activeOxi - activeJavi;   // > 0 = Oxi paid more (Javi owes)
+            const debtAmount = Math.round(Math.abs(oxiBalance) / 2);
+
+            const hasSettled = settledExpenses.length > 0;
             let settlementHTML = '';
             if (debtAmount < 1) {
+                const settledNote = hasSettled
+                    ? `<span style="font-size:0.75rem;opacity:0.7;margin-left:8px;">${settledExpenses.length} gasto${settledExpenses.length>1?'s':''} liquidado${settledExpenses.length>1?'s':''}</span>`
+                    : '';
                 settlementHTML = `<div class="settlement-card settled">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    <span>¡Cuentas perfectamente saldadas!</span>
+                    <span>¡No hay deuda pendiente!${settledNote}</span>
                 </div>`;
             } else {
                 const debtor  = oxiBalance > 0 ? 'Javi' : 'Oxi';
@@ -2013,7 +2185,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                             <span><strong>${debtor}</strong> le debe <strong>${formatCLP(debtAmount)}</strong> a <strong>${creditor}</strong></span>
                         </div>
-                        <button class="btn-saldado" id="btn-saldar-deuda" data-debtor="${debtorEmail}" data-amount="${debtAmount}">
+                        <button class="btn-saldado" id="btn-saldar-deuda" data-debtor="${debtorEmail}" data-debtor-name="${debtor}" data-creditor-name="${creditor}" data-amount="${debtAmount}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             Marcar como saldado
                         </button>
@@ -2027,11 +2199,9 @@
                 const avatarClass = isOxi ? 'avatar-oxi' : 'avatar-javi';
                 const initial = isOxi ? 'O' : 'J';
                 const catColor = getCategoryColor(exp.category);
-                const dateStr = exp.date
-                    ? new Date(exp.date + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
-                    : '—';
+                const dateStr = safeFmtDate(exp.date);
                 return `
-                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both;">
+                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both; ${exp.settled ? 'opacity:0.45;' : ''}">
                         <td class="expense-concept">${escapeHTML(exp.concept || 'Sin concepto')}</td>
                         <td class="expense-amount">${formatCLP(exp.amount)}</td>
                         <td><div class="expense-paid-by"><div class="expense-avatar ${avatarClass}">${initial}</div><span>${paidByName}</span></div></td>
@@ -2049,6 +2219,82 @@
                         </td>
                     </tr>`;
             }).join('');
+
+
+            // Build month filter options from all expenses
+            const monthSet = [...new Set(expenses.map(e => (e.date || '').slice(0,7)).filter(Boolean))].sort().reverse();
+            const mnLabels = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            const fmtMonth = (ym) => { const [y,m] = ym.split('-'); return `${mnLabels[parseInt(m)-1]} ${y}`; };
+
+            // Default: current month if available, else 'all'
+            if (expensesState.selectedMonth === null) {
+                const curMo = new Date().toISOString().slice(0,7);
+                expensesState.selectedMonth = monthSet.includes(curMo) ? curMo : (monthSet[0] || 'all');
+            }
+
+            const monthOptions = `<option value="all" ${expensesState.selectedMonth==='all'?'selected':''}>Todos los meses</option>`
+                + monthSet.map(ym => `<option value="${ym}" ${expensesState.selectedMonth===ym?'selected':''}>${fmtMonth(ym)}</option>`).join('');
+
+            // Filter for table
+            const filtered = expensesState.selectedMonth === 'all'
+                ? expenses
+                : expenses.filter(e => (e.date || '').startsWith(expensesState.selectedMonth));
+
+            // Filtered stats for cartola header
+            const filtTotal = filtered.reduce((s,e)=>s+Math.round(parseFloat(e.amount)||0),0);
+            const filtOxi   = filtered.filter(e=>e.paidBy==='oxi@oxiflow.com').reduce((s,e)=>s+Math.round(parseFloat(e.amount)||0),0);
+            const filtJavi  = filtered.filter(e=>e.paidBy==='javi@oxiflow.com').reduce((s,e)=>s+Math.round(parseFloat(e.amount)||0),0);
+
+            // Filtered expense rows
+            const filtExpenseRows = filtered.map((exp, idx) => {
+                const realIdx = expenses.indexOf(exp);
+                const isOxi = exp.paidBy === 'oxi@oxiflow.com';
+                const paidByName = isOxi ? 'Oxi' : 'Javi';
+                const avatarClass = isOxi ? 'avatar-oxi' : 'avatar-javi';
+                const initial = isOxi ? 'O' : 'J';
+                const catColor = getCategoryColor(exp.category);
+                const dateStr = safeFmtDate(exp.date);
+                return `
+                    <tr class="expense-row" style="animation: fadeIn 0.3s ease ${idx * 0.04}s both; ${exp.settled ? 'opacity:0.4;' : ''}">
+                        <td class="expense-concept">${escapeHTML(exp.concept || 'Sin concepto')}${exp.settled ? ' <span style="font-size:0.65rem;background:rgba(16,185,129,0.12);color:#10b981;border-radius:4px;padding:1px 5px;vertical-align:middle;">Saldado</span>' : ''}</td>
+                        <td class="expense-amount">${formatCLP(exp.amount)}</td>
+                        <td><div class="expense-paid-by"><div class="expense-avatar ${avatarClass}">${initial}</div><span>${paidByName}</span></div></td>
+                        <td>${dateStr}</td>
+                        <td><span class="expense-cat-tag" style="--cat-color:${catColor};">${escapeHTML(exp.category || 'Otro')}</span></td>
+                        <td>
+                            <div class="expense-row-actions">
+                                ${!exp.settled ? `
+                                <button class="expense-edit-btn" data-idx="${realIdx}" title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                </button>` : ''}
+                                <button class="expense-delete-btn" data-idx="${realIdx}" title="Eliminar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            // Settlements history
+            const settlements = data.settlements || [];
+            const settlementsHTML = settlements.length === 0 ? '' : `
+                <div class="glass-panel" style="margin-top:20px;padding:20px 24px;border-radius:var(--border-radius-lg);box-shadow:var(--shadow-card);">
+                    <h3 style="font-size:0.9rem;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--text-secondary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Historial de Liquidaciones
+                    </h3>
+                    ${settlements.slice().reverse().map(s => {
+                        const d = parseInt((s.date||'').split('-')[2]||'0',10);
+                        const [sy,sm] = (s.date||'').split('-');
+                        const mo = mnLabels[parseInt(sm)-1]||'';
+                        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-color);font-size:0.83rem;">
+                            <span style="font-weight:700;color:#10b981;white-space:nowrap;">${d} ${mo} ${sy}</span>
+                            <span style="flex:1;">${escapeHTML(s.debtor)} pagó <strong>${formatCLP(s.amount)}</strong> a ${escapeHTML(s.creditor)}</span>
+                            <span style="font-size:0.72rem;color:var(--text-secondary);">${s.expenseCount} gasto${s.expenseCount!==1?'s':''} liquidado${s.expenseCount!==1?'s':''}</span>
+                        </div>`;
+                    }).join('')}
+                </div>
+            `;
 
             container.innerHTML = `
                 <div class="expenses-container">
@@ -2069,12 +2315,12 @@
                         <div class="balance-card balance-oxi">
                             <div class="balance-avatar avatar-oxi">O</div>
                             <div class="balance-info"><span class="balance-name">Oxi</span><span class="balance-amount">${formatCLP(oxiTotal)}</span></div>
-                            <div class="balance-label">Aportado</div>
+                            <div class="balance-label">Aportado total</div>
                         </div>
                         <div class="balance-card balance-javi">
                             <div class="balance-avatar avatar-javi">J</div>
                             <div class="balance-info"><span class="balance-name">Javi</span><span class="balance-amount">${formatCLP(javiTotal)}</span></div>
-                            <div class="balance-label">Aportado</div>
+                            <div class="balance-label">Aportado total</div>
                         </div>
                         <div class="balance-card balance-total">
                             <div class="balance-icon"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg></div>
@@ -2083,12 +2329,28 @@
                         </div>
                     </div>
                     ${settlementHTML}
+
+                    <!-- Cartola mensual -->
+                    <div style="display:flex;align-items:center;gap:12px;margin:20px 0 12px;flex-wrap:wrap;">
+                        <label style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);">Ver:</label>
+                        <select id="expense-month-filter" class="filter-select" style="min-width:160px;">
+                            ${monthOptions}
+                        </select>
+                        ${expensesState.selectedMonth !== 'all' ? `
+                        <div style="display:flex;gap:16px;margin-left:auto;font-size:0.82rem;flex-wrap:wrap;">
+                            <span style="color:var(--text-secondary);">Oxi <strong style="color:var(--text-primary);">${formatCLP(filtOxi)}</strong></span>
+                            <span style="color:var(--text-secondary);">Javi <strong style="color:var(--text-primary);">${formatCLP(filtJavi)}</strong></span>
+                            <span style="font-weight:800;">Total: <strong style="color:var(--accent-primary);">${formatCLP(filtTotal)}</strong></span>
+                        </div>` : ''}
+                    </div>
+
                     <div class="expenses-table-wrapper">
                         <table class="expenses-table">
                             <thead><tr><th>Concepto</th><th>Monto</th><th>Pagado por</th><th>Fecha</th><th>Categoría</th><th></th></tr></thead>
-                            <tbody>${expenseRows || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No hay gastos aún. ¡Añade el primero!</td></tr>'}</tbody>
+                            <tbody>${filtExpenseRows || '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-secondary);">No hay gastos en este período.</td></tr>'}</tbody>
                         </table>
                     </div>
+                    ${settlementsHTML}
                 </div>
             `;
 
@@ -2098,16 +2360,32 @@
 
             document.getElementById('btn-saldar-deuda')?.addEventListener('click', (e) => {
                 const btn = e.currentTarget;
-                const debtorEmail = btn.getAttribute('data-debtor');
-                const amount = parseInt(btn.getAttribute('data-amount'), 10);
-                if (confirm(`¿Registrar el pago de ${formatCLP(amount)} para saldar la deuda?`)) {
+                const debtorName   = btn.getAttribute('data-debtor-name');
+                const creditorName = btn.getAttribute('data-creditor-name');
+                const amount       = parseInt(btn.getAttribute('data-amount'), 10);
+                if (confirm(`¿Confirmar liquidación? Se registrará el pago de ${formatCLP(amount)} de ${debtorName} a ${creditorName}.`)) {
                     const d = getBoardData();
-                    if (!d.expenses) d.expenses = [];
-                    d.expenses.push({ concept: 'Liquidación de deuda', amount, paidBy: debtorEmail, date: new Date().toISOString().split('T')[0], category: 'Finanzas', id: Date.now().toString(36) });
+                    const unsettled = (d.expenses || []).filter(exp => !exp.settled);
+                    if (!d.settlements) d.settlements = [];
+                    d.settlements.push({
+                        id: generateId(),
+                        date: new Date().toISOString().split('T')[0],
+                        debtor: debtorName,
+                        creditor: creditorName,
+                        amount,
+                        expenseCount: unsettled.length
+                    });
+                    unsettled.forEach(exp => { exp.settled = true; });
                     saveBoardData(d);
-                    addActivityLog('Deuda saldada', 'Gastos', 'low');
+                    addActivityLog(`${debtorName} pagó ${formatCLP(amount)} a ${creditorName}`, 'Gastos', 'low');
                     renderExpenses(container);
                 }
+            });
+
+            // Month filter
+            document.getElementById('expense-month-filter')?.addEventListener('change', (e) => {
+                expensesState.selectedMonth = e.target.value;
+                renderExpenses(container);
             });
 
             container.querySelectorAll('.expense-edit-btn').forEach(btn => {
@@ -2135,7 +2413,7 @@
             if (!panel) return;
             const renderInds = (d) => {
                 const fmt = v => formatCLP(Math.round(v || 0));
-                const fecha = d.uf?.fecha ? new Date(d.uf.fecha + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                const fecha = d.uf?.fecha ? (() => { try { return new Date(d.uf.fecha).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return ''; } })() : '';
                 panel.innerHTML = `
                     <div class="indicator-chip"><span class="ind-label">UF</span><span class="ind-value">${fmt(d.uf?.valor)}</span></div>
                     <div class="indicator-chip"><span class="ind-label">USD</span><span class="ind-value">${fmt(d.dolar?.valor)}</span></div>
@@ -2145,10 +2423,13 @@
                 `;
             };
             try {
+                // Invalidate cache if it produced Invalid Date (legacy bug)
                 const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { data, ts } = JSON.parse(cached);
-                    if (Date.now() - ts < CACHE_TTL) { renderInds(data); return; }
+                    const testDate = data.uf?.fecha ? new Date(data.uf.fecha) : null;
+                    const cacheOk  = testDate && !isNaN(testDate.getTime());
+                    if (cacheOk && Date.now() - ts < CACHE_TTL) { renderInds(data); return; }
                 }
                 const res = await fetch('https://mindicador.cl/api');
                 if (!res.ok) throw new Error('fetch error');
@@ -2185,7 +2466,7 @@
                         <div class="form-row-2">
                             <div class="form-group">
                                 <label for="exp-amount">Monto (CLP $)</label>
-                                <input type="number" id="exp-amount" placeholder="0" step="1" min="1" value="${existing ? Math.round(existing.amount) : ''}" required>
+                                <input type="text" inputmode="numeric" id="exp-amount" placeholder="0" value="${existing ? Math.round(existing.amount).toLocaleString('es-CL') : ''}" required autocomplete="off">
                             </div>
                             <div class="form-group">
                                 <label for="exp-date">Fecha</label>
@@ -2205,7 +2486,7 @@
                                 <select id="exp-category" required>${catOptions}</select>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;font-weight:700;font-size:1rem;margin-top:8px;">${isEdit ? 'Guardar Cambios' : 'Guardar Gasto'}</button>
+                        <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;font-weight:700;font-size:1rem;margin-top:4px;">${isEdit ? 'Guardar Cambios' : 'Guardar Gasto'}</button>
                     </form>
                 </div>
             `;
@@ -2217,21 +2498,32 @@
             const closeOverlay = () => { overlay.classList.remove('show'); setTimeout(() => overlay.remove(), 300); };
             overlay.querySelector('#expense-modal-close').addEventListener('click', closeOverlay);
             overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+
+            // CLP amount formatting
+            const amountInput = overlay.querySelector('#exp-amount');
+            amountInput.addEventListener('input', () => {
+                const digits = amountInput.value.replace(/\D/g, '');
+                const num    = parseInt(digits || '0', 10);
+                amountInput.value = num > 0 ? num.toLocaleString('es-CL') : '';
+            });
+
             overlay.querySelector('#expense-form').addEventListener('submit', e => {
                 e.preventDefault();
                 const concept  = overlay.querySelector('#exp-concept').value.trim();
-                const amount   = Math.round(parseFloat(overlay.querySelector('#exp-amount').value) || 0);
+                const rawAmt   = overlay.querySelector('#exp-amount').value.replace(/\./g, '').replace(/[^\d]/g, '');
+                const amount   = Math.round(parseInt(rawAmt || '0', 10));
                 const date     = overlay.querySelector('#exp-date').value;
                 const paidBy   = overlay.querySelector('#exp-paid-by').value;
                 const category = overlay.querySelector('#exp-category').value;
+                const splitPct = 50;
                 if (!concept || amount <= 0) return;
                 const d = getBoardData();
                 if (!d.expenses) d.expenses = [];
                 if (isEdit) {
-                    d.expenses[editIdx] = { ...d.expenses[editIdx], concept, amount, date, paidBy, category };
+                    d.expenses[editIdx] = { ...d.expenses[editIdx], concept, amount, date, paidBy, category, splitPct };
                     addActivityLog(`Gasto editado: ${concept}`, 'Gastos', 'low');
                 } else {
-                    d.expenses.push({ concept, amount, date, paidBy, category, id: Date.now().toString(36) });
+                    d.expenses.push({ concept, amount, date, paidBy, category, splitPct, id: Date.now().toString(36) });
                     addActivityLog(`Gasto añadido: ${concept} (${formatCLP(amount)})`, 'Gastos', 'medium');
                 }
                 saveBoardData(d);
@@ -2413,21 +2705,47 @@
                 if (avatarEl && nameEl && roleEl) {
                     if (user) {
                         const isOxi = user.email === 'oxi@oxiflow.com';
-                        avatarEl.textContent = isOxi ? 'O' : 'J';
-                        avatarEl.style.background = isOxi
-                            ? 'linear-gradient(135deg, #6366f1, #3b82f6)'
-                            : 'linear-gradient(135deg, #ec4899, #a855f7)';
-                        avatarEl.style.color = 'white';
-                        avatarEl.style.fontWeight = '800';
+                        // Show mini mouse SVG matching login screen
+                        avatarEl.style.background = 'transparent';
+                        avatarEl.style.color = '';
+                        avatarEl.style.fontWeight = '';
                         avatarEl.style.display = 'flex';
                         avatarEl.style.alignItems = 'center';
                         avatarEl.style.justifyContent = 'center';
+                        if (isOxi) {
+                            avatarEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+                                <circle cx="10" cy="10" r="6" fill="#6366f1" opacity="0.85"/>
+                                <circle cx="10" cy="10" r="3.5" fill="#a5b4fc"/>
+                                <circle cx="26" cy="10" r="6" fill="#6366f1" opacity="0.85"/>
+                                <circle cx="26" cy="10" r="3.5" fill="#a5b4fc"/>
+                                <ellipse cx="18" cy="24" rx="11" ry="9" fill="#6366f1"/>
+                                <circle cx="14" cy="22" r="2" fill="white"/>
+                                <circle cx="22" cy="22" r="2" fill="white"/>
+                                <circle cx="14.5" cy="22" r="1" fill="#1e1b4b"/>
+                                <circle cx="22.5" cy="22" r="1" fill="#1e1b4b"/>
+                                <ellipse cx="18" cy="26" rx="2" ry="1.5" fill="#fda4af"/>
+                            </svg>`;
+                        } else {
+                            avatarEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+                                <circle cx="10" cy="10" r="6" fill="#ec4899" opacity="0.85"/>
+                                <circle cx="10" cy="10" r="3.5" fill="#f9a8d4"/>
+                                <circle cx="26" cy="10" r="6" fill="#ec4899" opacity="0.85"/>
+                                <circle cx="26" cy="10" r="3.5" fill="#f9a8d4"/>
+                                <ellipse cx="18" cy="24" rx="11" ry="9" fill="#ec4899"/>
+                                <circle cx="14" cy="22" r="2" fill="white"/>
+                                <circle cx="22" cy="22" r="2" fill="white"/>
+                                <circle cx="14.5" cy="22" r="1" fill="#4a044e"/>
+                                <circle cx="22.5" cy="22" r="1" fill="#4a044e"/>
+                                <ellipse cx="18" cy="26" rx="2" ry="1.5" fill="#fda4af"/>
+                            </svg>`;
+                        }
                         nameEl.textContent = user.name;
                         roleEl.textContent = user.email;
                     } else {
-                        avatarEl.textContent = 'U';
-                        avatarEl.style.background = '';
-                        avatarEl.style.color = '';
+                        avatarEl.innerHTML = '';
+                        avatarEl.textContent = '?';
+                        avatarEl.style.background = 'var(--glass-bg)';
+                        avatarEl.style.color = 'var(--text-secondary)';
                         nameEl.textContent = 'Sin sesión';
                         roleEl.textContent = 'Selecciona tu perfil';
                     }
