@@ -2740,7 +2740,7 @@
                             </svg>`;
                         }
                         nameEl.textContent = user.name;
-                        roleEl.textContent = user.email;
+                        roleEl.textContent = user.name === 'Oxi' ? 'Administradora' : 'Administrador';
                     } else {
                         avatarEl.innerHTML = '';
                         avatarEl.textContent = '?';
