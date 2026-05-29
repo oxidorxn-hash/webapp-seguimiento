@@ -117,6 +117,16 @@ html, body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color var(--transition-normal), color var(--transition-normal);
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* iPad / touch devices: allow native momentum scrolling everywhere needed */
+@supports (-webkit-touch-callout: none) {
+    .content-body, .kanban-board, .gantt-scroll-canvas,
+    .calendar-days-grid, .expenses-table-wrapper, .column-cards-list,
+    .sidebar-nav, .recent-tasks-list, .modal-form {
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 a, button, select, input, textarea {
@@ -180,13 +190,14 @@ a, button, select, input, textarea {
 
 .logo-icon {
     color: var(--accent-primary);
-    filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4));
-    animation: rotateLogo 8s linear infinite;
+    filter: drop-shadow(0 2px 10px rgba(99, 102, 241, 0.55));
+    animation: floatLogo 3.5s ease-in-out infinite;
+    transform-origin: center bottom;
 }
 
-@keyframes rotateLogo {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes floatLogo {
+    0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 2px 10px rgba(99,102,241,0.55)); }
+    50%       { transform: translateY(-4px) scale(1.05); filter: drop-shadow(0 6px 18px rgba(99,102,241,0.75)); }
 }
 
 .logo-text {
@@ -410,8 +421,11 @@ body.light-theme .icon-dark {
     flex: 1;
     padding: 32px;
     overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
-    /* Smooth transitions when loading content */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
     animation: fadeIn var(--transition-normal) forwards;
 }
 
@@ -826,6 +840,7 @@ body.light-theme .icon-dark {
     display: flex;
     gap: 20px;
     overflow-x: auto;
+    overflow-y: visible;
     align-items: flex-start;
     padding-bottom: 16px;
     height: calc(100vh - 180px);
@@ -833,6 +848,9 @@ body.light-theme .icon-dark {
     max-width: 1060px;
     margin: 0 auto;
     width: 100%;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    scroll-snap-type: x proximity;
 }
 
 /* Column Panel */
@@ -1361,9 +1379,84 @@ body.light-theme .icon-dark {
     }
     
     .kanban-board {
-        height: calc(100vh - 250px);
+        height: auto;
+        min-height: 60vh;
+        overflow-x: auto;
+        overflow-y: visible;
+        justify-content: flex-start;
+        scroll-snap-type: x mandatory;
     }
-    
+
+    .kanban-column {
+        scroll-snap-align: start;
+        min-width: 280px;
+        width: 85vw;
+        max-width: 340px;
+    }
+
+    /* Calendar responsive */
+    .calendar-wrapper {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-days-grid {
+        min-height: 400px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Timeline/Gantt responsive */
+    .gantt-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+    }
+
+    .gantt-scroll-canvas {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Dashboard responsive */
+    .dashboard-header-intro {
+        grid-template-columns: 1fr !important;
+    }
+
+    .charts-row {
+        flex-direction: column;
+    }
+
+    .chart-panel {
+        width: 100%;
+    }
+
+    /* Content body full scroll on mobile */
+    .content-body {
+        padding: 16px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: calc(100vh - 60px);
+        max-height: none;
+    }
+
+    /* Modal full screen on mobile */
+    .expense-modal-card, .modal-card {
+        max-width: 96vw !important;
+        margin: 8px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .expense-modal-overlay, .modal-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .expense-modal-card, .modal-card {
+        border-radius: 20px 20px 0 0 !important;
+    }
+
     .search-container {
         width: 100%;
     }
@@ -2960,4 +3053,147 @@ body.light-theme .cal-event-pill {
 body.light-theme .cal-holiday-pill {
     background: rgba(239, 68, 68, 0.08);
     color: #dc2626;
+}
+
+/* ============================================================
+   VISUAL EFFECTS & POLISH
+   ============================================================ */
+
+/* Glassmorphism shimmer on hover */
+.glass-panel {
+    position: relative;
+    overflow: hidden;
+}
+.glass-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.04) 50%, transparent 70%);
+    background-size: 200% 100%;
+    background-position: 200% 0;
+    transition: background-position 0.6s ease;
+    pointer-events: none;
+    border-radius: inherit;
+}
+.glass-panel:hover::after {
+    background-position: -200% 0;
+}
+
+/* Metric cards — neon glow on hover */
+.metric-card {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
+}
+.metric-card:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+}
+#metric-total-card:hover     { box-shadow: 0 12px 32px -6px rgba(99,102,241,0.35) !important; }
+#metric-completed-card:hover { box-shadow: 0 12px 32px -6px rgba(16,185,129,0.35) !important; }
+#metric-inprogress-card:hover{ box-shadow: 0 12px 32px -6px rgba(245,158,11,0.35) !important; }
+#metric-overdue-card:hover   { box-shadow: 0 12px 32px -6px rgba(239,68,68,0.35)  !important; }
+
+/* Kanban cards — deeper lift */
+.kanban-card {
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease !important;
+}
+.kanban-card:hover {
+    transform: translateY(-3px) scale(1.01) !important;
+}
+
+/* Input / select focus glow */
+input:not([type="range"]):focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.18), 0 0 12px rgba(99,102,241,0.12) !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Active nav button — stronger glow */
+.nav-btn.active {
+    box-shadow: 0 4px 24px -4px rgba(99,102,241,0.55), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+}
+
+/* Balance cards — animated gradient border */
+.balance-card {
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
+}
+.balance-card:hover {
+    transform: translateY(-3px);
+}
+.balance-card.balance-oxi:hover {
+    box-shadow: 0 12px 30px -6px rgba(99,102,241,0.3);
+}
+.balance-card.balance-javi:hover {
+    box-shadow: 0 12px 30px -6px rgba(236,72,153,0.3);
+}
+
+/* Settlement card — pulse when there's debt */
+.settlement-card.owes {
+    animation: debtPulse 3s ease-in-out infinite;
+}
+@keyframes debtPulse {
+    0%, 100% { box-shadow: 0 4px 20px -4px rgba(245,158,11,0.15); }
+    50%       { box-shadow: 0 8px 30px -4px rgba(245,158,11,0.35); }
+}
+
+/* Calendar day box hover */
+.calendar-day-box {
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.calendar-day-box:not(.other-month):hover {
+    background: rgba(99,102,241,0.06) !important;
+    border-color: rgba(99,102,241,0.2) !important;
+    transform: scale(1.01);
+}
+
+/* Login profile card — smoother entrance */
+.login-profile-card {
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s ease, border-color 0.25s ease !important;
+}
+
+/* Btn primary — shimmer sweep on hover */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+}
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.5s ease;
+}
+.btn-primary:hover::after {
+    left: 160%;
+}
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -4px rgba(99,102,241,0.45);
+}
+.btn-primary:active {
+    transform: scale(0.97);
+}
+
+/* Expense row hover */
+.expense-row {
+    transition: background 0.15s ease;
+}
+.expense-row:hover td {
+    background: rgba(99,102,241,0.04);
+}
+
+/* Recent task item hover */
+.recent-task-item {
+    transition: background 0.15s ease, transform 0.15s ease;
+    border-radius: var(--border-radius-sm);
+    padding: 6px 4px;
+}
+.recent-task-item:hover {
+    background: rgba(99,102,241,0.05);
+    transform: translateX(2px);
 }
