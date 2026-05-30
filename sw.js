@@ -1,4 +1,4 @@
-const CACHE_NAME = 'oxiflow-kanban-v1';
+const CACHE_NAME = 'oxiflow-kanban-v2';
 const ASSETS = [
     'index.html',
     'css/styles.css',
@@ -19,23 +19,24 @@ self.addEventListener('activate', (e) => {
         caches.keys().then((keys) => {
             return Promise.all(
                 keys.map((key) => {
-                    if (key !== CACHE_NAME) {
-                        return caches.delete(key);
-                    }
+                    if (key !== CACHE_NAME) return caches.delete(key);
                 })
             );
         }).then(() => self.clients.claim())
     );
 });
 
+// Network-first: always gets latest files, cache only as offline fallback
 self.addEventListener('fetch', (e) => {
     e.respondWith(
-        caches.match(e.request).then((cachedResponse) => {
-            return cachedResponse || fetch(e.request).catch(() => {
-                if (e.request.mode === 'navigate') {
-                    return caches.match('index.html');
-                }
-            });
-        })
+        fetch(e.request)
+            .then((response) => {
+                const copy = response.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+                return response;
+            })
+            .catch(() => caches.match(e.request).then((cached) =>
+                cached || (e.request.mode === 'navigate' ? caches.match('index.html') : undefined)
+            ))
     );
 });

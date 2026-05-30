@@ -1037,6 +1037,10 @@ body.light-theme .icon-dark {
     position: relative;
     box-shadow: var(--shadow-card);
     transition: box-shadow var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .kanban-card:active {
@@ -1396,12 +1400,29 @@ body.light-theme .icon-dark {
     }
     
     .kanban-actions {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+        gap: 8px !important;
     }
-    
+
+    .kanban-actions::-webkit-scrollbar { display: none; }
+
     .filter-wrapper {
-        justify-content: space-between;
+        flex-shrink: 0;
+        gap: 4px !important;
+    }
+
+    .filter-wrapper label {
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+    }
+
+    .filter-select {
+        font-size: 0.78rem !important;
+        padding: 5px 8px !important;
     }
     
     .kanban-board {
@@ -1418,6 +1439,14 @@ body.light-theme .icon-dark {
         min-width: 280px;
         width: 85vw;
         max-width: 340px;
+    }
+
+    .column-cards-list {
+        gap: 14px !important;
+    }
+
+    .kanban-card {
+        padding: 18px 16px !important;
     }
 
     /* Calendar responsive */
@@ -2040,7 +2069,7 @@ body.light-theme .icon-dark {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at center, #0e1320 0%, #03060c 100%);
+    background: radial-gradient(circle at center, #0e1320 0%, #03060c 100%) !important;
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -3375,11 +3404,19 @@ body.light-theme .task-comment-input {
 
 /* Mobile Optimizations (iOS Safari safe input zoom & responsive fixes) */
 @media (max-width: 480px) {
-    .login-password-input {
+    .login-password-wrapper {
         width: 90% !important;
-        max-width: 290px !important;
-        padding: 14px 20px !important;
-        font-size: 16px !important; /* Critical to prevent iOS Safari auto-zoom */
+        max-width: 320px !important;
+    }
+
+    .login-password-input {
+        padding: 16px 20px !important;
+        font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+    }
+
+    .login-card {
+        padding: 36px 24px !important;
+        margin: 16px !important;
     }
     
     /* Calendar Mobile View improvements (Caso 5) */
