@@ -320,6 +320,15 @@
         // Helper to generate IDs
         var generateId = () => 'id-' + Math.random().toString(36).substr(2, 9);
 
+        // Helper to get local date string (YYYY-MM-DD) avoiding UTC shifts
+        var getLocalDateString = () => {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
         // Seed Data
         const FIXED_COLUMNS = [
             { id: 'col-pending',    title: 'Pendientes',  color: '#6366f1' },
@@ -632,7 +641,7 @@
             let completedTasks = 0;
             let inProgressTasks = 0;
             let overdueTasks = 0;
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalDateString();
             
             let completedColId = '';
             const completedCol = data.columns.find(col => 
@@ -693,7 +702,7 @@
             const session = getActiveUserSession();
             const userName = session ? session.name : 'Usuario';
 
-            // Pre-compute events for month
+            // Pre-compute events for month and today
             const dashNow = new Date();
             const dashYear = dashNow.getFullYear(), dashMonth = dashNow.getMonth();
             const dashMonthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -701,6 +710,8 @@
             const monthEventsForHeader = allEvents
                 .filter(ev => { if (!ev.date) return false; const [y,m] = ev.date.split('-').map(Number); return y===dashYear && (m-1)===dashMonth; })
                 .sort((a,b) => a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
+
+            const todayEvents = allEvents.filter(ev => ev.date === todayStr);
 
             const todayEventsHtml = monthEventsForHeader.length === 0
                 ? `<p style="font-size:0.82rem;color:var(--text-secondary);padding:4px 0;">Sin eventos este mes.</p>`
@@ -723,13 +734,19 @@
                     <div class="glass-panel" style="padding:18px 20px;border-radius:var(--border-radius-lg);border-left:4px solid var(--accent-primary);box-shadow:var(--shadow-card);">
                         <h3 style="font-size:0.9rem;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            Tareas para Hoy
+                            Hoy y Eventos
                         </h3>
-                        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;">
+                        <p style="font-size:0.83rem;color:var(--text-secondary);line-height:1.5;margin-bottom:6px;">
                             ${todayTasks.length===0
                                 ? 'Sin tareas para hoy. ¡Buen momento para planificar!'
                                 : `<strong style="color:var(--text-primary);">${todayTasks.length}</strong> ${todayTasks.length===1?'tarea activa':'tareas activas'}: ${todayTasks.map(t=>escapeHTML(t.title)).join(', ')}.`}
                         </p>
+                        ${todayEvents.length > 0 ? `
+                        <div style="margin-top:8px;border-top:1px dashed var(--border-color);padding-top:8px;font-size:0.8rem;color:var(--text-secondary);">
+                            <span style="font-weight:700;color:var(--accent-primary);">📅 Eventos hoy:</span>
+                            ${todayEvents.map(e => `<span style="color:var(--text-primary);font-weight:600;">${escapeHTML(e.title)}${e.time ? ` (${e.time})` : ''}</span>`).join(', ')}
+                        </div>
+                        ` : ''}
                     </div>
                     <!-- Tareas Próximas -->
                     <div class="glass-panel" style="padding:18px 20px;border-radius:var(--border-radius-lg);border-left:4px solid #f59e0b;box-shadow:var(--shadow-card);">
@@ -1250,7 +1267,7 @@
          * @param {string} columnId - Parent column ID.
          */
         const renderTaskCard = (task, columnId) => {
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalDateString();
             const isOverdue = task.date && task.date < todayStr && columnId !== 'col-completed';
             
             // Priority labels in Spanish
@@ -1934,7 +1951,7 @@
         const renderCalendarDays = (year, month, data, holidays) => {
             const grid = document.getElementById('calendar-days-grid');
             if (!grid) return;
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalDateString();
             const firstDayOffset = (new Date(year, month, 1).getDay() + 6) % 7;
             const totalDays      = new Date(year, month + 1, 0).getDate();
             const totalPrevDays  = new Date(year, month, 0).getDate();
@@ -1986,7 +2003,7 @@
 
         const openEventModal = (existing = null, preDate = null, calContainer = null) => {
             document.getElementById('event-modal-overlay')?.remove();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalDateString();
             const isEdit   = existing !== null;
 
             const getGCalUrl = (ev) => {
@@ -2399,7 +2416,7 @@
                     if (!d.settlements) d.settlements = [];
                     d.settlements.push({
                         id: generateId(),
-                        date: new Date().toISOString().split('T')[0],
+                        date: getLocalDateString(),
                         debtor: debtorName,
                         creditor: creditorName,
                         amount,
@@ -2475,7 +2492,7 @@
         const openExpenseModal = (existing = null, editIdx = -1, expContainer = null) => {
             document.getElementById('expense-modal-overlay')?.remove();
             const catOptions = EXPENSE_CATEGORIES.map(c => `<option value="${escapeHTML(c)}" ${existing?.category === c ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('');
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getLocalDateString();
             const isEdit = existing !== null && editIdx >= 0;
             const overlay = document.createElement('div');
             overlay.className = 'expense-modal-overlay show';
