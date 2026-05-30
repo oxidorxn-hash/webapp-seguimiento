@@ -1044,8 +1044,7 @@ body.light-theme .icon-dark {
 }
 
 .kanban-card:hover {
-    box-shadow: 0 8px 24px -6px var(--shadow-color), 0 0 16px -2px var(--card-color, var(--accent-primary));
-    border-color: var(--card-color, var(--accent-primary)) !important;
+    box-shadow: 0 8px 24px -6px var(--shadow-color), 0 0 0 1.5px var(--card-color, var(--accent-primary)), 0 0 16px -2px var(--card-color, var(--accent-primary));
 }
 
 .kanban-card.dragging {
@@ -3392,5 +3391,64 @@ body.light-theme .balance-card:hover {
     50% {
         box-shadow: 0 12px 32px -4px rgba(245,158,11,0.22);
         border-color: rgba(245, 158, 11, 0.35);
+    }
+}
+
+/* Elegant Comments Input */
+.task-comment-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    transition: all var(--transition-fast);
+}
+
+body.light-theme .task-comment-input {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+.task-comment-input:focus {
+    outline: none;
+    border-color: var(--accent-primary) !important;
+    background: var(--bg-secondary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+}
+
+/* Mobile Optimizations (iOS Safari safe input zoom & responsive fixes) */
+@media (max-width: 480px) {
+    .login-password-input {
+        width: 90% !important;
+        max-width: 290px !important;
+        padding: 14px 20px !important;
+        font-size: 16px !important; /* Critical to prevent iOS Safari auto-zoom */
+    }
+    
+    /* Calendar Mobile View improvements (Caso 5) */
+    .calendar-container {
+        padding: 8px !important;
+    }
+    
+    .calendar-header {
+        margin-bottom: 12px !important;
+        padding: 10px !important;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start !important;
+    }
+
+    .calendar-header h2 {
+        font-size: 1.35rem !important; /* Smaller cleaner header */
+    }
+    
+    .calendar-days-header {
+        font-size: 0.72rem !important;
+    }
+    
+    .calendar-day-box {
+        min-height: 48px !important;
     }
 }
