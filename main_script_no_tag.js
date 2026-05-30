@@ -1,298 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <!-- Global JavaScript Error Boundary -->
-    <script>
-        window.showAppError = function(message, sourceInfo) {
-            if (document.getElementById('app-error-banner')) return;
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.id = 'app-error-banner';
-            errorDiv.style.position = 'fixed';
-            errorDiv.style.bottom = '20px';
-            errorDiv.style.right = '20px';
-            errorDiv.style.maxWidth = '450px';
-            errorDiv.style.background = 'rgba(239, 68, 68, 0.98)';
-            errorDiv.style.color = '#ffffff';
-            errorDiv.style.padding = '18px 22px';
-            errorDiv.style.borderRadius = '14px';
-            errorDiv.style.zIndex = '99999';
-            errorDiv.style.fontFamily = 'monospace';
-            errorDiv.style.fontSize = '12px';
-            errorDiv.style.lineHeight = '1.6';
-            errorDiv.style.boxShadow = '0 10px 35px rgba(239, 68, 68, 0.4)';
-            errorDiv.style.backdropFilter = 'blur(12px)';
-            errorDiv.style.border = '1px solid rgba(255,255,255,0.25)';
-            errorDiv.style.animation = 'fadeIn 0.3s ease-out';
-            
-            errorDiv.innerHTML = `
-                <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Error de Ejecución Detallado
-                </div>
-                <div style="opacity: 0.95; margin-bottom: 10px; font-weight: 600;">${message}</div>
-                <div style="font-size: 10px; opacity: 0.8; white-space: pre-wrap; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px; max-height: 150px; overflow-y: auto;">${sourceInfo}</div>
-            `;
-            document.body.appendChild(errorDiv);
-        };
-        
-        window.onerror = function(message, source, lineno, colno, error) {
-            const file = source ? source.substring(source.lastIndexOf('/') + 1) : 'unknown';
-            window.showAppError(message, `Archivo: ${file}\nLínea: ${lineno}:${colno}\nStack: ${error ? error.stack : 'No disponible'}`);
-            return false;
-        };
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ratoncitos — Hogar Oxi & Javi</title>
-    <!-- Google Fonts: Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="css/styles.css">
-    
-    <!-- PWA Manifest & Icons -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icon.svg">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#6366f1">
-    
-    <script>
-        // Register Service Worker for PWA support
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                     .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
-                     .catch(err => console.error('Error al registrar Service Worker:', err));
-            });
-        }
-    </script>
-    <!-- Firebase SDK Compat -->
-    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-</head>
-<body class="dark-theme">
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span class="logo-text">Ratoncitos</span>
-                </div>
-                <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Menu">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
-                </button>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <button class="nav-btn active" data-view="dashboard" id="nav-dashboard">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="10" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>
-                    <span>Dashboard</span>
-                </button>
-                <button class="nav-btn" data-view="kanban" id="nav-kanban">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M11 3v18"></path><path d="M16 3v18"></path><path d="M8 3v18"></path></svg>
-                    <span>Tareas</span>
-                </button>
-                <button class="nav-btn" data-view="calendar" id="nav-calendar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-                    <span>Calendario</span>
-                </button>
-
-                <button class="nav-btn" data-view="expenses" id="nav-expenses">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                    <span>Gastos</span>
-                </button>
-            </nav>
-
-            <div class="sidebar-footer">
-                <button class="theme-toggle-btn" id="theme-toggle" aria-label="Cambiar tema">
-                    <span class="icon-light">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-                    </span>
-                    <span class="icon-dark">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-                    </span>
-                    <span class="theme-toggle-text">Modo Claro</span>
-                </button>
-                <div class="user-profile">
-                    <div class="avatar">U</div>
-                    <div class="user-info">
-                        <span class="user-name">Usuario Demo</span>
-                        <span class="user-role">Administrador</span>
-                    </div>
-                    <button class="logout-btn" id="logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <header class="top-bar">
-                <div class="search-container" id="global-search-container">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                    <input type="text" placeholder="Buscar tareas..." id="search-input" class="search-input">
-                </div>
-                <div class="top-bar-actions">
-                    <div class="date-badge" id="current-date">Cargando fecha...</div>
-                </div>
-            </header>
-
-            <div class="content-body" id="app-content">
-                <!-- Dynamic Content Loaded Here -->
-            </div>
-        </main>
-    </div>
-
-    <!-- Universal Modal for Tasks/Columns -->
-    <div class="modal-overlay" id="modal-overlay">
-        <div class="modal-card" id="task-modal">
-            <div class="modal-header">
-                <h3 id="modal-title">Añadir Tarea</h3>
-                <button class="close-btn" id="modal-close" aria-label="Cerrar modal">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-                </button>
-            </div>
-            <form id="task-form" class="modal-form">
-                <input type="hidden" id="task-id">
-                <input type="hidden" id="task-column-id">
-                
-                <div class="form-group">
-                    <label for="task-title-input">Título de la tarea</label>
-                    <input type="text" id="task-title-input" required placeholder="Ej. Implementar autenticación" maxlength="80">
-                </div>
-                
-                <div class="form-group">
-                    <label for="task-desc-input">Descripción</label>
-                    <textarea id="task-desc-input" rows="3" placeholder="Describe brevemente de qué trata esta tarea..." maxlength="300"></textarea>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="task-priority-input">Prioridad</label>
-                        <select id="task-priority-input" required>
-                            <option value="low">Baja</option>
-                            <option value="medium" selected>Media</option>
-                            <option value="high">Alta</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="task-category-input">Categoría</label>
-                        <select id="task-category-input" required>
-                            <option value="Casa" selected>Casa</option>
-                            <option value="Trabajo">Trabajo</option>
-                            <option value="Supermercado">Supermercado</option>
-                            <option value="Mascotas">Mascotas</option>
-                            <option value="Finanzas">Finanzas</option>
-                            <option value="Ocio">Ocio</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="task-start-date-input">Fecha de inicio <span style="font-weight:400;opacity:0.6;">(opcional)</span></label>
-                        <input type="date" id="task-start-date-input">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="task-date-input">Fecha límite</label>
-                        <input type="date" id="task-date-input" required>
-                    </div>
-                </div>
-                
-                <div class="form-group" style="margin-top: 16px;">
-                    <label style="font-weight: 700; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span>Subtareas</span>
-                        <span id="subtasks-progress" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">0/0 (0%)</span>
-                    </label>
-                    <div style="width: 100%; height: 6px; background-color: rgba(255, 255, 255, 0.05); border-radius: var(--border-radius-full); margin-bottom: 12px; overflow: hidden;">
-                        <div id="subtasks-progress-bar" style="width: 0%; height: 100%; background: var(--accent-gradient); border-radius: var(--border-radius-full); transition: width 0.3s ease;"></div>
-                    </div>
-                    <div id="subtasks-list-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; margin-bottom: 12px; padding: 4px;">
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="new-subtask-input" placeholder="Añadir subtarea..." style="flex: 1; padding: 8px 12px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02); font-size: 0.85rem;" maxlength="80">
-                        <button type="button" class="btn btn-secondary" id="add-subtask-btn" style="padding: 8px 12px;">+</button>
-                    </div>
-                </div>
-                
-                <div class="form-group" id="calendar-export-group" style="display: none; margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px;">Añadir a Calendario</label>
-                    <div style="display: flex; gap: 12px;">
-                        <a id="export-google-btn" href="#" target="_blank" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 12px; border-radius: var(--border-radius-sm); display: flex; align-items: center; gap: 6px; text-decoration: none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-                            Google Calendar
-                        </a>
-                        <button type="button" id="export-apple-btn" class="btn btn-secondary" style="font-size: 0.78rem; padding: 6px 12px; border-radius: var(--border-radius-sm); display: flex; align-items: center; gap: 6px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"></path><path d="M12 16V12"></path><path d="M12 8H12.01"></path></svg>
-                            Apple / iCal
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="modal-submit-btn">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- View Task Modal -->
-    <div class="modal-overlay" id="task-view-overlay">
-        <div class="modal-card" id="task-view-card" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3 id="view-task-title" style="margin-right: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px;">
-                    Título
-                </h3>
-                <div style="display: flex; gap: 8px;">
-                    <button class="close-btn" id="view-task-edit-btn" aria-label="Editar" title="Editar Tarea" style="background: rgba(255,255,255,0.05);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    </button>
-                    <button class="close-btn" onclick="document.getElementById('task-view-overlay').classList.remove('show')" aria-label="Cerrar modal">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-                    </button>
-                </div>
-            </div>
-            <div class="modal-body" style="padding: 20px;">
-                <div id="view-task-meta" style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;"></div>
-                <p id="view-task-desc" style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;"></p>
-                
-                <div id="view-task-progress-container" style="margin-bottom: 20px; display: none;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; color: var(--text-secondary);">
-                        <span>Progreso de subtareas</span>
-                        <span id="view-task-progress-text">0%</span>
-                    </div>
-                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                        <div id="view-task-progress-bar" style="height: 100%; background: var(--accent-primary); width: 0%; transition: width 0.3s ease;"></div>
-                    </div>
-                </div>
-
-                <div id="view-task-subtasks-section" style="margin-bottom: 20px; display: none;">
-                    <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; color: var(--text-secondary);">SUBTAREAS</h4>
-                    <div id="view-task-subtasks-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
-                </div>
-
-                <div id="view-task-comments-section">
-                    <h4 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; color: var(--text-secondary);">COMENTARIOS</h4>
-                    <div id="view-task-comments-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height: 200px; overflow-y: auto;"></div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="view-task-new-comment" placeholder="Añadir comentario..." style="flex: 1; padding: 10px 12px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white; font-size: 0.85rem;">
-                        <button type="button" class="btn btn-primary" id="view-task-add-comment-btn" style="padding: 8px 16px; font-size: 0.85rem;">Enviar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- App Combined Engine -->
-    <script>
         /* ==========================================================================
            STORAGE SERVICE
            Handles LocalStorage, seed data generation, and activity logging.
@@ -1222,13 +927,7 @@
                         </div>
                         <div class="column-cards-list" data-col-id="${column.id}">
                             ${filteredTasks.length === 0
-                                ? `<div class="kanban-empty-state">
-                                    <div class="empty-state-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                    </div>
-                                    <span class="empty-state-text">¡Todo al día aquí! ✨</span>
-                                    <span class="empty-state-subtext">Suelta tareas en esta columna</span>
-                                   </div>`
+                                ? `<div class="empty-col-msg" style="text-align:center;color:var(--text-secondary);font-size:0.75rem;padding:20px 0;border:1.5px dashed var(--border-color);border-radius:var(--border-radius-md);">Suelta tareas aquí</div>`
                                 : filteredTasks.map(task => renderTaskCard(task, column.id)).join('')}
                         </div>
                         <button class="btn btn-secondary add-task-btn" style="margin-top:14px;justify-content:center;padding:8px 12px;font-size:0.8rem;" data-col-id="${column.id}">
@@ -2040,6 +1739,7 @@
                         <div class="form-group" style="position: relative;">
                             <label for="evt-address">Dirección / Lugar</label>
                             <input type="text" id="evt-address" placeholder="Ej: Av. Principal 123, Santiago" value="${escapeHTML(existing?.address || '')}" autocomplete="off">
+                            <ul id="evt-address-suggestions" style="display: none; position: absolute; z-index: 1000; background: var(--glass-bg); backdrop-filter: blur(10px); width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); list-style: none; padding: 0; margin-top: 4px; max-height: 150px; overflow-y: auto; box-shadow: var(--shadow-card);"></ul>
                         </div>
                         <div class="form-group">
                             <label for="evt-notes">Notas</label>
@@ -2067,7 +1767,55 @@
 
             document.body.appendChild(overlay);
 
+            // Address Autocomplete (Nominatim)
+            const addrInput = overlay.querySelector('#evt-address');
+            const addrSuggestions = overlay.querySelector('#evt-address-suggestions');
+            let nominatimTimeout;
+
+            addrInput.addEventListener('input', (e) => {
+                clearTimeout(nominatimTimeout);
+                const query = e.target.value.trim();
+                if (query.length < 3) {
+                    addrSuggestions.style.display = 'none';
+                    return;
+                }
+                nominatimTimeout = setTimeout(() => {
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.length === 0) {
+                                addrSuggestions.style.display = 'none';
+                                return;
+                            }
+                            addrSuggestions.innerHTML = data.map(item => `
+                                <li style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--text-primary); transition: background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.style.background='transparent'">
+                                    ${escapeHTML(item.display_name)}
+                                </li>
+                            `).join('');
+                            
+                            const lis = addrSuggestions.querySelectorAll('li');
+                            lis.forEach((li, idx) => {
+                                li.onclick = () => {
+                                    addrInput.value = data[idx].display_name;
+                                    addrSuggestions.style.display = 'none';
+                                };
+                            });
+                            addrSuggestions.style.display = 'block';
+                        })
+                        .catch(err => console.error("OSM error:", err));
+                }, 500);
+            });
+            
+            // Close suggestions on outside click
+            const outsideClickOsm = (e) => {
+                if (e.target !== addrInput && e.target !== addrSuggestions) {
+                    addrSuggestions.style.display = 'none';
+                }
+            };
+            document.addEventListener('click', outsideClickOsm);
+
             const closeOverlay = () => { 
+                document.removeEventListener('click', outsideClickOsm);
                 overlay.classList.remove('show'); 
                 setTimeout(() => overlay.remove(), 300); 
             };
@@ -2848,76 +2596,3 @@
         } else {
             init();
         }
-    </script>
-
-    <!-- Direct Login — Profile Selector for Oxi & Javi -->
-    <div class="login-overlay" id="login-overlay">
-        <!-- Theme toggle inside login -->
-        <button class="login-theme-toggle" id="login-theme-toggle" aria-label="Cambiar tema">
-            <span class="icon-light">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            </span>
-            <span class="icon-dark">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-            </span>
-        </button>
-
-        <div class="login-card">
-            <div class="login-logo">
-                <!-- Two mice SVG -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="96" height="60" viewBox="0 0 96 60" fill="none">
-                    <!-- Mouse Oxi (left, blue) -->
-                    <g>
-                        <circle cx="11" cy="14" r="7" fill="#6366f1" opacity="0.85"/>
-                        <circle cx="11" cy="14" r="4" fill="#a5b4fc"/>
-                        <circle cx="27" cy="14" r="7" fill="#6366f1" opacity="0.85"/>
-                        <circle cx="27" cy="14" r="4" fill="#a5b4fc"/>
-                        <ellipse cx="19" cy="32" rx="13" ry="11" fill="#6366f1"/>
-                        <circle cx="14" cy="29" r="2.5" fill="white"/>
-                        <circle cx="24" cy="29" r="2.5" fill="white"/>
-                        <circle cx="15" cy="29" r="1.2" fill="#1e1b4b"/>
-                        <circle cx="25" cy="29" r="1.2" fill="#1e1b4b"/>
-                        <ellipse cx="19" cy="34" rx="2.5" ry="1.8" fill="#fda4af"/>
-                        <path d="M32 38 Q40 34 40 27" stroke="#4f46e5" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    </g>
-                    <!-- Mouse Javi (right, pink) -->
-                    <g>
-                        <circle cx="69" cy="14" r="7" fill="#ec4899" opacity="0.85"/>
-                        <circle cx="69" cy="14" r="4" fill="#f9a8d4"/>
-                        <circle cx="85" cy="14" r="7" fill="#ec4899" opacity="0.85"/>
-                        <circle cx="85" cy="14" r="4" fill="#f9a8d4"/>
-                        <ellipse cx="77" cy="32" rx="13" ry="11" fill="#ec4899"/>
-                        <circle cx="72" cy="29" r="2.5" fill="white"/>
-                        <circle cx="82" cy="29" r="2.5" fill="white"/>
-                        <circle cx="73" cy="29" r="1.2" fill="#4a044e"/>
-                        <circle cx="83" cy="29" r="1.2" fill="#4a044e"/>
-                        <ellipse cx="77" cy="34" rx="2.5" ry="1.8" fill="#fda4af"/>
-                        <path d="M64 38 Q56 34 56 27" stroke="#be185d" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    </g>
-                    <!-- Heart between them -->
-                    <path d="M48 22 C48 20 46.5 18 44.5 20 C42.5 18 41 20 41 22 C41 24 44.5 27 44.5 27 C44.5 27 48 24 48 22Z" fill="#f43f5e" transform="translate(3.5, 0)"/>
-                </svg>
-            </div>
-            <h2 class="login-title">Ratoncitos</h2>
-            <p class="login-subtitle">Gestión de tareas y gastos en el hogar.<br>Ingresa la palabra clave y selecciona tu perfil:</p>
-
-            <div style="margin-bottom: 20px;">
-                <input type="password" id="login-password-input" placeholder="Palabra clave..." style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); width: 80%; max-width: 250px; background: rgba(0,0,0,0.2); color: var(--text-primary); text-align: center; font-size: 1rem;">
-                <p id="login-error-msg" style="color: #ef4444; font-size: 0.85rem; margin-top: 8px; display: none; font-weight: 600;">Palabra clave incorrecta.</p>
-            </div>
-
-            <div class="login-profiles-grid">
-                <div class="login-profile-card oxi" data-name="Oxi" data-email="oxi@oxiflow.com">
-                    <div class="login-profile-avatar">O</div>
-                    <span class="login-profile-name">Oxi</span>
-                </div>
-                <div class="login-profile-card javi" data-name="Javi" data-email="javi@oxiflow.com">
-                    <div class="login-profile-avatar">J</div>
-                    <span class="login-profile-name">Javi</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>

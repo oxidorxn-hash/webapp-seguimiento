@@ -1035,8 +1035,8 @@ body.light-theme .icon-dark {
     padding: 16px;
     cursor: grab;
     position: relative;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease, opacity var(--transition-fast);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast), opacity var(--transition-fast);
 }
 
 .kanban-card:active {
@@ -1044,9 +1044,8 @@ body.light-theme .icon-dark {
 }
 
 .kanban-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px -4px var(--shadow-color);
-    border-color: var(--accent-primary);
+    box-shadow: 0 8px 24px -6px var(--shadow-color), 0 0 16px -2px var(--card-color, var(--accent-primary));
+    border-color: var(--card-color, var(--accent-primary)) !important;
 }
 
 .kanban-card.dragging {
@@ -1105,29 +1104,57 @@ body.light-theme .icon-dark {
 }
 
 .card-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     display: flex;
-    gap: 8px;
+    gap: 6px;
     opacity: 0;
-    transition: opacity var(--transition-fast);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
+    z-index: 10;
+    transform: translateY(-2px);
 }
 
 .kanban-card:hover .card-actions {
     opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
 .card-action-btn {
-    background: transparent;
-    border: none;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
     color: var(--text-secondary);
     cursor: pointer;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px var(--shadow-color);
+    transition: all var(--transition-fast);
+}
+
+.card-action-btn svg {
+    display: block;
 }
 
 .card-action-btn:hover {
-    color: var(--text-primary);
+    color: var(--accent-primary);
+    background-color: var(--bg-secondary);
+    border-color: var(--accent-primary);
+    transform: scale(1.1);
 }
 
 .card-action-btn.delete:hover {
     color: var(--priority-high);
+    border-color: var(--priority-high);
+    background-color: var(--bg-secondary);
+    transform: scale(1.1);
 }
 
 /* Empty Columns button styling */
@@ -3091,13 +3118,6 @@ body.light-theme .cal-holiday-pill {
 #metric-inprogress-card:hover{ box-shadow: 0 12px 32px -6px rgba(245,158,11,0.35) !important; }
 #metric-overdue-card:hover   { box-shadow: 0 12px 32px -6px rgba(239,68,68,0.35)  !important; }
 
-/* Kanban cards — deeper lift */
-.kanban-card {
-    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease !important;
-}
-.kanban-card:hover {
-    transform: translateY(-3px) scale(1.01) !important;
-}
 
 /* Input / select focus glow */
 input:not([type="range"]):focus,
@@ -3196,4 +3216,129 @@ textarea:focus {
 .recent-task-item:hover {
     background: rgba(99,102,241,0.05);
     transform: translateX(2px);
+}
+
+/* ==========================================================================
+   PREMIUM CUSTOM UX/UI POLISH
+   ========================================================================== */
+
+/* Glass panels hover micro-animation */
+.glass-panel {
+    transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+.glass-panel:hover {
+    border-color: rgba(99, 102, 241, 0.25) !important;
+    box-shadow: 0 12px 30px -4px var(--shadow-color) !important;
+}
+
+/* Kanban Column Glassmorphism */
+.kanban-column {
+    background: rgba(255, 255, 255, 0.015);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius-lg);
+    padding: 16px;
+    transition: all var(--transition-normal);
+}
+body.light-theme .kanban-column {
+    background: rgba(0, 0, 0, 0.01);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* Kanban column hover state */
+.kanban-column:hover {
+    border-color: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.025);
+}
+body.light-theme .kanban-column:hover {
+    border-color: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Elegant empty state styling for column cards */
+.kanban-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    border: 2px dashed rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius-md);
+    color: var(--text-secondary);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.005);
+    transition: all var(--transition-fast);
+    gap: 8px;
+    margin: 10px 0;
+}
+body.light-theme .kanban-empty-state {
+    border-color: rgba(0, 0, 0, 0.08);
+}
+.kanban-empty-state .empty-state-icon {
+    color: var(--text-secondary);
+    opacity: 0.35;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.kanban-empty-state:hover {
+    border-color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.015);
+}
+.kanban-empty-state:hover .empty-state-icon {
+    opacity: 0.8;
+    transform: scale(1.1) rotate(5deg);
+    color: var(--accent-primary);
+}
+.kanban-empty-state .empty-state-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.kanban-empty-state .empty-state-subtext {
+    font-size: 0.72rem;
+    opacity: 0.7;
+}
+
+/* Premium Balance Cards styling */
+.balance-card {
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: transform var(--transition-fast) cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+.balance-card.balance-oxi {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.02) 100%);
+}
+.balance-card.balance-javi {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%);
+}
+.balance-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+body.light-theme .balance-card:hover {
+    border-color: rgba(0, 0, 0, 0.12);
+}
+.balance-card.balance-oxi:hover {
+    box-shadow: 0 12px 30px -6px rgba(99, 102, 241, 0.25), inset 0 1px 1px rgba(255,255,255,0.1);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+.balance-card.balance-javi:hover {
+    box-shadow: 0 12px 30px -6px rgba(236, 72, 153, 0.25), inset 0 1px 1px rgba(255,255,255,0.1);
+    border-color: rgba(236, 72, 153, 0.4);
+}
+
+/* Settlement alert dynamic pulse highlight */
+.settlement-card.owes {
+    animation: premiumDebtPulse 4s ease-in-out infinite;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+@keyframes premiumDebtPulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px -4px rgba(245,158,11,0.08);
+        border-color: rgba(245, 158, 11, 0.15);
+    }
+    50% {
+        box-shadow: 0 12px 32px -4px rgba(245,158,11,0.22);
+        border-color: rgba(245, 158, 11, 0.35);
+    }
 }
