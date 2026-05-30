@@ -37,6 +37,9 @@
         };
         
         window.onerror = function(message, source, lineno, colno, error) {
+            // Ignore cross-origin errors (Firebase SDK, extensions) — no actionable info
+            if (!source && lineno === 0) return false;
+            if (message === 'Script error.') return false;
             const file = source ? source.substring(source.lastIndexOf('/') + 1) : 'unknown';
             window.showAppError(message, `Archivo: ${file}\nLínea: ${lineno}:${colno}\nStack: ${error ? error.stack : 'No disponible'}`);
             return false;
@@ -2767,24 +2770,7 @@
         const initDirectLogin = () => {
             const loginOverlay = document.getElementById('login-overlay');
             const logoutBtn    = document.getElementById('logout-btn');
-            const loginThemeToggle = document.getElementById('login-theme-toggle');
             const profileCards = document.querySelectorAll('.login-profile-card');
-
-            // Login screen theme toggle — mirrors the sidebar toggle
-            if (loginThemeToggle) {
-                const syncLoginToggleIcon = () => {
-                    const lightIcon = loginThemeToggle.querySelector('.icon-light');
-                    const darkIcon  = loginThemeToggle.querySelector('.icon-dark');
-                    if (lightIcon) lightIcon.style.display = state.theme === 'dark'  ? 'flex' : 'none';
-                    if (darkIcon)  darkIcon.style.display  = state.theme === 'light' ? 'flex' : 'none';
-                };
-                syncLoginToggleIcon();
-                loginThemeToggle.addEventListener('click', () => {
-                    state.theme = state.theme === 'dark' ? 'light' : 'dark';
-                    applyTheme();
-                    syncLoginToggleIcon();
-                });
-            }
 
             const updateUserProfileUI = (user) => {
                 const avatarEl = document.querySelector('.sidebar .user-profile .avatar');
@@ -2862,6 +2848,7 @@
                     const name  = card.getAttribute('data-name');
                     const email = card.getAttribute('data-email');
                     const user  = { name, email, picture: 'icon.svg' };
+                    if (pwdInput) pwdInput.value = '';
                     localStorage.setItem('oxiflow_user_session', JSON.stringify(user));
                     loginOverlay.classList.add('hidden');
                     updateUserProfileUI(user);
@@ -2887,6 +2874,25 @@
         };
 
 
+        // iOS PWA Install Prompt
+        const initIOSInstallPrompt = () => {
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const isStandalone = window.navigator.standalone === true;
+            const dismissed = localStorage.getItem('oxiflow_install_dismissed');
+            if (!isIOS || isStandalone || dismissed) return;
+
+            const prompt = document.getElementById('ios-install-prompt');
+            const closeBtn = document.getElementById('ios-install-close');
+            if (!prompt) return;
+
+            setTimeout(() => prompt.classList.add('visible'), 3000);
+
+            closeBtn.addEventListener('click', () => {
+                prompt.classList.remove('visible');
+                localStorage.setItem('oxiflow_install_dismissed', '1');
+            });
+        };
+
         // Initialize Application
         const init = () => {
             try {
@@ -2897,6 +2903,7 @@
                 initMobileMenu();
                 initSearch();
                 initDirectLogin();   // Session & authentication flow
+                initIOSInstallPrompt();
             } catch (err) {
                 console.error("Fallo en inicialización de Ratoncitos:", err);
                 if (window.showAppError) {
@@ -2964,7 +2971,9 @@
             <p class="login-subtitle">Gestión de tareas y gastos en el hogar.<br>Ingresa la palabra clave y selecciona tu perfil:</p>
 
             <div class="login-password-container">
-                <input type="password" id="login-password-input" class="login-password-input" placeholder="Palabra clave...">
+                <div class="login-password-wrapper">
+                    <input type="password" id="login-password-input" class="login-password-input" placeholder="Palabra clave..." autocomplete="new-password">
+                </div>
                 <p id="login-error-msg" class="login-error-msg">Palabra clave incorrecta.</p>
             </div>
 
@@ -2979,6 +2988,21 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- iOS PWA Install Prompt -->
+    <div class="ios-install-prompt" id="ios-install-prompt">
+        <button class="ios-install-close" id="ios-install-close" aria-label="Cerrar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="ios-install-icon">
+            <img src="icon.svg" width="48" height="48" alt="Ratoncitos">
+        </div>
+        <div class="ios-install-text">
+            <strong>Instalar Ratoncitos</strong>
+            <span>Toca <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin:0 2px"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> y luego <b>"Agregar a inicio"</b></span>
+        </div>
+        <div class="ios-install-arrow">▼</div>
     </div>
 
 </body>
