@@ -2935,7 +2935,35 @@ body.light-theme .icon-dark {
 /* Responsive expenses */
 @media (max-width: 768px) {
     .expenses-balance-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .balance-card.balance-total {
+        grid-column: span 2;
+    }
+
+    .balance-card {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .balance-avatar, .balance-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+    }
+
+    .balance-amount {
+        font-size: 1.1rem !important;
+    }
+
+    .balance-name {
+        font-size: 0.82rem !important;
+    }
+
+    .balance-label {
+        display: none;
     }
     .form-row-2 {
         grid-template-columns: 1fr;
