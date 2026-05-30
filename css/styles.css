@@ -156,6 +156,7 @@ a, button, select, input, textarea {
     display: flex;
     width: 100vw;
     height: 100vh;
+    height: 100dvh; /* iOS Safari fix: excludes browser chrome */
     position: relative;
 }
 
@@ -1334,15 +1335,33 @@ body.light-theme .icon-dark {
 @media (max-width: 768px) {
     .app-container {
         flex-direction: column;
+        height: 100dvh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .main-content {
+        height: auto !important;
+        overflow: visible !important;
+        flex: 1;
+    }
+
+    .content-body {
+        overflow-y: visible !important;
+        height: auto !important;
     }
     
-    /* Sidebar converts into header/drawer on mobile */
+    /* Sidebar converts into sticky header/drawer on mobile */
     .sidebar {
         width: 100%;
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
         box-shadow: 0 4px 15px var(--shadow-color);
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        flex-shrink: 0;
     }
     
     .sidebar-header {
@@ -1350,7 +1369,14 @@ body.light-theme .icon-dark {
     }
     
     .mobile-toggle {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .sidebar-nav {
