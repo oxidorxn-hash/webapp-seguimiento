@@ -37,151 +37,17 @@ const getSeedData = () => {
 
     return {
         columns: [
-            {
-                id: 'col-backlog',
-                title: 'Backlog Chores',
-                color: '#64748b', // Slate
-                tasks: [
-                    {
-                        id: 'task-1',
-                        title: 'Limpieza a fondo del horno',
-                        desc: 'Desengrasar y limpiar a fondo la cocina y el horno con productos biodegradables.',
-                        priority: 'low',
-                        date: formatDate(6),
-                        category: 'Casa',
-                        creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
-                    },
-                    {
-                        id: 'task-2',
-                        title: 'Comprar alimento para los perros',
-                        desc: 'Comprar saco de comida premium en la tienda de mascotas cercana.',
-                        priority: 'medium',
-                        date: formatDate(4),
-                        category: 'Mascotas',
-                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
-                    }
-                ]
-            },
-            {
-                id: 'col-todo',
-                title: 'Por Hacer',
-                color: '#6366f1', // Indigo
-                tasks: [
-                    {
-                        id: 'task-3',
-                        title: 'Hacer las compras del supermercado',
-                        desc: 'Comprar frutas, verduras, lácteos y artículos de despensa semanal.',
-                        priority: 'high',
-                        date: formatDate(2),
-                        category: 'Supermercado',
-                        creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
-                    },
-                    {
-                        id: 'task-4',
-                        title: 'Planificar menú semanal de almuerzos',
-                        desc: 'Escribir las opciones saludables para cocinar durante la semana.',
-                        priority: 'low',
-                        date: formatDate(3),
-                        category: 'Casa',
-                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
-                    }
-                ]
-            },
-            {
-                id: 'col-inprogress',
-                title: 'En Progreso',
-                color: '#f59e0b', // Amber
-                tasks: [
-                    {
-                        id: 'task-5',
-                        title: 'Lavar y ordenar la ropa blanca',
-                        desc: 'Sábanas, toallas y fundas de almohada de la habitación principal.',
-                        priority: 'high',
-                        date: formatDate(1),
-                        category: 'Casa',
-                        creator: { name: 'Javi', email: 'javi@oxiflow.com', picture: 'icon.svg' }
-                    }
-                ]
-            },
-            {
-                id: 'col-completed',
-                title: 'Completado',
-                color: '#10b981', // Emerald
-                tasks: [
-                    {
-                        id: 'task-6',
-                        title: 'Pagar alquiler y gastos comunes',
-                        desc: 'Transferencia mensual realizada con éxito del presupuesto familiar.',
-                        priority: 'high',
-                        date: formatDate(-1),
-                        category: 'Finanzas',
-                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
-                    },
-                    {
-                        id: 'task-7',
-                        title: 'Pasear a los perros y cepillarlos',
-                        desc: 'Paseo largo de la tarde por el parque y cepillado diario.',
-                        priority: 'medium',
-                        date: formatDate(-2),
-                        category: 'Mascotas',
-                        creator: { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' }
-                    }
-                ]
-            }
+            { id: 'col-backlog', title: 'Backlog Chores', color: '#64748b', tasks: [] },
+            { id: 'col-todo', title: 'Por Hacer', color: '#6366f1', tasks: [] },
+            { id: 'col-inprogress', title: 'En Progreso', color: '#f59e0b', tasks: [] },
+            { id: 'col-completed', title: 'Completado', color: '#10b981', tasks: [] }
         ],
-        expenses: [
-            {
-                id: 'exp-1',
-                title: 'Compra semanal Jumbo',
-                amount: 85.00,
-                paidBy: 'oxi@oxiflow.com',
-                date: formatDate(-2),
-                category: 'Supermercado'
-            },
-            {
-                id: 'exp-2',
-                title: 'Vacunas Veterinario (Perro)',
-                amount: 50.00,
-                paidBy: 'javi@oxiflow.com',
-                date: formatDate(-1),
-                category: 'Mascotas'
-            },
-            {
-                id: 'exp-3',
-                title: 'Artículos de limpieza Hogar',
-                amount: 15.00,
-                paidBy: 'oxi@oxiflow.com',
-                date: formatDate(0),
-                category: 'Casa'
-            }
-        ]
+        expenses: []
     };
 };
 
 const getSeedLogs = () => {
-    return [
-        {
-            id: 'log-1',
-            text: 'Alquiler y gastos comunes pagados',
-            colName: 'Completado',
-            priority: 'high',
-            date: new Date(Date.now() - 3600000 * 24).toLocaleString()
-        },
-        {
-            id: 'log-2',
-            text: 'Paseo de perros y cepillado realizado',
-            colName: 'Completado',
-            priority: 'medium',
-            date: new Date(Date.now() - 3600000 * 12).toLocaleString()
-        },
-        {
-            id: 'log-3',
-            text: 'Comenzó el lavado de la ropa blanca',
-            colName: 'En Progreso',
-            priority: 'high',
-            date: new Date(Date.now() - 3600000 * 2).toLocaleString()
-        }
-    ];
+    return [];
 };
 
 /**
