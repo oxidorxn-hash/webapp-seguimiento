@@ -581,10 +581,15 @@
             // Listen for changes from Firebase to keep local in sync
             fbDb.ref('oxiflow_data').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (data) {
+                if (data && data.board) {
+                    // Normalize: Firebase omits empty arrays, restore them
+                    if (data.board.columns) {
+                        data.board.columns.forEach(col => {
+                            if (!col.tasks) col.tasks = [];
+                        });
+                    }
                     localStorage.setItem(getActiveStorageKey(), JSON.stringify(data.board));
                     localStorage.setItem(getActiveLogsKey(), JSON.stringify(data.logs || []));
-                    // Re-render the current view if we are logged in
                     if (getActiveUserSession() && typeof switchView === 'function') {
                         switchView(state.currentView);
                     }
@@ -678,12 +683,13 @@
             if (inProgressCol) inProgressColId = inProgressCol.id;
 
             data.columns.forEach(column => {
-                const count = column.tasks.length;
+                const tasks = column.tasks || [];
+                const count = tasks.length;
                 totalTasks += count;
                 if (column.id === completedColId) completedTasks += count;
                 else if (column.id === inProgressColId) inProgressTasks += count;
                 if (column.id !== completedColId) {
-                    column.tasks.forEach(task => {
+                    tasks.forEach(task => {
                         if (task.date && task.date < todayStr) overdueTasks++;
                     });
                 }
@@ -700,7 +706,7 @@
             const upcomingTasks = [];
             data.columns.forEach(col => {
                 if (col.id === completedColId) return;
-                col.tasks.forEach(task => {
+                (col.tasks || []).forEach(task => {
                     const isDueToday = task.date === todayStr;
                     const isStartingToday = task.startDate === todayStr;
                     const isActiveToday = task.startDate && task.date && task.startDate <= todayStr && task.date >= todayStr;
