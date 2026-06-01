@@ -127,6 +127,9 @@
                         <span class="user-name">Usuario Demo</span>
                         <span class="user-role">Administrador</span>
                     </div>
+                    <button class="logout-btn" id="btn-settings" title="Configuración" aria-label="Configuración">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </button>
                     <button class="logout-btn" id="logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
                     </button>
@@ -161,7 +164,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
                 </button>
             </div>
-            <form id="task-form" class="modal-form">
+            <form id="task-form" class="modal-form" onsubmit="event.preventDefault();">
                 <input type="hidden" id="task-id">
                 <input type="hidden" id="task-column-id">
                 
@@ -187,12 +190,7 @@
                     <div class="form-group">
                         <label for="task-category-input">Categoría</label>
                         <select id="task-category-input" required>
-                            <option value="Casa" selected>Casa</option>
-                            <option value="Trabajo">Trabajo</option>
-                            <option value="Supermercado">Supermercado</option>
-                            <option value="Mascotas">Mascotas</option>
-                            <option value="Finanzas">Finanzas</option>
-                            <option value="Ocio">Ocio</option>
+                            <!-- Opciones generadas dinámicamente -->
                         </select>
                     </div>
                 </div>
@@ -306,6 +304,52 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal-overlay">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Configuración</h3>
+                <button class="close-btn" id="settings-modal-close" aria-label="Cerrar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-form" style="max-height: 70vh; overflow-y: auto;">
+                <div class="settings-section">
+                    <h4>Categorías de Tareas</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">Añade o elimina categorías para las tareas.</p>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <input type="text" id="new-task-cat" placeholder="Nueva categoría..." style="flex: 1; padding: 8px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
+                        <button type="button" class="btn btn-primary" id="btn-add-task-cat">Añadir</button>
+                    </div>
+                    <div id="settings-task-cat-list" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;"></div>
+                </div>
+                
+                <div class="settings-section" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <h4>Categorías de Gastos</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">Añade o elimina tipos de gastos.</p>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <input type="text" id="new-exp-cat" placeholder="Nueva categoría..." style="flex: 1; padding: 8px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
+                        <button type="button" class="btn btn-primary" id="btn-add-exp-cat">Añadir</button>
+                    </div>
+                    <div id="settings-exp-cat-list" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;"></div>
+                </div>
+
+                <div class="settings-section" style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <h4>Categorías de Eventos</h4>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">Añade o elimina tipos de eventos en el calendario.</p>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <input type="text" id="new-evt-cat" placeholder="Nueva categoría..." style="flex: 1; padding: 8px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary);">
+                        <button type="button" class="btn btn-primary" id="btn-add-evt-cat">Añadir</button>
+                    </div>
+                    <div id="settings-evt-cat-list" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btn-save-settings" style="width: 100%; padding: 12px; font-weight: 700;">Guardar y Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- App Combined Engine -->
     <script>
         /* ==========================================================================
@@ -367,7 +411,16 @@
                     { id: 'col-completed', title: 'Completados', color: '#10b981', tasks: [] }
                 ],
                 events: [],
-                expenses: []
+                expenses: [],
+                settings: {
+                    taskCategories: ["Casa", "Trabajo", "Supermercado", "Mascotas", "Finanzas", "Ocio"],
+                    expenseCategories: ["Supermercado", "Casa", "Mascotas", "Finanzas", "Ocio", "Transporte", "Salud", "Otro"],
+                    eventCategories: ["Cita Médica", "Cumpleaños", "Vacaciones", "Reunión", "Otro"],
+                    users: [
+                        { name: "Oxi", email: "oxi@oxiflow.com" },
+                        { name: "Javi", email: "javi@oxiflow.com" }
+                    ]
+                }
             };
         };
 
@@ -384,8 +437,8 @@
             const rawData = localStorage.getItem(key);
             const seedData = getSeedData();
 
-            if (!rawData) {
-                saveBoardData(seedData);
+            if (!rawData || rawData === 'undefined') {
+                localStorage.setItem(key, JSON.stringify(seedData));
                 localStorage.setItem(getActiveLogsKey(), JSON.stringify(getSeedLogs()));
                 return seedData;
             }
@@ -417,7 +470,19 @@
                         const compl = newData.columns[2].tasks.map(t => t.id);
                         pending.tasks = allTasks.filter(t => !inProg.includes(t.id) && !compl.includes(t.id));
                     }
-                    saveBoardData(newData);
+                    
+                    if (!newData.settings) {
+                        newData.settings = {
+                            taskCategories: ["Casa", "Trabajo", "Supermercado", "Mascotas", "Finanzas", "Ocio"],
+                            expenseCategories: ["Supermercado", "Casa", "Mascotas", "Finanzas", "Ocio", "Transporte", "Salud", "Otro"],
+                            eventCategories: ["Cita Médica", "Cumpleaños", "Vacaciones", "Reunión", "Otro"],
+                            users: [
+                                { name: "Oxi", email: "oxi@oxiflow.com" },
+                                { name: "Javi", email: "javi@oxiflow.com" }
+                            ]
+                        };
+                    }
+                    localStorage.setItem(key, JSON.stringify(newData));
                     return newData;
                 }
                 // Enforce fixed column metadata (color, title)
@@ -425,10 +490,27 @@
                     const col = parsed.columns.find(c => c.id === fc.id);
                     if (col) { col.color = fc.color; col.title = fc.title; }
                 });
+                // Configurar settings por defecto si no existen, o rellenar faltantes
+                if (!parsed.settings) {
+                    parsed.settings = getSeedData().settings;
+                    localStorage.setItem(key, JSON.stringify(parsed));
+                } else {
+                    let updated = false;
+                    const seedSets = getSeedData().settings;
+                    ['taskCategories', 'expenseCategories', 'eventCategories'].forEach(cat => {
+                        if (!parsed.settings[cat]) {
+                            parsed.settings[cat] = seedSets[cat];
+                            updated = true;
+                        }
+                    });
+                    if (updated) localStorage.setItem(key, JSON.stringify(parsed));
+                }
+                
                 return parsed;
             } catch (e) {
                 console.warn('Datos corruptos en localStorage. Reseteando.', e);
-                saveBoardData(seedData);
+                const storageKey = getActiveStorageKey();
+                localStorage.setItem(storageKey, JSON.stringify(seedData));
                 localStorage.setItem(getActiveLogsKey(), JSON.stringify(getSeedLogs()));
                 return seedData;
             }
@@ -475,10 +557,18 @@
          */
         var saveBoardData = (data) => {
             const key = getActiveStorageKey();
-            localStorage.setItem(key, JSON.stringify(data));
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (err) {
+                console.error('LocalStorage save error:', err);
+                if (window.showAppError) window.showAppError('Error guardando localmente: ' + err.message, err.stack);
+            }
             
             if (fbDb) {
-                fbDb.ref('oxiflow_data/board').set(data).catch(e => console.error('Firebase save error:', e));
+                fbDb.ref('oxiflow_data/board').set(data).catch(e => {
+                    console.error('Firebase save error:', e);
+                    if (window.showAppError) window.showAppError('Error guardando en Firebase: ' + e.message, e.stack || '');
+                });
             }
         };
 
@@ -1025,20 +1115,14 @@
                             <label for="board-creator-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Dueño:</label>
                             <select id="board-creator-filter" class="filter-select">
                                 <option value="all" ${boardState.creatorFilter === 'all' ? 'selected' : ''}>Todos</option>
-                                <option value="oxi@oxiflow.com"  ${boardState.creatorFilter === 'oxi@oxiflow.com'  ? 'selected' : ''}>Oxi</option>
-                                <option value="javi@oxiflow.com" ${boardState.creatorFilter === 'javi@oxiflow.com' ? 'selected' : ''}>Javi</option>
+                                ${boardState.data.settings.users.map(u => `<option value="${escapeHTML(u.email)}" ${boardState.creatorFilter === u.email ? 'selected' : ''}>${escapeHTML(u.name)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="filter-wrapper" style="display: flex; align-items: center; gap: 6px;">
                             <label for="board-category-filter" style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">Categoría:</label>
                             <select id="board-category-filter" class="filter-select">
-                                <option value="all"          ${boardState.categoryFilter === 'all'          ? 'selected' : ''}>Todas</option>
-                                <option value="Casa"         ${boardState.categoryFilter === 'Casa'         ? 'selected' : ''}>Casa</option>
-                                <option value="Trabajo"      ${boardState.categoryFilter === 'Trabajo'      ? 'selected' : ''}>Trabajo</option>
-                                <option value="Supermercado" ${boardState.categoryFilter === 'Supermercado' ? 'selected' : ''}>Supermercado</option>
-                                <option value="Mascotas"     ${boardState.categoryFilter === 'Mascotas'     ? 'selected' : ''}>Mascotas</option>
-                                <option value="Finanzas"     ${boardState.categoryFilter === 'Finanzas'     ? 'selected' : ''}>Finanzas</option>
-                                <option value="Ocio"         ${boardState.categoryFilter === 'Ocio'         ? 'selected' : ''}>Ocio</option>
+                                <option value="all" ${boardState.categoryFilter === 'all' ? 'selected' : ''}>Todas</option>
+                                ${boardState.data.settings.taskCategories.map(c => `<option value="${escapeHTML(c)}" ${boardState.categoryFilter === c ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('')}
                             </select>
                         </div>
                     </div>
@@ -1068,22 +1152,10 @@
             taskStartDateInput = document.getElementById('task-start-date-input');
             taskCategoryInput = document.getElementById('task-category-input');
 
-            // Remove any previous submit listener to prevent multiple submissions
-            const newForm = taskForm.cloneNode(true);
-            taskForm.parentNode.replaceChild(newForm, taskForm);
-            taskForm = newForm;
-
-            // Cache updated modal elements
-            taskIdInput = document.getElementById('task-id');
-            taskColIdInput = document.getElementById('task-column-id');
-            taskTitleInput = document.getElementById('task-title-input');
-            taskDescInput = document.getElementById('task-desc-input');
-            taskPriorityInput = document.getElementById('task-priority-input');
-            taskDateInput = document.getElementById('task-date-input');
-            taskStartDateInput = document.getElementById('task-start-date-input');
-            taskCategoryInput = document.getElementById('task-category-input');
-
-            taskForm.addEventListener('submit', handleTaskSubmit);
+            // Attach submit handler directly, replacing any old one
+            if (taskForm) {
+                taskForm.onsubmit = handleTaskSubmit;
+            }
 
             // Subtask add button
             const addSubtaskBtn = document.getElementById('add-subtask-btn');
@@ -1172,6 +1244,7 @@
             workspace.innerHTML = html;
             initDragAndDrop();
             bindTaskInteractions();
+            bindBoardEvents();
         };
 
         /**
@@ -1202,11 +1275,25 @@
                 'Supermercado': { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', border: 'rgba(16, 185, 129, 0.3)' },
                 'Mascotas': { bg: 'rgba(245, 158, 11, 0.15)', text: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' },
                 'Finanzas': { bg: 'rgba(239, 68, 68, 0.15)', text: '#ef4444', border: 'rgba(239, 68, 68, 0.3)' },
-                'Ocio': { bg: 'rgba(20, 184, 166, 0.15)', text: '#20b8a6', border: 'rgba(20, 184, 166, 0.3)' }
+                'Ocio': { bg: 'rgba(20, 184, 166, 0.15)', text: '#14b8a6', border: 'rgba(20, 184, 166, 0.3)' }
             };
 
             const cat = task.category || 'Casa';
-            const styling = categoryColors[cat] || { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', border: 'rgba(100, 116, 139, 0.3)' };
+            let styling = categoryColors[cat];
+            if (!styling) {
+                // Auto color from palette based on hash
+                const palette = [
+                    { bg: 'rgba(99, 102, 241, 0.15)', text: '#6366f1', border: 'rgba(99, 102, 241, 0.3)' },
+                    { bg: 'rgba(236, 72, 153, 0.15)', text: '#ec4899', border: 'rgba(236, 72, 153, 0.3)' },
+                    { bg: 'rgba(249, 115, 22, 0.15)', text: '#f97316', border: 'rgba(249, 115, 22, 0.3)' },
+                    { bg: 'rgba(16, 185, 129, 0.15)', text: '#10b981', border: 'rgba(16, 185, 129, 0.3)' },
+                    { bg: 'rgba(139, 92, 246, 0.15)', text: '#8b5cf6', border: 'rgba(139, 92, 246, 0.3)' },
+                    { bg: 'rgba(100, 116, 139, 0.15)', text: '#64748b', border: 'rgba(100, 116, 139, 0.3)' }
+                ];
+                let hash = 0;
+                for (let i = 0; i < cat.length; i++) hash = cat.charCodeAt(i) + ((hash << 5) - hash);
+                styling = palette[Math.abs(hash) % palette.length];
+            }
 
             const creator = task.creator || { name: 'Oxi', email: 'oxi@oxiflow.com' };
             const initials = creator.name ? creator.name.charAt(0).toUpperCase() : 'U';
@@ -1582,6 +1669,9 @@
             const col = boardState.data.columns.find(c => c.id === colId);
             const colTitle = col ? col.title : 'Columna';
             
+            // Populate task categories dynamically
+            taskCategoryInput.innerHTML = (boardState.data.settings?.taskCategories || []).map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('');
+
             const today = new Date();
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1648,6 +1738,7 @@
                         if (!task.creator) {
                             task.creator = getActiveUserSession() || { name: 'Oxi', email: 'oxi@oxiflow.com', picture: 'icon.svg' };
                         }
+                        saveBoardData(boardState.data);
                         addActivityLog(`Tarea actualizada: "${title}"`, col.title, priority);
                     }
                 } else {
@@ -1664,9 +1755,9 @@
                         creator: activeSession
                     };
                     col.tasks.push(newTask);
+                    saveBoardData(boardState.data);
                     addActivityLog(`Tarea creada: "${title}"`, col.title, priority);
                 }
-                saveBoardData(boardState.data);
                 modalOverlay.classList.remove('show');
                 renderWorkspace();
             } catch (err) {
@@ -1855,10 +1946,71 @@
                         </div>
                         <div class="calendar-days-grid" id="calendar-days-grid"></div>
                     </div>
+                    <div id="calendar-agenda-view" class="calendar-agenda-view"></div>
                 </div>
             `;
 
             renderCalendarDays(year, month, data, holidays);
+
+            const renderAgenda = (dateStr) => {
+                const agendaContainer = document.getElementById('calendar-agenda-view');
+                if (!agendaContainer) return;
+                
+                const events = data.events.filter(ev => ev.date === dateStr);
+                const holiday = holidays[dateStr];
+                
+                const [y, m, d] = dateStr.split('-');
+                const dateObj = new Date(y, m - 1, d);
+                const formatter = new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+                const dateTitle = formatter.format(dateObj);
+
+                let html = `<div class="agenda-header"><h3>${dateTitle.charAt(0).toUpperCase() + dateTitle.slice(1)}</h3></div>`;
+                html += `<div class="agenda-events-list">`;
+                
+                if (holiday) {
+                    html += `<div class="agenda-event-card holiday">
+                        <div class="agenda-event-color" style="background:var(--accent-primary);"></div>
+                        <div class="agenda-event-details">
+                            <span class="agenda-event-title">${escapeHTML(holiday)}</span>
+                            <span class="agenda-event-time">Feriado</span>
+                        </div>
+                    </div>`;
+                }
+
+                if (events.length === 0 && !holiday) {
+                    html += `<div class="agenda-empty-state">No hay eventos para este día.</div>`;
+                } else {
+                    events.forEach(ev => {
+                        const timeStr = ev.time ? ev.time : 'Todo el día';
+                        html += `
+                        <div class="agenda-event-card" data-evt-id="${ev.id}">
+                            <div class="agenda-event-color"></div>
+                            <div class="agenda-event-details">
+                                <span class="agenda-event-title">${escapeHTML(ev.title)}</span>
+                                <div class="agenda-event-meta">
+                                    <span class="agenda-event-time">${timeStr}</span>
+                                    ${ev.address ? `<span class="agenda-event-address">• ${escapeHTML(ev.address)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                }
+                html += `</div>`;
+                agendaContainer.innerHTML = html;
+            };
+
+            const todayStr = getLocalDateString();
+            const [ty, tm] = todayStr.split('-');
+            let initialSelectedDate = todayStr;
+            if (parseInt(ty) !== year || parseInt(tm) - 1 !== month) {
+                initialSelectedDate = fmtDs(year, month, 1);
+            }
+            
+            setTimeout(() => {
+                const initialBox = document.querySelector(`.calendar-day-box[data-date="${initialSelectedDate}"]`);
+                if (initialBox) initialBox.classList.add('selected');
+                renderAgenda(initialSelectedDate);
+            }, 0);
 
             document.getElementById('cal-prev').onclick = () => {
                 calendarState.currentMonth--;
@@ -1875,20 +2027,52 @@
                 calendarState.currentMonth = new Date().getMonth();
                 renderCalendar(container);
             };
-            document.getElementById('cal-add-event').onclick = () => openEventModal(null, null, container);
+            document.getElementById('cal-add-event').onclick = () => {
+                const selectedDay = document.querySelector('.calendar-day-box.selected');
+                const date = selectedDay ? selectedDay.getAttribute('data-date') : null;
+                openEventModal(null, date, container);
+            };
 
             document.getElementById('calendar-days-grid').addEventListener('click', (e) => {
                 const pill   = e.target.closest('.cal-event-pill');
                 const addBtn = e.target.closest('.calendar-day-add-btn');
+                const dayBox = e.target.closest('.calendar-day-box');
+                
+                if (addBtn) {
+                    openEventModal(null, addBtn.getAttribute('data-date'), container);
+                    e.stopPropagation();
+                    return;
+                }
+                
                 if (pill) {
                     const evtId = pill.getAttribute('data-evt-id');
                     const d = getBoardData();
                     const evt = (d.events || []).find(ev => ev.id === evtId);
                     if (evt) openEventModal(evt, null, container);
-                } else if (addBtn) {
-                    openEventModal(null, addBtn.getAttribute('data-date'), container);
+                    e.stopPropagation();
+                    return;
+                }
+                
+                if (dayBox) {
+                    document.querySelectorAll('.calendar-day-box').forEach(b => b.classList.remove('selected'));
+                    dayBox.classList.add('selected');
+                    const dateStr = dayBox.getAttribute('data-date');
+                    renderAgenda(dateStr);
                 }
             });
+            
+            const agendaView = document.getElementById('calendar-agenda-view');
+            if (agendaView) {
+                agendaView.addEventListener('click', (e) => {
+                    const card = e.target.closest('.agenda-event-card[data-evt-id]');
+                    if (card) {
+                        const evtId = card.getAttribute('data-evt-id');
+                        const d = getBoardData();
+                        const evt = (d.events || []).find(ev => ev.id === evtId);
+                        if (evt) openEventModal(evt, null, container);
+                    }
+                });
+            }
         };
 
         const renderCalendarDays = (year, month, data, holidays) => {
@@ -1925,12 +2109,16 @@
             const dayEvents = events.filter(ev => ev.date === dateStr);
 
             let eventsHtml = '';
+            let dotsHtml = '';
+            
             if (holiday) {
                 eventsHtml += `<div class="cal-holiday-pill" title="${escapeHTML(holiday)}">${escapeHTML(holiday)}</div>`;
+                dotsHtml += `<div class="cal-event-dot holiday-dot"></div>`;
             }
             dayEvents.forEach(ev => {
                 const timeStr = ev.time ? `${ev.time} ` : '';
                 eventsHtml += `<div class="cal-event-pill" data-evt-id="${ev.id}" title="${escapeHTML(ev.title)}">${timeStr}${escapeHTML(ev.title)}</div>`;
+                dotsHtml += `<div class="cal-event-dot regular-dot"></div>`;
             });
 
             return `
@@ -1939,7 +2127,10 @@
                         <span class="day-number">${dayNum}</span>
                         <button class="calendar-day-add-btn" data-date="${dateStr}" title="Añadir evento">+</button>
                     </div>
-                    <div class="calendar-tasks-container">${eventsHtml}</div>
+                    <div class="calendar-tasks-container">
+                        <div class="cal-pills-container">${eventsHtml}</div>
+                        <div class="cal-dots-container">${dotsHtml}</div>
+                    </div>
                 </div>
             `;
         };
@@ -1971,6 +2162,8 @@
                 a.click();
             };
 
+            const evtCatOptions = (boardState.data.settings?.eventCategories || []).map(c => `<option value="${escapeHTML(c)}" ${existing?.category === c ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('');
+
             const overlay = document.createElement('div');
             overlay.className = 'expense-modal-overlay show';
             overlay.id = 'event-modal-overlay';
@@ -2000,6 +2193,13 @@
                         <div class="form-group" style="position: relative;">
                             <label for="evt-address">Dirección / Lugar</label>
                             <input type="text" id="evt-address" placeholder="Ej: Av. Principal 123, Santiago" value="${escapeHTML(existing?.address || '')}" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="evt-category">Categoría</label>
+                            <select id="evt-category">
+                                <option value="">Sin categoría</option>
+                                ${evtCatOptions}
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="evt-notes">Notas</label>
@@ -2070,6 +2270,7 @@
                 const date    = overlay.querySelector('#evt-date').value;
                 const time    = overlay.querySelector('#evt-time').value;
                 const address = overlay.querySelector('#evt-address').value.trim();
+                const category = overlay.querySelector('#evt-category').value.trim();
                 const notes   = overlay.querySelector('#evt-notes').value.trim();
                 if (!title || !date) return;
 
@@ -2077,10 +2278,10 @@
                 if (!d.events) d.events = [];
                 if (isEdit) {
                     const idx = d.events.findIndex(ev => ev.id === existing.id);
-                    if (idx >= 0) d.events[idx] = { ...d.events[idx], title, date, time, address, notes };
+                    if (idx >= 0) d.events[idx] = { ...d.events[idx], title, date, time, address, category, notes };
                     addActivityLog(`Evento editado: ${title}`, 'Calendario', 'low');
                 } else {
-                    d.events.push({ id: 'evt-' + generateId(), title, date, time, address, notes });
+                    d.events.push({ id: 'evt-' + generateId(), title, date, time, address, category, notes });
                     addActivityLog(`Evento creado: ${title}`, 'Calendario', 'low');
                 }
                 saveBoardData(d);
@@ -2091,7 +2292,6 @@
 
 
         // --- 3.5 EXPENSES MODULE ---
-        const EXPENSE_CATEGORIES = ['Supermercado', 'Casa', 'Mascotas', 'Finanzas', 'Ocio', 'Transporte', 'Salud', 'Otro'];
         
         const getCategoryColor = (cat) => {
             const map = {
@@ -2099,7 +2299,12 @@
                 'Finanzas': '#3b82f6', 'Trabajo': '#6366f1', 'Ocio': '#ec4899',
                 'Transporte': '#14b8a6', 'Salud': '#ef4444', 'Otro': '#94a3b8'
             };
-            return map[cat] || '#94a3b8';
+            if (map[cat]) return map[cat];
+            
+            const palette = ['#6366f1', '#ec4899', '#f97316', '#10b981', '#8b5cf6', '#64748b'];
+            let hash = 0;
+            for (let i = 0; i < (cat||'').length; i++) hash = (cat||'').charCodeAt(i) + ((hash << 5) - hash);
+            return palette[Math.abs(hash) % palette.length];
         };
 
         const expensesState = { selectedMonth: null }; // 'YYYY-MM' or null = all
@@ -2460,7 +2665,7 @@
 
         const openExpenseModal = (existing = null, editIdx = -1, expContainer = null) => {
             document.getElementById('expense-modal-overlay')?.remove();
-            const catOptions = EXPENSE_CATEGORIES.map(c => `<option value="${escapeHTML(c)}" ${existing?.category === c ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('');
+            const catOptions = (boardState.data.settings?.expenseCategories || []).map(c => `<option value="${escapeHTML(c)}" ${existing?.category === c ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('');
             const todayStr = getLocalDateString();
             const isEdit = existing !== null && editIdx >= 0;
             const overlay = document.createElement('div');
@@ -2691,6 +2896,34 @@
         const initDirectLogin = () => {
             const loginOverlay = document.getElementById('login-overlay');
             const logoutBtn    = document.getElementById('logout-btn');
+            const profilesGrid = document.getElementById('login-profiles-grid');
+            
+            // Fallback defensivo en caso de corrupción de datos local
+            if (!boardState.data) {
+                boardState.data = getSeedData();
+            }
+            if (!boardState.data.settings) {
+                boardState.data.settings = getSeedData().settings;
+            } else {
+                if (!boardState.data.settings.eventCategories) {
+                    boardState.data.settings.eventCategories = getSeedData().settings.eventCategories;
+                }
+                if (!boardState.data.settings.taskCategories) {
+                    boardState.data.settings.taskCategories = getSeedData().settings.taskCategories;
+                }
+            }
+            
+            if (profilesGrid && boardState.data.settings) {
+                profilesGrid.innerHTML = boardState.data.settings.users.map(u => {
+                    const profileClass = u.email === 'oxi@oxiflow.com' ? 'oxi' : (u.email === 'javi@oxiflow.com' ? 'javi' : '');
+                    return `
+                    <div class="login-profile-card ${profileClass}" data-name="${escapeHTML(u.name)}" data-email="${escapeHTML(u.email)}" style="background: rgba(255,255,255,0.05);">
+                        <div class="login-profile-avatar">${escapeHTML(u.name.charAt(0).toUpperCase())}</div>
+                        <span class="login-profile-name">${escapeHTML(u.name)}</span>
+                    </div>
+                `}).join('');
+            }
+            
             const profileCards = document.querySelectorAll('.login-profile-card');
 
             const updateUserProfileUI = (user) => {
@@ -2817,12 +3050,124 @@
             });
         };
 
+        const initSettings = () => {
+            const btnSettings = document.getElementById('btn-settings');
+            const overlay = document.getElementById('settings-modal-overlay');
+            const btnClose = document.getElementById('settings-modal-close');
+            const btnSave = document.getElementById('btn-save-settings');
+
+            if (!btnSettings || !overlay) return;
+
+            const renderSettingsLists = () => {
+                const s = boardState.data.settings;
+                if(!s) return;
+                
+                // Tasks
+                const taskList = document.getElementById('settings-task-cat-list');
+                taskList.innerHTML = s.taskCategories.map((c, i) => `
+                    <span style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.8rem;">
+                        ${escapeHTML(c)} 
+                        <button type="button" class="btn-del-task-cat" data-index="${i}" style="background: none; border: none; color: var(--danger-color); cursor: pointer; padding: 0 4px; font-size: 1.2rem; line-height: 1;">&times;</button>
+                    </span>
+                `).join('');
+
+                // Expenses
+                const expList = document.getElementById('settings-exp-cat-list');
+                expList.innerHTML = s.expenseCategories.map((c, i) => `
+                    <span style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.8rem;">
+                        ${escapeHTML(c)} 
+                        <button type="button" class="btn-del-exp-cat" data-index="${i}" style="background: none; border: none; color: var(--danger-color); cursor: pointer; padding: 0 4px; font-size: 1.2rem; line-height: 1;">&times;</button>
+                    </span>
+                `).join('');
+
+                // Events
+                const evtList = document.getElementById('settings-evt-cat-list');
+                evtList.innerHTML = (s.eventCategories || []).map((c, i) => `
+                    <span style="display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.8rem;">
+                        ${escapeHTML(c)} 
+                        <button type="button" class="btn-del-evt-cat" data-index="${i}" style="background: none; border: none; color: var(--danger-color); cursor: pointer; padding: 0 4px; font-size: 1.2rem; line-height: 1;">&times;</button>
+                    </span>
+                `).join('');
+
+                // Attach delete listeners
+                taskList.querySelectorAll('.btn-del-task-cat').forEach(b => b.onclick = () => {
+                    s.taskCategories.splice(b.getAttribute('data-index'), 1);
+                    renderSettingsLists();
+                });
+                expList.querySelectorAll('.btn-del-exp-cat').forEach(b => b.onclick = () => {
+                    s.expenseCategories.splice(b.getAttribute('data-index'), 1);
+                    renderSettingsLists();
+                });
+                evtList.querySelectorAll('.btn-del-evt-cat').forEach(b => b.onclick = () => {
+                    s.eventCategories.splice(b.getAttribute('data-index'), 1);
+                    renderSettingsLists();
+                });
+            };
+
+            btnSettings.addEventListener('click', () => {
+                renderSettingsLists();
+                overlay.classList.add('show');
+            });
+
+            const closeSettings = () => {
+                overlay.classList.remove('show');
+                saveBoardData(boardState.data);
+                if (window.currentView === 'kanban') renderWorkspace();
+                if (window.currentView === 'expenses') renderExpenses();
+            };
+
+            btnClose.onclick = closeSettings;
+            btnSave.onclick = closeSettings;
+
+            // Add events
+            document.getElementById('btn-add-task-cat').onclick = () => {
+                const inp = document.getElementById('new-task-cat');
+                if (inp.value.trim()) {
+                    boardState.data.settings.taskCategories.push(inp.value.trim());
+                    inp.value = '';
+                    renderSettingsLists();
+                }
+            };
+
+            document.getElementById('btn-add-exp-cat').onclick = () => {
+                const inp = document.getElementById('new-exp-cat');
+                if (inp.value.trim()) {
+                    boardState.data.settings.expenseCategories.push(inp.value.trim());
+                    inp.value = '';
+                    renderSettingsLists();
+                }
+            };
+
+            document.getElementById('btn-add-evt-cat').onclick = () => {
+                const inp = document.getElementById('new-evt-cat');
+                if (inp.value.trim()) {
+                    if (!boardState.data.settings.eventCategories) {
+                        boardState.data.settings.eventCategories = [];
+                    }
+                    boardState.data.settings.eventCategories.push(inp.value.trim());
+                    inp.value = '';
+                    renderSettingsLists();
+                }
+            };
+        };
+
         // Initialize Application
         const init = () => {
             try {
+                // Validación defensiva global
+                if (!boardState.data) {
+                    boardState.data = getSeedData();
+                }
+                if (!boardState.data.settings) {
+                    boardState.data.settings = getSeedData().settings;
+                } else if (!boardState.data.settings.eventCategories) {
+                    boardState.data.settings.eventCategories = getSeedData().settings.eventCategories;
+                }
+
                 initModalCache();
                 initTheme();
                 initDateTime();
+                initSettings();
                 initNavigation();
                 initMobileMenu();
                 initSearch();
@@ -2893,15 +3238,8 @@
                 <p id="login-error-msg" class="login-error-msg">Palabra clave incorrecta.</p>
             </div>
 
-            <div class="login-profiles-grid">
-                <div class="login-profile-card oxi" data-name="Oxi" data-email="oxi@oxiflow.com">
-                    <div class="login-profile-avatar">O</div>
-                    <span class="login-profile-name">Oxi</span>
-                </div>
-                <div class="login-profile-card javi" data-name="Javi" data-email="javi@oxiflow.com">
-                    <div class="login-profile-avatar">J</div>
-                    <span class="login-profile-name">Javi</span>
-                </div>
+            <div class="login-profiles-grid" id="login-profiles-grid">
+                <!-- Se llena dinámicamente -->
             </div>
         </div>
     </div>
