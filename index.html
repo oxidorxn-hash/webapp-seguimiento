@@ -405,6 +405,7 @@
             };
 
             return {
+                isSeedData: true,
                 columns: [
                     { id: 'col-pending', title: 'Pendientes', color: '#6366f1', tasks: [] },
                     { id: 'col-inprogress', title: 'En Curso', color: '#f59e0b', tasks: [] },
@@ -544,6 +545,7 @@
                     }
                     localStorage.setItem(getActiveStorageKey(), JSON.stringify(data.board));
                     localStorage.setItem(getActiveLogsKey(), JSON.stringify(data.logs || []));
+                    try { if (typeof boardState !== 'undefined') boardState.data = data.board; } catch(e) {}
                     if (getActiveUserSession() && typeof switchView === 'function') {
                         switchView(state.currentView);
                     }
@@ -556,6 +558,14 @@
          * @param {Object} data - Application data object.
          */
         var saveBoardData = (data) => {
+            // Eliminar flag de semilla si el usuario ya agregó contenido
+            const hasTasks = data.columns && data.columns.some(c => c.tasks && c.tasks.length > 0);
+            const hasEvents = data.events && data.events.length > 0;
+            const hasExpenses = data.expenses && data.expenses.length > 0;
+            if (data.isSeedData && (hasTasks || hasEvents || hasExpenses)) {
+                delete data.isSeedData;
+            }
+
             const key = getActiveStorageKey();
             try {
                 localStorage.setItem(key, JSON.stringify(data));
@@ -564,11 +574,14 @@
                 if (window.showAppError) window.showAppError('Error guardando localmente: ' + err.message, err.stack);
             }
             
-            if (fbDb) {
+            // Bloqueo crítico: NUNCA sobreescribir Firebase con seedData vacía
+            if (fbDb && !data.isSeedData) {
                 fbDb.ref('oxiflow_data/board').set(data).catch(e => {
                     console.error('Firebase save error:', e);
                     if (window.showAppError) window.showAppError('Error guardando en Firebase: ' + e.message, e.stack || '');
                 });
+            } else if (fbDb && data.isSeedData) {
+                console.warn("Protección activa: Se evitó enviar un tablero vacío (seed) a Firebase.");
             }
         };
 
@@ -617,6 +630,7 @@
         // --- 2. DASHBOARD VIEW CONTROLLER (js/dashboard.js) ---
         var renderDashboard = (container) => {
             const data = getBoardData();
+            try { if (typeof boardState !== 'undefined') boardState.data = data; } catch(e) {}
             const logs = getActivityLogs();
             
             let totalTasks = 0;
@@ -1906,6 +1920,7 @@
 
         var renderCalendar = (container) => {
             const data = getBoardData();
+            try { if (typeof boardState !== 'undefined') boardState.data = data; } catch(e) {}
             if (!data.events) data.events = [];
             const year  = calendarState.currentYear;
             const month = calendarState.currentMonth;
@@ -2311,6 +2326,7 @@
 
         var renderExpenses = (container) => {
             const data = getBoardData();
+            try { if (typeof boardState !== 'undefined') boardState.data = data; } catch(e) {}
             // Remove legacy synthetic settlement entries from old mechanism
             if (data.expenses) {
                 const cleaned = data.expenses.filter(e =>
@@ -2900,7 +2916,7 @@
             
             // Fallback defensivo en caso de corrupción de datos local
             if (!boardState.data) {
-                boardState.data = getSeedData();
+                boardState.data = getBoardData();
             }
             if (!boardState.data.settings) {
                 boardState.data.settings = getSeedData().settings;
@@ -3156,7 +3172,7 @@
             try {
                 // Validación defensiva global
                 if (!boardState.data) {
-                    boardState.data = getSeedData();
+                    boardState.data = getBoardData();
                 }
                 if (!boardState.data.settings) {
                     boardState.data.settings = getSeedData().settings;
