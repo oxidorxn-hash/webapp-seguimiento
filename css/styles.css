@@ -3050,6 +3050,9 @@ body.light-theme .icon-dark {
         grid-template-columns: 1fr 1fr;
         gap: 12px;
     }
+    #event-form .form-row-2 {
+        grid-template-columns: 1fr;
+    }
     .expenses-table-wrapper {
         overflow-x: auto;
     }
